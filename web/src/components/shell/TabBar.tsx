@@ -21,7 +21,7 @@ export function TabBar() {
     <nav
       aria-label="Primary"
       className="fixed left-1/2 -translate-x-1/2 z-40 w-[min(430px,calc(100%-24px))] flex items-center gap-2 lg:hidden"
-      style={{ bottom: "calc(var(--sab) + 12px - var(--ios-bottom-shim))" }}
+      style={{ bottom: "calc(var(--sab) + 4px - var(--ios-bottom-shim))" }}
     >
       <div className="glass-strong rounded-full p-1 flex items-center flex-1 relative">
         {TABS.map(({ href, label, Icon }) => {
