@@ -1,0 +1,337 @@
+@import "tailwindcss";
+
+/* ───────────────────────────── Tokens ───────────────────────────── */
+:root {
+  --lacquer: #0b0a09;
+  --lacquer-2: #151311;
+  --lacquer-3: #1f1c18;
+  --ivory: #f3ede2;
+  --ivory-2: #cfc6b6;
+  --ivory-3: #8f8778;
+  --walnut: #4a3222;
+  --walnut-2: #6b4630;
+  --walnut-hi: #8a5a3a;
+  /* accent: six values per accent, three for each theme; --gold* resolve per theme */
+  --a-hi-d: #e8c77e; --a-d: #c9a45c; --a-lo-d: #8f7238;
+  --a-hi-l: #b08a3c; --a-l: #94743a; --a-lo-l: #6a5228;
+  --gold: var(--a-d);
+  --gold-hi: var(--a-hi-d);
+  --gold-lo: var(--a-lo-d);
+  --on-accent: #1a1408;
+  --felt: #7a1f2b;
+  --felt-hi: #b23a48;
+  --tint-1: rgba(255, 255, 255, 0.03);
+  --tint-2: rgba(255, 255, 255, 0.06);
+  --ground-veil: rgba(11, 10, 9, 0.9);
+  --strong-glass: rgba(20, 18, 16, 0.5);
+  --keyboard: #0f0d0b;
+  --glass: rgba(243, 237, 226, 0.035);
+  --glass-2: rgba(243, 237, 226, 0.07);
+  --glass-line: rgba(255, 255, 255, 0.085);
+  --glass-line-hi: rgba(255, 255, 255, 0.16);
+  --rail-w: 232px;
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --tabbar-h: 64px;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-lacquer: var(--lacquer);
+  --color-lacquer-2: var(--lacquer-2);
+  --color-lacquer-3: var(--lacquer-3);
+  --color-ivory: var(--ivory);
+  --color-ivory-2: var(--ivory-2);
+  --color-ivory-3: var(--ivory-3);
+  --color-walnut: var(--walnut);
+  --color-walnut-2: var(--walnut-2);
+  --color-walnut-hi: var(--walnut-hi);
+  --color-gold: var(--gold);
+  --color-gold-hi: var(--gold-hi);
+  --color-gold-lo: var(--gold-lo);
+  --color-felt: var(--felt);
+  --color-felt-hi: var(--felt-hi);
+  --color-on-accent: var(--on-accent);
+  --font-display: var(--font-display), ui-sans-serif, sans-serif;
+  --font-sans: var(--font-body), ui-sans-serif, sans-serif;
+  --radius-xl: var(--radius-xl);
+  --radius-lg: var(--radius-lg);
+  --radius-md: var(--radius-md);
+  --radius-sm: var(--radius-sm);
+}
+
+
+/* ───────────────────────────── Accents ───────────────────────────── */
+:root[data-accent="copper"] { --a-hi-d: #eaa77e; --a-d: #c97c53; --a-lo-d: #8c4f2f; --a-hi-l: #b2653a; --a-l: #97532d; --a-lo-l: #6b3a1e; }
+:root[data-accent="rose"]   { --a-hi-d: #f1a9b4; --a-d: #d47684; --a-lo-d: #91424e; --a-hi-l: #bf5163; --a-l: #a2404f; --a-lo-l: #762b38; }
+:root[data-accent="sage"]   { --a-hi-d: #bfd6aa; --a-d: #93b17b; --a-lo-d: #5e7c4a; --a-hi-l: #678a50; --a-l: #547343; --a-lo-l: #3c5530; }
+:root[data-accent="sky"]    { --a-hi-d: #b0d0ea; --a-d: #7fabd0; --a-lo-d: #4d7192; --a-hi-l: #4a7ba3; --a-l: #3d688c; --a-lo-l: #2b4a65; }
+:root[data-accent="silver"] { --a-hi-d: #e6e2da; --a-d: #bdb8ae; --a-lo-d: #7f7a70; --a-hi-l: #6f6a60; --a-l: #5d584f; --a-lo-l: #3f3b34; }
+
+/* ───────────────────────────── Light theme ─────────────────────────────
+   Dark is the brand default. The same block is applied for an explicit choice
+   and for the system preference when no choice was made. */
+:root[data-theme="light"] {
+  --lacquer: #f5f0e7;
+  --lacquer-2: #ede7db;
+  --lacquer-3: #e5ded0;
+  --ivory: #1c1814;
+  --ivory-2: #4a423a;
+  --ivory-3: #7c7263;
+  --gold: var(--a-l);
+  --gold-hi: var(--a-hi-l);
+  --gold-lo: var(--a-lo-l);
+  --on-accent: #fff9ee;
+  --felt-hi: #a8323f;
+  --glass: rgba(28, 24, 20, 0.035);
+  --glass-2: rgba(28, 24, 20, 0.06);
+  --glass-line: rgba(28, 24, 20, 0.1);
+  --glass-line-hi: rgba(28, 24, 20, 0.16);
+  --tint-1: rgba(28, 24, 20, 0.035);
+  --tint-2: rgba(28, 24, 20, 0.07);
+  --ground-veil: rgba(245, 240, 231, 0.9);
+  --strong-glass: rgba(250, 247, 240, 0.6);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+  --lacquer: #f5f0e7;
+    --lacquer-2: #ede7db;
+    --lacquer-3: #e5ded0;
+    --ivory: #1c1814;
+    --ivory-2: #4a423a;
+    --ivory-3: #7c7263;
+    --gold: var(--a-l);
+    --gold-hi: var(--a-hi-l);
+    --gold-lo: var(--a-lo-l);
+    --on-accent: #fff9ee;
+    --felt-hi: #a8323f;
+    --glass: rgba(28, 24, 20, 0.035);
+    --glass-2: rgba(28, 24, 20, 0.06);
+    --glass-line: rgba(28, 24, 20, 0.1);
+    --glass-line-hi: rgba(28, 24, 20, 0.16);
+    --tint-1: rgba(28, 24, 20, 0.035);
+    --tint-2: rgba(28, 24, 20, 0.07);
+    --ground-veil: rgba(245, 240, 231, 0.9);
+    --strong-glass: rgba(250, 247, 240, 0.6);
+    color-scheme: light;
+  }
+}
+
+/* ───────────────────────────── Base ───────────────────────────── */
+html {
+  background: var(--lacquer);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--lacquer);
+  color: var(--ivory);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  overscroll-behavior-y: none;
+  min-height: 100dvh;
+}
+
+/* ambient light on the lid: what the glass refracts */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 45% at 12% 8%, var(--tint-2), transparent 70%),
+    radial-gradient(45% 40% at 88% 18%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 70%),
+    radial-gradient(55% 40% at 70% 92%, color-mix(in srgb, var(--walnut-hi) 18%, transparent), transparent 70%),
+    radial-gradient(40% 35% at 20% 80%, color-mix(in srgb, var(--gold) 8%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--lacquer-2) 0%, var(--lacquer) 45%, var(--lacquer) 100%);
+}
+.ambient::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(30% 30% at 30% 30%, color-mix(in srgb, var(--gold-hi) 8%, transparent), transparent 70%),
+    radial-gradient(28% 28% at 75% 65%, color-mix(in srgb, var(--walnut-hi) 14%, transparent), transparent 70%);
+  animation: drift 40s ease-in-out infinite alternate;
+}
+@keyframes drift {
+  from { transform: translate3d(-3%, -2%, 0) rotate(0deg); }
+  to { transform: translate3d(3%, 3%, 0) rotate(4deg); }
+}
+
+/* film grain over everything, very faint */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+  button { font: inherit; color: inherit; }
+  input, textarea { font: inherit; }
+}
+::selection { background: color-mix(in srgb, var(--gold) 35%, transparent); }
+
+@layer components {
+/* ───────────────────────────── Surfaces ─────────────────────────────
+   Three tiers. hairline: an edge only. glass: a breath of fill over blur.
+   glass-strong: for things that float over content and must stay legible. */
+.hairline {
+  border: 1px solid var(--glass-line);
+  box-shadow: inset 0 1px 0 var(--tint-1);
+}
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid var(--glass-line);
+  box-shadow: inset 0 1px 0 var(--tint-2);
+}
+.glass-strong {
+  background: var(--strong-glass);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+  border: 1px solid var(--glass-line-hi);
+  box-shadow:
+    inset 0 1px 0 var(--tint-2),
+    0 24px 60px -30px rgba(0, 0, 0, 0.5);
+}
+/* kept as an alias: former solid card, now a quiet glass tier */
+.lacquer {
+  background: var(--tint-1);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-line);
+  box-shadow: inset 0 1px 0 var(--tint-1);
+}
+.tint-1 { background: var(--tint-1); }
+.tint-2 { background: var(--tint-2); }
+.keyboard { background: var(--keyboard); }
+
+/* walnut grain: used sparingly, thumbnails and the odd accent */
+.wood {
+  position: relative;
+  background-color: var(--walnut);
+  background-image:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.25), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.3)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='200'%3E%3Cfilter id='w' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.09' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.54  0 0 0 0 0.35  0 0 0 0 0.22  0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  background-size: auto, 600px 200px;
+  background-blend-mode: normal, multiply;
+}
+.wood::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.25));
+  border-radius: inherit;
+}
+
+.gold-line {
+  background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold-hi) 50%, var(--gold) 70%, transparent);
+  height: 1px;
+}
+.gold-text {
+  background: linear-gradient(120deg, var(--gold-lo), var(--gold-hi) 45%, var(--gold) 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.gold-fill {
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+  color: var(--lacquer);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 24px -12px rgba(201, 164, 92, 0.7);
+}
+
+/* ───────────────────────────── Type ───────────────────────────── */
+.display {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 100, "opsz" 96;
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+}
+.chordname {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  font-feature-settings: "tnum";
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ivory-3);
+  font-weight: 500;
+}
+}
+
+/* ───────────────────────────── Utilities ───────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+.safe-top { padding-top: max(var(--sat), 12px); }
+.page-pad-bottom { padding-bottom: calc(var(--tabbar-h) + var(--sab) + 96px); }
+.song-header { background: linear-gradient(180deg, var(--ground-veil) 70%, transparent); }
+@media (min-width: 1024px) {
+  .song-header { background: none; }
+  .page-pad-bottom { padding-bottom: 64px; }
+  .safe-top { padding-top: 28px; }
+}
+.press { transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 160ms; }
+.press:active { transform: scale(0.97); }
+
+.rise { animation: rise 640ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.shimmer {
+  background: linear-gradient(90deg, var(--tint-1) 0%, var(--tint-2) 50%, var(--tint-1) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+.pulse-gold { animation: pulseGold 1.4s ease-in-out infinite; }
+@keyframes pulseGold {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--gold) 14%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* range input */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  background: transparent;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--gold) var(--fill, 0%), var(--tint-2) var(--fill, 0%));
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px; margin-top: -9px;
+  border-radius: 50%;
+  background: var(--gold-hi);
+  border: 1px solid rgba(0,0,0,0.25);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.5);
+}
