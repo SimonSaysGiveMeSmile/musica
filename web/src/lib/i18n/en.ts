@@ -1,0 +1,70 @@
+export const en = {
+  // navigation
+  "nav.search": "Search", "nav.library": "Library", "nav.live": "Live", "nav.me": "Me",
+  "rail.privacy": "Analysis runs on this device. Nothing you play is uploaded.",
+  // home
+  "home.tagline1": "Sing any song", "home.tagline2": "in just a minute.",
+  "home.intro": "Paste a link or search. Key, tempo, chords and lyrics, analyzed right on this phone.",
+  "home.placeholder": "Song, artist, or YouTube / Spotify link",
+  "home.analyze": "Analyze", "home.search": "Search", "home.useFile": "Use a file", "home.pasteLink": "Paste link",
+  "home.results": "Results", "home.nothingFound": "Nothing found.",
+  "home.searchUnavailable": "Search is unavailable right now. Check the audio service is running.",
+  "home.recentlyPlayed": "Recently played", "home.howItWorks": "How it works",
+  "home.how1": "Paste a YouTube or Spotify link, search, or pick a file.",
+  "home.how2": "Musica listens for the key, tempo and chords, on your device.",
+  "home.how3": "Play along with chords over lyrics, and see what to learn next.",
+  "common.localFile": "Local file", "common.save": "Save", "common.cancel": "Cancel", "common.reset": "Reset", "common.close": "Close", "common.back": "Back", "common.delete": "Delete",
+  // ingest
+  "ingest.analyzing": "Analyzing", "ingest.failed": "Could not analyze",
+  "ingest.stepPull": "Pull", "ingest.stepDecode": "Decode", "ingest.stepListen": "Listen", "ingest.stepLyrics": "Lyrics",
+  "ingest.readingYouTube": "Reading YouTube link", "ingest.readingSpotify": "Reading Spotify link", "ingest.youtubeVideo": "YouTube video", "ingest.spotifyTrack": "Spotify track",
+  "ingest.pulling": "Pulling audio", "ingest.readingFile": "Reading file", "ingest.decoding": "Decoding audio", "ingest.warming": "Warming up the analyzer",
+  "ingest.waveform": "Reading waveform", "ingest.key": "Finding the key", "ingest.tempo": "Locking the tempo", "ingest.chords": "Hearing the chords", "ingest.done": "Done",
+  "ingest.lyrics": "Looking for lyrics", "ingest.saving": "Saving to your library", "ingest.ready": "Ready", "ingest.already": "Already in your library",
+  // song
+  "song.sheet": "Sheet", "song.beats": "Beats", "song.chords": "Chords", "song.learn": "Learn",
+  "song.transpose": "Transpose", "song.capo": "Capo", "song.guitar": "Guitar", "song.piano": "Piano", "song.ukulele": "Ukulele",
+  "song.relative": "relative {key} · {pct}% sure", "song.rel": "rel. {key}", "song.bpm": "{n} bpm",
+  "song.notInLibrary": "This song isn't in your library on this device.", "song.opening": "Opening…",
+  "song.findLyricsAgain": "Find lyrics again", "song.searching": "Searching…", "song.editLyrics": "Edit lyrics", "song.pasteLyrics": "Paste lyrics",
+  "song.unsynced": "Lyrics are unsynced, chords are placed approximately.", "song.lyricsTitle": "Lyrics", "song.lyricsPlaceholder": "Paste lyrics, one line per lyric line",
+  "song.playingNow": "Playing now", "song.knowThisOne": "I know this one ✓", "song.markKnown": "Mark as known", "song.forgetChord": "Forget this chord",
+  // player
+  "player.now": "Now", "player.next": "Next", "player.loop": "Loop this bar", "player.metronome": "Metronome", "player.play": "Play", "player.pause": "Pause", "player.speed": "Playback speed",
+  // sheet / timeline / gallery
+  "sheet.instrumental": "Instrumental", "sheet.noLyrics": "No lyrics for this song yet. Use the Beats view, or paste lyrics below.", "sheet.notKnown": "{chord} · not in your chords yet",
+  "timeline.hint": "Chords on the beat grid · tap to jump", "timeline.beats": "{n} beats", "timeline.confidence": "Bar under each block shows how confident the analysis is for that chord.",
+  "gallery.count": "{n} chords in this song · {instrument}", "gallery.learn": "learn", "gallery.known": "known",
+  // learn
+  "learn.youCanPlay": "You can already play", "learn.ofChords": "{k} of {n} chords", "learn.makeEasier": "Make it easier", "learn.best": "best",
+  "learn.asWritten": "As written", "learn.capoOnFret": "Capo on fret {n}", "learn.transposeBy": "Transpose {n} semitones", "learn.capoShort": "Capo {n}", "learn.transposeShort": "Transpose {n}",
+  "learn.everyKnown": "every chord is one you know", "learn.pctKnown": "{pct}% known",
+  "learn.leftToLearn": "Left to learn", "learn.gotIt": "Got it", "learn.allInHands": "Every chord here is in your hands. Go play it.", "learn.noChords": "No chords detected.",
+  "learn.playInstead": "Play {name} instead, you already know it", "learn.simplifyTo": "Simplify to {name}", "learn.barre": "Barre chord · try a capo option above", "learn.newChord": "New chord to learn",
+  // library
+  "library.title": "Library", "library.eyebrow": "On this device", "library.empty": "Nothing here yet",
+  "library.emptyHint": "Analyze a song from the Search tab and it will live here, offline.", "library.findSong": "Find a song",
+  "library.chords": "{n} chords", "library.capo": "capo {n}",
+  // live
+  "live.title": "Live", "live.eyebrow": "Listen as you play", "live.chordsMode": "Chords", "live.tuner": "Tuner",
+  "live.tapMic": "Tap the mic to start", "live.listening": "Listening…", "live.hearing": "Hearing", "live.pitch": "Pitch", "live.chroma": "Chroma",
+  "live.singleNotes": "single notes show here", "live.openTuner": "Open the tuner", "live.start": "Start listening", "live.stop": "Stop listening",
+  "live.privacyChords": "Audio never leaves your device. Strum a chord and hold it for a second.",
+  "live.privacyTuner": "Pluck one string at a time and let it ring. Audio never leaves your device.",
+  "live.micDenied": "Microphone access was denied. Allow it in Settings to use Live.", "live.cents": "{n} cents",
+  // tuner
+  "tuner.inTune": "In tune", "tuner.tuneUp": "Tune up", "tuner.tuneDown": "Tune down", "tuner.playNote": "Play a note",
+  "tuner.strings": "Strings", "tuner.tuning": "Tuning", "tuner.autoDetect": "Auto-detects the nearest string. Tap one to lock it, tap ▶ to hear it.",
+  "tuner.held": "Held steady, this string is done.", "tuner.chromatic": "Chromatic",
+  "tuner.chromaticHint": "Every key is a target. Play one note at a time; the display shows the nearest note and how far it sits. Use the reference tone below to check a key by ear.",
+  "tuner.reference": "Reference A4", "tuner.lower": "Lower reference", "tuner.raise": "Raise reference", "tuner.playRef": "Play {note}",
+  "tuner.standard": "Standard", "tuner.dropD": "Drop D", "tuner.halfDown": "Half step down", "tuner.reentrant": "Standard (re-entrant)", "tuner.lowG": "Low G", "tuner.baritone": "Baritone (DGBE)", "tuner.chromaticName": "Chromatic (A4 reference)",
+  // me
+  "me.title": "Me", "me.eyebrow": "Chords you can play",
+  "me.hint": "Tap a chord to mark it as known. Long-press to see the shape. Songs use this to suggest a capo or key that fits your hands.",
+  "me.showSharps": "Show sharps & flats", "me.fewerRoots": "Fewer roots", "me.clear": "Clear", "me.knowAll": "I know them all",
+  "me.appearance": "Appearance", "me.theme": "Theme", "me.system": "System", "me.light": "Light", "me.dark": "Dark", "me.accent": "Accent", "me.language": "Language",
+  "me.accentLabel": "{name} accent",
+  "accent.gold": "Gold", "accent.copper": "Copper", "accent.rose": "Rose", "accent.sage": "Sage", "accent.sky": "Sky", "accent.silver": "Silver", "accent.orchid": "Orchid", "accent.gliver": "Gliver", "accent.sunrise": "Sunrise",
+} as const;
+export type Key = keyof typeof en;

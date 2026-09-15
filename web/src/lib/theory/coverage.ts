@@ -12,6 +12,7 @@ export interface CoverageOption {
   coverage: number;     // 0-1
   barres: number;
   reason: string;
+  swaps: string[];      // e.g. "F→D" for the top few chords that turn into known shapes
 }
 
 /** Normalise a set of chord symbols to canonical names. */
@@ -47,7 +48,7 @@ export function evaluateOptions(
     const barres = instrument === "guitar" ? shapeNames.filter((n) => isBarre(guitarVoicing(n))).length : 0;
     options.push({
       capo, transpose, shapes: shapeNames, known: k, unknown: u,
-      coverage: shapeNames.length ? k.length / shapeNames.length : 1, barres, reason: "",
+      coverage: shapeNames.length ? k.length / shapeNames.length : 1, barres, reason: "", swaps: [],
     });
   };
 
@@ -59,41 +60,46 @@ export function evaluateOptions(
     for (let t = -5; t <= 6; t++) if (t !== 0) evaluate(0, t);
   }
 
-  for (const o of options) o.reason = describe(o, chords);
+  for (const o of options) { o.swaps = swapsFor(o, chords); o.reason = describe(o); }
   options.sort((a, b) =>
     b.coverage - a.coverage || a.barres - b.barres || Math.abs(a.transpose) - Math.abs(b.transpose) || a.capo - b.capo,
   );
   return options;
 }
 
-function describe(o: CoverageOption, chords: ParsedChord[]): string {
-  const pct = Math.round(o.coverage * 100);
-  const where = o.capo ? `Capo ${o.capo}` : o.transpose ? `Transpose ${o.transpose > 0 ? "+" : ""}${o.transpose}` : "As written";
-  if (o.unknown.length === 0) return `${where} · every chord is one you know`;
+function swapsFor(o: CoverageOption, chords: ParsedChord[]): string[] {
   const swaps: string[] = [];
   for (const c of chords.slice(0, 6)) {
     const shape = chordName(shapeForCapo(transposeChord(c, o.transpose), o.capo));
     const orig = chordName(c);
     if (shape !== orig && o.known.includes(shape)) swaps.push(`${orig}→${shape}`);
   }
-  const s = swaps.length ? ` · ${swaps.slice(0, 3).join(", ")}` : "";
-  return `${where} · ${pct}% known${s}`;
+  return swaps.slice(0, 3);
 }
 
-export interface Suggestion { chord: string; easier: string | null; note: string }
+/** English fallback; the UI rebuilds this from the fields in the user's language. */
+function describe(o: CoverageOption): string {
+  const pct = Math.round(o.coverage * 100);
+  const where = o.capo ? `Capo ${o.capo}` : o.transpose ? `Transpose ${o.transpose > 0 ? "+" : ""}${o.transpose}` : "As written";
+  if (o.unknown.length === 0) return `${where} · every chord is one you know`;
+  return `${where} · ${pct}% known${o.swaps.length ? ` · ${o.swaps.join(", ")}` : ""}`;
+}
+
+export type SuggestionKind = "playInstead" | "simplifyTo" | "barre" | "newChord";
+export interface Suggestion { chord: string; easier: string | null; kind: SuggestionKind }
 
 export function suggestions(unknown: string[], known: string[]): Suggestion[] {
   const k = new Set(canon(known));
   return unknown.map((u) => {
     const p = parseChord(u);
-    if (!p) return { chord: u, easier: null, note: "" };
+    if (!p) return { chord: u, easier: null, kind: "newChord" as const };
     const s = simplify(p);
     if (s) {
       const name = chordName(s);
-      return { chord: u, easier: name, note: k.has(name) ? `Play ${name} instead, you already know it` : `Simplify to ${name}` };
+      return { chord: u, easier: name, kind: k.has(name) ? ("playInstead" as const) : ("simplifyTo" as const) };
     }
     const v = guitarVoicing(u);
-    if (isBarre(v)) return { chord: u, easier: null, note: "Barre chord · try a capo option above" };
-    return { chord: u, easier: null, note: "New chord to learn" };
+    if (isBarre(v)) return { chord: u, easier: null, kind: "barre" as const };
+    return { chord: u, easier: null, kind: "newChord" as const };
   });
 }

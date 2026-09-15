@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fmtTime, type Loop } from "@/lib/audio/player";
 import { IconLoop, IconMetronome, IconPause, IconPlay } from "@/components/ui/Icons";
+import { useT } from "@/lib/i18n";
 
 type P = {
   playing: boolean; time: number; duration: number; rate: number; loop: Loop | null; metronome: boolean;
@@ -9,6 +10,7 @@ type P = {
 };
 
 export function Player({ player, peaks, duration, beats, current, next }: { player: P; peaks?: number[]; duration: number; beats: number[]; current: string | null; next: string | null }) {
+  const { t } = useT();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [showSpeed, setShowSpeed] = useState(false);
   const dur = player.duration || duration;
@@ -60,11 +62,11 @@ export function Player({ player, peaks, duration, beats, current, next }: { play
         {/* now / next */}
         <div className="flex items-end justify-between px-2 mb-2">
           <div>
-            <div className="eyebrow">Now</div>
+            <div className="eyebrow">{t("player.now")}</div>
             <div className="chordname text-[36px] lg:text-[44px] leading-none text-gold-hi min-h-[36px]">{current ?? "—"}</div>
           </div>
           <div className="text-right">
-            <div className="eyebrow">Next</div>
+            <div className="eyebrow">{t("player.next")}</div>
             <div className="chordname text-[20px] leading-none label-2 min-h-[20px]">{next ?? "—"}</div>
           </div>
         </div>
@@ -72,18 +74,18 @@ export function Player({ player, peaks, duration, beats, current, next }: { play
         <div className="flex items-center justify-between mt-2 px-1">
           <span className="ios-caption label-2 tabular-nums w-12">{fmtTime(player.time)}</span>
           <div className="flex items-center gap-2">
-            <button aria-pressed={!!player.loop} onClick={setLoopHere} className={`press circle-btn ${player.loop ? "gold-fill" : "glass text-ivory"}`} title="Loop this bar"><IconLoop width={18} height={18} /></button>
-            <button onClick={player.toggle} aria-label={player.playing ? "Pause" : "Play"} className="press circle-btn !w-16 !h-16 gold-fill">
+            <button aria-pressed={!!player.loop} onClick={setLoopHere} className={`press circle-btn ${player.loop ? "gold-fill" : "glass text-ivory"}`} title={t("player.loop")} aria-label={t("player.loop")}><IconLoop width={18} height={18} /></button>
+            <button onClick={player.toggle} aria-label={player.playing ? t("player.pause") : t("player.play")} className="press circle-btn !w-16 !h-16 gold-fill">
               {player.playing ? <IconPause width={26} height={26} /> : <IconPlay width={26} height={26} />}
             </button>
-            <button aria-pressed={player.metronome} onClick={() => player.setMetronome(!player.metronome)} className={`press circle-btn ${player.metronome ? "gold-fill" : "glass text-ivory"}`} title="Metronome"><IconMetronome width={18} height={18} /></button>
+            <button aria-pressed={player.metronome} onClick={() => player.setMetronome(!player.metronome)} className={`press circle-btn ${player.metronome ? "gold-fill" : "glass text-ivory"}`} title={t("player.metronome")} aria-label={t("player.metronome")}><IconMetronome width={18} height={18} /></button>
           </div>
           <button onClick={() => setShowSpeed((s) => !s)} className="press ios-caption font-semibold tabular-nums w-12 text-right text-gold">{Math.round(player.rate * 100)}%</button>
         </div>
         {showSpeed && (
           <div className="px-2 pt-1 flex items-center gap-3">
             <span className="ios-caption2 label-2">50%</span>
-            <input type="range" min={0.5} max={1} step={0.05} value={player.rate} onChange={(e) => player.setRate(Number(e.target.value))} style={{ ["--fill" as string]: `${((player.rate - 0.5) / 0.5) * 100}%` }} aria-label="Playback speed" />
+            <input type="range" min={0.5} max={1} step={0.05} value={player.rate} onChange={(e) => player.setRate(Number(e.target.value))} style={{ ["--fill" as string]: `${((player.rate - 0.5) / 0.5) * 100}%` }} aria-label={t("player.speed")} />
             <span className="ios-caption2 label-2">100%</span>
           </div>
         )}

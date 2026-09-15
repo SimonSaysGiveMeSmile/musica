@@ -1,6 +1,7 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
+import { useT } from "@/lib/i18n";
 
 export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title?: string; children: React.ReactNode }) {
   useEffect(() => {
@@ -9,12 +10,13 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+  const { t } = useT();
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.button
-            aria-label="Close"
+            aria-label={t("common.close")}
             className="fixed inset-0 z-50 bg-black/35"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}

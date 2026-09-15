@@ -23,6 +23,7 @@ export interface Prefs {
   installDismissed: boolean;
   theme: Theme;
   accent: Accent;
+  language: "auto" | "en" | "zh" | "de" | "fr" | "es" | "az";
 }
 
 const KEY = "musica.prefs.v1";
@@ -33,6 +34,7 @@ const DEFAULTS: Prefs = {
   installDismissed: false,
   theme: "system",
   accent: "gold",
+  language: "auto",
 };
 
 /** Push theme + accent onto <html>. The inline script in layout.tsx does the same before first paint. */

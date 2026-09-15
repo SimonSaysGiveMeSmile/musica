@@ -5,11 +5,14 @@ import { onLive } from "@/lib/analysis/client";
 import type { Instrument } from "@/lib/theory/coverage";
 import { PitchSmoother, TUNINGS, midiToFreq, playReference, readPitch, type Reading } from "@/lib/audio/tuning";
 import { IconPlay } from "@/components/ui/Icons";
+import { useT } from "@/lib/i18n";
 
 const A4_KEY = "musica.tuner.a4";
 
 export function Tuner({ listening, instrument }: { listening: boolean; instrument: Instrument }) {
+  const { t } = useT();
   const tunings = TUNINGS[instrument];
+  const tuningName = (tn: (typeof tunings)[number]) => (tn.id === "dadgad" ? "DADGAD" : t(tn.name));
   const [tuningId, setTuningId] = useState(tunings[0].id);
   const tuning = tunings.find((t) => t.id === tuningId) ?? tunings[0];
   const [locked, setLocked] = useState<number | null>(null);
@@ -47,7 +50,7 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
         <div aria-hidden className="absolute inset-0 pointer-events-none transition-opacity duration-300" style={{ opacity: inTune ? 1 : 0, background: "radial-gradient(60% 60% at 50% 40%, color-mix(in srgb, var(--gold) 22%, transparent), transparent 70%)" }} />
         <div className="relative flex items-end justify-between">
           <div>
-            <div className="eyebrow">{listening ? (reading ? (inTune ? "In tune" : reading.cents < 0 ? "Tune up" : "Tune down") : "Play a note") : "Tap the mic to start"}</div>
+            <div className="eyebrow">{listening ? (reading ? (inTune ? t("tuner.inTune") : reading.cents < 0 ? t("tuner.tuneUp") : t("tuner.tuneDown")) : t("tuner.playNote")) : t("live.tapMic")}</div>
             <div className="flex items-baseline gap-2 mt-1">
               <motion.span key={reading?.targetLabel ?? "-"} initial={{ opacity: 0.4, y: 4 }} animate={{ opacity: 1, y: 0 }} className="chordname text-[64px] leading-none" style={{ color: tone }}>
                 {reading ? reading.targetLabel.replace(/\d+$/, "") : "–"}
@@ -77,16 +80,16 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
           />
           <div className="absolute inset-x-0 -bottom-1 flex justify-between ios-caption2 label-3 px-1"><span>♭ 50</span><span>0</span><span>50 ♯</span></div>
         </div>
-        {listening && held >= 8 && <div className="relative mt-3 text-center ios-footnote text-gold">Held steady, this string is done.</div>}
+        {listening && held >= 8 && <div className="relative mt-3 text-center ios-footnote text-gold">{t("tuner.held")}</div>}
       </div>
 
       {/* Strings */}
       {!chromatic ? (
         <div className="inset-group p-3">
           <div className="flex items-center justify-between px-1 mb-2">
-            <span className="eyebrow">Strings</span>
-            <select value={tuningId} onChange={(e) => { setTuningId(e.target.value); setLocked(null); }} className="glass rounded-full h-8 px-3 ios-footnote text-ivory bg-transparent outline-none" aria-label="Tuning">
-              {tunings.map((t) => <option key={t.id} value={t.id} className="text-black">{t.name}</option>)}
+            <span className="eyebrow">{t("tuner.strings")}</span>
+            <select value={tuningId} onChange={(e) => { setTuningId(e.target.value); setLocked(null); }} className="glass rounded-full h-8 px-3 ios-footnote text-ivory bg-transparent outline-none" aria-label={t("tuner.tuning")}>
+              {tunings.map((tn) => <option key={tn.id} value={tn.id} className="text-black">{tuningName(tn)}</option>)}
             </select>
           </div>
           <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${tuning.strings.length}, minmax(0, 1fr))` }}>
@@ -103,17 +106,17 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
                     <span style={{ color: active && inTune ? "var(--gold-hi)" : undefined }}>{s.label.replace(/\d+$/, "")}</span>
                     <span className="ios-caption2 label-3 font-normal">{s.label.match(/\d+$/)?.[0]}</span>
                   </button>
-                  <button onClick={() => playReference(s.midi, a4)} aria-label={`Play ${s.label}`} className="press circle-btn !w-8 !h-8 glass label-2"><IconPlay width={12} height={12} /></button>
+                  <button onClick={() => playReference(s.midi, a4)} aria-label={t("tuner.playRef", { note: s.label })} className="press circle-btn !w-8 !h-8 glass label-2"><IconPlay width={12} height={12} /></button>
                 </div>
               );
             })}
           </div>
-          <p className="ios-caption label-3 mt-2 px-1">Auto-detects the nearest string. Tap one to lock it, tap ▶ to hear it.</p>
+          <p className="ios-caption label-3 mt-2 px-1">{t("tuner.autoDetect")}</p>
         </div>
       ) : (
         <div className="inset-group p-4">
-          <div className="eyebrow mb-1">Chromatic</div>
-          <p className="ios-footnote label-2">Every key is a target. Play one note at a time; the display shows the nearest note and how far it sits. Use the reference tone below to check a key by ear.</p>
+          <div className="eyebrow mb-1">{t("tuner.chromatic")}</div>
+          <p className="ios-footnote label-2">{t("tuner.chromaticHint")}</p>
           <div className="flex flex-wrap gap-2 mt-3">
             {[57, 60, 64, 69, 72].map((m) => (
               <button key={m} onClick={() => playReference(m, a4, 2.2)} className="press glass rounded-full h-9 px-3.5 ios-footnote text-ivory flex items-center gap-1.5"><IconPlay width={12} height={12} /> {midiToFreq(m, a4).toFixed(0)} Hz · {["A3", "C4", "E4", "A4", "C5"][[57, 60, 64, 69, 72].indexOf(m)]}</button>
@@ -125,11 +128,11 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
       {/* Reference pitch */}
       <div className="inset-group">
         <div className="row">
-          <span className="ios-body flex-1">Reference A4</span>
-          <button onClick={() => setA4((v) => Math.max(415, v - 1))} className="press circle-btn !w-9 !h-9 glass text-ivory" aria-label="Lower reference">−</button>
+          <span className="ios-body flex-1">{t("tuner.reference")}</span>
+          <button onClick={() => setA4((v) => Math.max(415, v - 1))} className="press circle-btn !w-9 !h-9 glass text-ivory" aria-label={t("tuner.lower")}>−</button>
           <span className="chordname ios-headline tabular-nums w-16 text-center text-gold-hi">{a4} Hz</span>
-          <button onClick={() => setA4((v) => Math.min(466, v + 1))} className="press circle-btn !w-9 !h-9 glass text-ivory" aria-label="Raise reference">+</button>
-          {a4 !== 440 && <button onClick={() => setA4(440)} className="press ios-footnote text-gold ml-1">Reset</button>}
+          <button onClick={() => setA4((v) => Math.min(466, v + 1))} className="press circle-btn !w-9 !h-9 glass text-ivory" aria-label={t("tuner.raise")}>+</button>
+          {a4 !== 440 && <button onClick={() => setA4(440)} className="press ios-footnote text-gold ml-1">{t("common.reset")}</button>}
         </div>
       </div>
     </div>

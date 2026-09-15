@@ -2,17 +2,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconLibrary, IconLive, IconMe, IconSearch } from "@/components/ui/Icons";
+import { useT, type Key } from "@/lib/i18n";
 
-const TABS = [
-  { href: "/", label: "Search", Icon: IconSearch },
-  { href: "/library", label: "Library", Icon: IconLibrary },
-  { href: "/live", label: "Live", Icon: IconLive },
-  { href: "/me", label: "Me", Icon: IconMe },
+const TABS: { href: string; label: Key; Icon: typeof IconSearch }[] = [
+  { href: "/", label: "nav.search", Icon: IconSearch },
+  { href: "/library", label: "nav.library", Icon: IconLibrary },
+  { href: "/live", label: "nav.live", Icon: IconLive },
+  { href: "/me", label: "nav.me", Icon: IconMe },
 ];
 
 /** Desktop navigation: a quiet rail on the left. The mobile tab bar handles small screens. */
 export function SideRail() {
   const path = usePathname();
+  const { t } = useT();
   return (
     <aside className="hidden lg:flex flex-col sticky top-0 h-dvh px-4 py-7 gap-6" style={{ width: "var(--rail-w)" }}>
       <Link href="/" className="px-3">
@@ -31,13 +33,13 @@ export function SideRail() {
               }`}
             >
               <Icon width={20} height={20} />
-              {label}
+              {t(label)}
             </Link>
           );
         })}
       </nav>
       <div className="mt-auto px-3 ios-caption label-3">
-        Analysis runs on this device.<br />Nothing you play is uploaded.
+        {t("rail.privacy")}
       </div>
     </aside>
   );

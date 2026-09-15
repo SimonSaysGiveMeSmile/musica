@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useRef } from "react";
 import type { Analysis } from "@/lib/analysis/types";
+import { useT } from "@/lib/i18n";
 
 const PX_PER_SEC = 56;
 
 export function Timeline({ analysis, time, display, onSeek }: { analysis: Analysis; time: number; display: (s: string) => string; onSeek: (t: number) => void }) {
+  const { t } = useT();
   const scroller = useRef<HTMLDivElement>(null);
   const width = analysis.duration * PX_PER_SEC;
 
@@ -17,7 +19,7 @@ export function Timeline({ analysis, time, display, onSeek }: { analysis: Analys
 
   return (
     <div>
-      <div className="eyebrow mb-2">Chords on the beat grid · tap to jump</div>
+      <div className="eyebrow mb-2">{t("timeline.hint")}</div>
       <div ref={scroller} className="overflow-x-auto no-scrollbar -mx-4 px-4 pb-2">
         <div className="relative h-[150px]" style={{ width }}>
           {/* beat ticks */}
@@ -37,7 +39,7 @@ export function Timeline({ analysis, time, display, onSeek }: { analysis: Analys
                 style={{ left: s.start * PX_PER_SEC + 1, width: Math.max(8, w - 2), background: hot ? "linear-gradient(180deg, var(--gold-hi), var(--gold))" : undefined }}
               >
                 <span className="chordname text-[18px] leading-none">{w > 34 ? display(s.chord) : ""}</span>
-                <span className={`block mt-1 text-[10px] ${hot ? "text-on-accent/70" : "text-ivory-3"}`}>{w > 54 ? `${Math.round((s.end - s.start) / (60 / analysis.bpm))} beats` : ""}</span>
+                <span className={`block mt-1 text-[10px] ${hot ? "text-on-accent/70" : "text-ivory-3"}`}>{w > 54 ? t("timeline.beats", { n: Math.round((s.end - s.start) / (60 / analysis.bpm)) }) : ""}</span>
                 <span aria-hidden className="absolute bottom-0 left-0 right-0 h-1" style={{ background: `color-mix(in srgb, var(--gold-hi) ${Math.round(25 + s.strength * 60)}%, transparent)` }} />
               </button>
             );
@@ -50,7 +52,7 @@ export function Timeline({ analysis, time, display, onSeek }: { analysis: Analys
           ))}
         </div>
       </div>
-      <p className="label-2 ios-footnote mt-2">Bar under each block shows how confident the analysis is for that chord.</p>
+      <p className="label-2 ios-footnote mt-2">{t("timeline.confidence")}</p>
     </div>
   );
 }

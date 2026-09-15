@@ -11,12 +11,14 @@ import { LargeTitle } from "@/components/shell/LargeTitle";
 import { Segmented } from "@/components/ui/Segmented";
 import { IconLive } from "@/components/ui/Icons";
 import { Tuner } from "./Tuner";
+import { useT } from "@/lib/i18n";
 
 const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 type Mode = "chords" | "tuner";
 
 export function LiveView() {
   const prefs = usePrefs();
+  const { t } = useT();
   const [mode, setMode] = useState<Mode>("chords");
   const [on, setOn] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function LiveView() {
     if (on) { micRef.current?.stop(); micRef.current = null; setOn(false); setFrame(null); setStable(null); histRef.current = []; return; }
     setErr(null);
     try { micRef.current = await startMic(); setOn(true); }
-    catch (e) { setErr((e as Error).name === "NotAllowedError" ? "Microphone access was denied. Allow it in Settings to use Live." : (e as Error).message); }
+    catch (e) { setErr((e as Error).name === "NotAllowedError" ? t("live.micDenied") : (e as Error).message); }
   };
 
   const note = frame && frame.pitchConfidence > 0.6 && frame.rms > 0.005 ? pitchToNote(frame.pitch) : null;
@@ -50,19 +52,19 @@ export function LiveView() {
 
   const micButton = (
     <button onClick={toggle} className={`press w-full h-[52px] rounded-full ios-headline flex items-center justify-center gap-2 ${on ? "glass text-felt-hi pulse-gold" : "gold-fill"}`}>
-      <IconLive /> {on ? "Stop listening" : "Start listening"}
+      <IconLive /> {on ? t("live.stop") : t("live.start")}
     </button>
   );
 
   return (
     <main className="page-pad-bottom">
-      <LargeTitle eyebrow="Listen as you play" title="Live" />
+      <LargeTitle eyebrow={t("live.eyebrow")} title={t("live.title")} />
       <section className="px-5 lg:px-10 lg:max-w-[1000px] space-y-4">
         <div className="flex flex-col sm:flex-row gap-2">
-          <div className="sm:w-[260px]"><Segmented id="live-mode" value={mode} onChange={setMode} options={[{ value: "chords", label: "Chords" }, { value: "tuner", label: "Tuner" }]} /></div>
+          <div className="sm:w-[260px]"><Segmented id="live-mode" value={mode} onChange={setMode} options={[{ value: "chords", label: t("live.chordsMode") }, { value: "tuner", label: t("live.tuner") }]} /></div>
           <div className="glass rounded-full h-[42px] p-[3px] flex items-center self-start">
             {(["guitar", "piano", "ukulele"] as Instrument[]).map((i) => (
-              <button key={i} onClick={() => setPrefs({ instrument: i })} className={`press h-full px-3.5 rounded-full ios-footnote capitalize ${prefs.instrument === i ? "lens text-ivory font-semibold" : "label-2 font-medium"}`}>{i}</button>
+              <button key={i} onClick={() => setPrefs({ instrument: i })} className={`press h-full px-3.5 rounded-full ios-footnote capitalize ${prefs.instrument === i ? "lens text-ivory font-semibold" : "label-2 font-medium"}`}>{t(`song.${i}` as const)}</button>
             ))}
           </div>
         </div>
@@ -73,7 +75,7 @@ export function LiveView() {
             <div className="space-y-3">
               {micButton}
               {err && <p className="text-felt-hi ios-footnote">{err}</p>}
-              <p className="label-2 ios-footnote text-center">Pluck one string at a time and let it ring. Audio never leaves your device.</p>
+              <p className="label-2 ios-footnote text-center">{t("live.privacyTuner")}</p>
             </div>
           </div>
         ) : (
@@ -81,7 +83,7 @@ export function LiveView() {
             {/* Chord stage */}
             <div className="inset-group rounded-[30px] p-6 relative overflow-hidden min-h-[240px] lg:min-h-[420px] flex flex-col items-center justify-center lg:row-span-3">
               <div aria-hidden className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(60% 50% at 50% 60%, color-mix(in srgb, var(--gold) ${Math.round(5 + level * 25)}%, transparent), transparent 70%)`, transition: "background 120ms" }} />
-              <div className="eyebrow relative">{on ? (stable ? "Hearing" : "Listening…") : "Tap the mic to start"}</div>
+              <div className="eyebrow relative">{on ? (stable ? t("live.hearing") : t("live.listening")) : t("live.tapMic")}</div>
               <motion.div key={stable ?? "none"} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="chordname text-[84px] leading-none text-gold-hi relative mt-2">
                 {stable ?? "—"}
               </motion.div>
@@ -92,16 +94,16 @@ export function LiveView() {
             {/* Pitch + chroma */}
             <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
               <div className="inset-group p-4">
-                <div className="eyebrow">Pitch</div>
+                <div className="eyebrow">{t("live.pitch")}</div>
                 <div className="flex items-baseline gap-1 mt-1">
                   <span className="chordname text-[40px] leading-none">{note ? note.name : "–"}</span>
                   <span className="label-2 ios-subhead">{note ? note.octave : ""}</span>
                 </div>
-                <div className="ios-caption label-2 mt-1 tabular-nums">{note ? `${note.cents > 0 ? "+" : ""}${note.cents} cents` : "single notes show here"}</div>
-                <button onClick={() => setMode("tuner")} className="press ios-footnote text-gold mt-2">Open the tuner</button>
+                <div className="ios-caption label-2 mt-1 tabular-nums">{note ? t("live.cents", { n: `${note.cents > 0 ? "+" : ""}${note.cents}` }) : t("live.singleNotes")}</div>
+                <button onClick={() => setMode("tuner")} className="press ios-footnote text-gold mt-2">{t("live.openTuner")}</button>
               </div>
               <div className="inset-group p-4">
-                <div className="eyebrow">Chroma</div>
+                <div className="eyebrow">{t("live.chroma")}</div>
                 <div className="grid grid-cols-12 gap-[3px] items-end h-16 mt-2">
                   {NAMES.map((n, i) => {
                     const v = frame?.hpcp?.[i] ?? 0;
@@ -115,7 +117,7 @@ export function LiveView() {
             <div className="space-y-3">
               {micButton}
               {err && <p className="text-felt-hi ios-footnote">{err}</p>}
-              <p className="label-2 ios-footnote text-center">Audio never leaves your device. Strum a chord and hold it for a second.</p>
+              <p className="label-2 ios-footnote text-center">{t("live.privacyChords")}</p>
             </div>
           </div>
         )}

@@ -1,22 +1,23 @@
 import type { Instrument } from "@/lib/theory/coverage";
 
 export interface TuningString { label: string; midi: number }
-export interface Tuning { id: string; name: string; strings: TuningString[] }
+export type TuningNameKey = "tuner.standard" | "tuner.dropD" | "tuner.halfDown" | "tuner.reentrant" | "tuner.lowG" | "tuner.baritone" | "tuner.chromaticName";
+export interface Tuning { id: string; name: TuningNameKey; strings: TuningString[] }
 
 export const TUNINGS: Record<Instrument, Tuning[]> = {
   guitar: [
-    { id: "standard", name: "Standard", strings: [{ label: "E2", midi: 40 }, { label: "A2", midi: 45 }, { label: "D3", midi: 50 }, { label: "G3", midi: 55 }, { label: "B3", midi: 59 }, { label: "E4", midi: 64 }] },
-    { id: "drop-d", name: "Drop D", strings: [{ label: "D2", midi: 38 }, { label: "A2", midi: 45 }, { label: "D3", midi: 50 }, { label: "G3", midi: 55 }, { label: "B3", midi: 59 }, { label: "E4", midi: 64 }] },
-    { id: "half-down", name: "Half step down", strings: [{ label: "Eb2", midi: 39 }, { label: "Ab2", midi: 44 }, { label: "Db3", midi: 49 }, { label: "Gb3", midi: 54 }, { label: "Bb3", midi: 58 }, { label: "Eb4", midi: 63 }] },
-    { id: "dadgad", name: "DADGAD", strings: [{ label: "D2", midi: 38 }, { label: "A2", midi: 45 }, { label: "D3", midi: 50 }, { label: "G3", midi: 55 }, { label: "A3", midi: 57 }, { label: "D4", midi: 62 }] },
+    { id: "standard", name: "tuner.standard", strings: [{ label: "E2", midi: 40 }, { label: "A2", midi: 45 }, { label: "D3", midi: 50 }, { label: "G3", midi: 55 }, { label: "B3", midi: 59 }, { label: "E4", midi: 64 }] },
+    { id: "drop-d", name: "tuner.dropD", strings: [{ label: "D2", midi: 38 }, { label: "A2", midi: 45 }, { label: "D3", midi: 50 }, { label: "G3", midi: 55 }, { label: "B3", midi: 59 }, { label: "E4", midi: 64 }] },
+    { id: "half-down", name: "tuner.halfDown", strings: [{ label: "Eb2", midi: 39 }, { label: "Ab2", midi: 44 }, { label: "Db3", midi: 49 }, { label: "Gb3", midi: 54 }, { label: "Bb3", midi: 58 }, { label: "Eb4", midi: 63 }] },
+    { id: "dadgad", name: "tuner.standard", strings: [{ label: "D2", midi: 38 }, { label: "A2", midi: 45 }, { label: "D3", midi: 50 }, { label: "G3", midi: 55 }, { label: "A3", midi: 57 }, { label: "D4", midi: 62 }] },
   ],
   ukulele: [
-    { id: "gcea", name: "Standard (re-entrant)", strings: [{ label: "G4", midi: 67 }, { label: "C4", midi: 60 }, { label: "E4", midi: 64 }, { label: "A4", midi: 69 }] },
-    { id: "low-g", name: "Low G", strings: [{ label: "G3", midi: 55 }, { label: "C4", midi: 60 }, { label: "E4", midi: 64 }, { label: "A4", midi: 69 }] },
-    { id: "baritone", name: "Baritone (DGBE)", strings: [{ label: "D3", midi: 50 }, { label: "G3", midi: 55 }, { label: "B3", midi: 59 }, { label: "E4", midi: 64 }] },
+    { id: "gcea", name: "tuner.reentrant", strings: [{ label: "G4", midi: 67 }, { label: "C4", midi: 60 }, { label: "E4", midi: 64 }, { label: "A4", midi: 69 }] },
+    { id: "low-g", name: "tuner.lowG", strings: [{ label: "G3", midi: 55 }, { label: "C4", midi: 60 }, { label: "E4", midi: 64 }, { label: "A4", midi: 69 }] },
+    { id: "baritone", name: "tuner.baritone", strings: [{ label: "D3", midi: 50 }, { label: "G3", midi: 55 }, { label: "B3", midi: 59 }, { label: "E4", midi: 64 }] },
   ],
   // Piano is chromatic: every key is a target. Kept as an empty list; the UI switches to chromatic mode.
-  piano: [{ id: "chromatic", name: "Chromatic (A4 reference)", strings: [] }],
+  piano: [{ id: "chromatic", name: "tuner.chromaticName", strings: [] }],
 };
 
 const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];

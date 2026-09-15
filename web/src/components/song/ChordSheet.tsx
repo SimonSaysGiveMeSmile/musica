@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useRef } from "react";
 import type { SheetLine } from "@/lib/lyrics/align";
+import { useT } from "@/lib/i18n";
 
 export function ChordSheet({ lines, time, display, onSeek, onChord, known }: {
   lines: SheetLine[]; time: number; display: (s: string) => string; onSeek: (t: number) => void; onChord: (c: string) => void; known: Set<string>;
 }) {
+  const { t } = useT();
   const activeRef = useRef<HTMLDivElement>(null);
   const activeIdx = lines.findIndex((l) => time >= l.time && time < l.end);
 
@@ -15,7 +17,7 @@ export function ChordSheet({ lines, time, display, onSeek, onChord, known }: {
     if (r.top < 140 || r.bottom > window.innerHeight - 260) el.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [activeIdx]);
 
-  if (!lines.length) return <p className="label-2 ios-subhead mt-4">No lyrics for this song yet. Use the Beats view, or paste lyrics below.</p>;
+  if (!lines.length) return <p className="label-2 ios-subhead mt-4">{t("sheet.noLyrics")}</p>;
 
   return (
     <div className="space-y-1 ios-body lg:text-[19px] lg:leading-[26px] lg:max-w-[64ch]">
@@ -32,7 +34,7 @@ export function ChordSheet({ lines, time, display, onSeek, onChord, known }: {
             {active && <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full" style={{ background: "linear-gradient(180deg, var(--gold-hi), var(--gold-lo))" }} />}
             {l.instrumental ? (
               <div className="flex flex-wrap gap-2 items-center py-0.5">
-                <span className="eyebrow mr-1">Instrumental</span>
+                <span className="eyebrow mr-1">{t("sheet.instrumental")}</span>
                 {l.chords.map((c, k) => (
                   <ChordTag key={k} symbol={display(c.chord)} known={known} onChord={onChord} hot={active && time >= c.time && (l.chords[k + 1] ? time < l.chords[k + 1].time : true)} />
                 ))}
@@ -73,6 +75,7 @@ function Line({ line, display, onChord, known, dim, hotTime }: { line: SheetLine
 }
 
 function ChordTag({ symbol, known, onChord, hot, inline }: { symbol: string; known: Set<string>; onChord: (c: string) => void; hot: boolean; inline?: boolean }) {
+  const { t } = useT();
   const unknown = !known.has(symbol);
   return (
     <button
@@ -81,7 +84,7 @@ function ChordTag({ symbol, known, onChord, hot, inline }: { symbol: string; kno
       className={`chordname press rounded-md px-1.5 ${inline ? "text-[14px] lg:text-[15px] h-[20px] -ml-1" : "text-[15px] h-7 px-2.5 rounded-full"} leading-none inline-flex items-center gap-1 transition-colors ${
         hot ? "gold-fill" : unknown ? "label-2" : "text-gold-hi"
       }`}
-      title={unknown ? `${symbol} · not in your chords yet` : symbol}
+      title={unknown ? t("sheet.notKnown", { chord: symbol }) : symbol}
     >
       {symbol}
       {unknown && !hot && <span aria-hidden className="w-1 h-1 rounded-full bg-felt-hi/80 self-start mt-0.5" />}

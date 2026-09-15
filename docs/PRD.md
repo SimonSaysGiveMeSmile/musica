@@ -83,6 +83,9 @@ There is **no generative AI, no LLM tokens, and no per-request compute cost**. A
 - **F7.2** The app shell, fonts, and the Essentia WASM are precached by a service worker. Analyzed songs open with no network.
 - **F7.3** Installable: web manifest, iOS meta tags, standalone display, safe-area-aware layout.
 
+### 4.8 Languages
+- **F8.1** The whole interface is available in English, Chinese (Simplified), German, French, Spanish and Azerbaijani. The language follows the device by default and can be set in Me → Appearance → Language. Chord and note names stay in international notation.
+
 ## 5. Non-functional requirements
 
 | Area | Requirement |

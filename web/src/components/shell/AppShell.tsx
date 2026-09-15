@@ -3,9 +3,12 @@ import { useEffect } from "react";
 import { TabBar } from "./TabBar";
 import { SideRail } from "./SideRail";
 import { warmWorker } from "@/lib/analysis/client";
-import { applyTheme, getPrefs } from "@/lib/store/prefs";
+import { applyTheme, getPrefs, usePrefs } from "@/lib/store/prefs";
+import { applyLang, resolveLang } from "@/lib/i18n";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const prefs = usePrefs();
+  useEffect(() => { applyLang(resolveLang(prefs.language)); }, [prefs.language]);
   useEffect(() => {
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
       navigator.serviceWorker.register("/sw.js").catch(() => {});

@@ -9,9 +9,11 @@ import { IconFile, IconLink, IconSearch, IconSpark } from "@/components/ui/Icons
 import { fmtTime } from "@/lib/audio/player";
 import { IngestProgress } from "./IngestProgress";
 import Link from "next/link";
+import { useT } from "@/lib/i18n";
 
 export function SearchHome() {
   const router = useRouter();
+  const { t } = useT();
   const [q, setQ] = useState("");
   const [results, setResults] = useState<SearchResult[] | null>(null);
   const [searching, setSearching] = useState(false);
@@ -38,8 +40,8 @@ export function SearchHome() {
     setError(null);
     const kind = detectLink(text);
     if (kind) {
-      setIngest({ stage: "fetching", pct: 0.01, detail: kind === "spotify" ? "Reading Spotify link" : "Reading YouTube link" });
-      setIngestTitle(kind === "spotify" ? "Spotify track" : "YouTube video");
+      setIngest({ stage: "fetching", pct: 0.01, detail: kind === "spotify" ? "ingest.readingSpotify" : "ingest.readingYouTube" });
+      setIngestTitle(kind === "spotify" ? t("ingest.spotifyTrack") : t("ingest.youtubeVideo"));
       try { const r = await resolveUrl(text); await startResolved(r); }
       catch (e) { setIngest({ stage: "error", pct: 0, detail: "", error: (e as Error).message }); }
       return;
@@ -48,9 +50,9 @@ export function SearchHome() {
     const ac = new AbortController(); abortRef.current = ac;
     setSearching(true); setResults(null);
     try { setResults(await searchSongs(text, ac.signal)); }
-    catch (e) { if ((e as Error).name !== "AbortError") setError("Search is unavailable right now. Check the audio service is running."); }
+    catch (e) { if ((e as Error).name !== "AbortError") setError(t("home.searchUnavailable")); }
     finally { setSearching(false); }
-  }, [q, startResolved]);
+  }, [q, startResolved, t]);
 
   const pickFile = useCallback(async (f: File | undefined) => {
     if (!f) return;
@@ -68,10 +70,10 @@ export function SearchHome() {
         <div aria-hidden className="absolute top-0 right-0 w-[320px] h-[260px] pointer-events-none" style={{ background: "radial-gradient(closest-side, color-mix(in srgb, var(--gold) 16%, transparent), transparent)" }} />
         <h1 className="ios-large-title rise">Musica</h1>
         <p className="ios-title2 lg:text-[34px] lg:leading-[41px] mt-2 rise max-w-[22ch]" style={{ animationDelay: "60ms" }}>
-          Any song, <span className="gold-text">in your hands.</span>
+          {t("home.tagline1")} <span className="gold-text">{t("home.tagline2")}</span>
         </p>
         <p className="label-2 mt-2 ios-subhead max-w-[38ch] rise" style={{ animationDelay: "120ms" }}>
-          Paste a link or search. Key, tempo, chords and lyrics, analyzed right on this phone.
+          {t("home.intro")}
         </p>
       </section>
 
@@ -82,7 +84,7 @@ export function SearchHome() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Song, artist, or YouTube / Spotify link"
+            placeholder={t("home.placeholder")}
             inputMode="search"
             enterKeyHint="search"
             autoCapitalize="off"
@@ -90,15 +92,15 @@ export function SearchHome() {
             className="flex-1 bg-transparent border-0 outline-none h-11 ios-body placeholder:text-(--label-3) min-w-0 appearance-none"
           />
           <button type="submit" disabled={busy || !q.trim()} className="press h-11 px-4 rounded-full ios-headline gold-fill disabled:opacity-40">
-            {detectLink(q) ? "Analyze" : "Search"}
+            {detectLink(q) ? t("home.analyze") : t("home.search")}
           </button>
         </form>
         <div className="flex gap-2 mt-3">
           <button type="button" onClick={() => fileRef.current?.click()} disabled={busy} className="press glass rounded-full h-10 px-4 flex items-center gap-2 ios-subhead text-ivory disabled:opacity-40">
-            <IconFile width={18} height={18} /> Use a file
+            <IconFile width={18} height={18} /> {t("home.useFile")}
           </button>
           <button type="button" onClick={async () => { try { const t = await navigator.clipboard.readText(); if (t) setQ(t); } catch {} }} disabled={busy} className="press glass rounded-full h-10 px-4 flex items-center gap-2 ios-subhead text-ivory disabled:opacity-40">
-            <IconLink width={18} height={18} /> Paste link
+            <IconLink width={18} height={18} /> {t("home.pasteLink")}
           </button>
           <input ref={fileRef} type="file" accept="audio/*,.m4a,.mp3,.wav,.flac,.ogg,.aac" className="hidden" onChange={(e) => pickFile(e.target.files?.[0])} />
         </div>
@@ -117,9 +119,9 @@ export function SearchHome() {
       {/* Results */}
       {(searching || results) && (
         <section className="px-5 lg:px-0 mt-6">
-          <div className="eyebrow mb-3">Results</div>
+          <div className="eyebrow mb-3">{t("home.results")}</div>
           {searching && <div className="grid gap-2 lg:grid-cols-2">{[0, 1, 2, 3].map((i) => <div key={i} className="shimmer h-[72px] rounded-[20px]" />)}</div>}
-          {results && results.length === 0 && <p className="label-2">Nothing found.</p>}
+          {results && results.length === 0 && <p className="label-2">{t("home.nothingFound")}</p>}
           <ul className="grid gap-2 lg:grid-cols-2">
             {results?.map((r, i) => (
               <motion.li key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
@@ -146,8 +148,8 @@ export function SearchHome() {
       {!results && !searching && recent.length > 0 && (
         <section className="px-5 lg:px-0 mt-8 rise" style={{ animationDelay: "240ms" }}>
           <div className="flex items-baseline justify-between mb-3">
-            <div className="eyebrow">Recently played</div>
-            <Link href="/library" className="text-gold ios-subhead">Library</Link>
+            <div className="eyebrow">{t("home.recentlyPlayed")}</div>
+            <Link href="/library" className="text-gold ios-subhead">{t("nav.library")}</Link>
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 lg:mx-0 lg:px-0 snap-x">
             {recent.map((s) => (
@@ -157,7 +159,7 @@ export function SearchHome() {
                   <div className="absolute bottom-2 left-2 glass rounded-full px-2 py-0.5 ios-caption2 font-semibold">{s.analysis?.key}{s.analysis?.scale === "minor" ? "m" : ""} · {Math.round(s.analysis?.bpm ?? 0)}</div>
                 </div>
                 <div className="mt-2 ios-subhead font-semibold truncate">{s.title}</div>
-                <div className="ios-footnote label-2 truncate">{s.artist ?? "Local file"}</div>
+                <div className="ios-footnote label-2 truncate">{s.artist ?? t("common.localFile")}</div>
               </Link>
             ))}
           </div>
@@ -167,11 +169,11 @@ export function SearchHome() {
       {!results && !searching && recent.length === 0 && !ingest && (
         <section className="px-5 lg:px-0 mt-10 rise lg:max-w-[640px]" style={{ animationDelay: "240ms" }}>
           <div className="inset-group p-5">
-            <div className="eyebrow mb-2">How it works</div>
+            <div className="eyebrow mb-2">{t("home.howItWorks")}</div>
             <ol className="space-y-2 ios-subhead label-2">
-              <li><span className="text-gold font-semibold">1.</span> Paste a YouTube or Spotify link, search, or pick a file.</li>
-              <li><span className="text-gold font-semibold">2.</span> Musica listens for the key, tempo and chords, on your device.</li>
-              <li><span className="text-gold font-semibold">3.</span> Play along with chords over lyrics, and see what to learn next.</li>
+              <li><span className="text-gold font-semibold">1.</span> {t("home.how1")}</li>
+              <li><span className="text-gold font-semibold">2.</span> {t("home.how2")}</li>
+              <li><span className="text-gold font-semibold">3.</span> {t("home.how3")}</li>
             </ol>
           </div>
         </section>

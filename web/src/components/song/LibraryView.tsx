@@ -7,21 +7,23 @@ import { LargeTitle } from "@/components/shell/LargeTitle";
 import { IconChevron, IconTrash } from "@/components/ui/Icons";
 import { fmtTime } from "@/lib/audio/player";
 import { distinctChords } from "@/lib/analysis/postprocess";
+import { useT } from "@/lib/i18n";
 
 export function LibraryView() {
+  const { t } = useT();
   const [songs, setSongs] = useState<Song[] | null>(null);
   useEffect(() => { listSongs().then(setSongs).catch(() => setSongs([])); }, []);
 
   return (
     <main className="page-pad-bottom">
-      <LargeTitle eyebrow="On this device" title="Library" />
+      <LargeTitle eyebrow={t("library.eyebrow")} title={t("library.title")} />
       <section className="px-5 lg:px-10">
         {songs === null && <div className="space-y-2">{[0, 1, 2].map((i) => <div key={i} className="shimmer h-20 rounded-[22px]" />)}</div>}
         {songs?.length === 0 && (
           <div className="inset-group p-6 text-center">
-            <div className="ios-title2">Nothing here yet</div>
-            <p className="label-2 mt-1 ios-subhead">Analyze a song from the Search tab and it will live here, offline.</p>
-            <Link href="/" className="press inline-block mt-4 h-11 px-5 leading-[44px] rounded-full font-medium gold-fill">Find a song</Link>
+            <div className="ios-title2">{t("library.empty")}</div>
+            <p className="label-2 mt-1 ios-subhead">{t("library.emptyHint")}</p>
+            <Link href="/" className="press inline-block mt-4 h-11 px-5 leading-[44px] rounded-full font-medium gold-fill">{t("library.findSong")}</Link>
           </div>
         )}
         <ul className="inset-group lg:grid lg:grid-cols-2">
@@ -33,16 +35,16 @@ export function LibraryView() {
                 </div>
                 <div className="min-w-0">
                   <div className="ios-body truncate">{s.title}</div>
-                  <div className="ios-footnote label-2 truncate">{s.artist ?? "Local file"} · {fmtTime(s.durationSec)}</div>
+                  <div className="ios-footnote label-2 truncate">{s.artist ?? t("common.localFile")} · {fmtTime(s.durationSec)}</div>
                   <div className="mt-1 flex gap-1.5 items-center">
                     <span className="chordname ios-caption text-gold-hi">{s.analysis?.key}{s.analysis?.scale === "minor" ? "m" : ""}</span>
-                    <span className="ios-caption label-2">{Math.round(s.analysis?.bpm ?? 0)} bpm</span>
-                    <span className="ios-caption label-2">· {s.analysis ? distinctChords(s.analysis).length : 0} chords</span>
-                    {s.capo ? <span className="ios-caption label-2">· capo {s.capo}</span> : null}
+                    <span className="ios-caption label-2">{t("song.bpm", { n: Math.round(s.analysis?.bpm ?? 0) })}</span>
+                    <span className="ios-caption label-2">· {t("library.chords", { n: s.analysis ? distinctChords(s.analysis).length : 0 })}</span>
+                    {s.capo ? <span className="ios-caption label-2">· {t("library.capo", { n: s.capo })}</span> : null}
                   </div>
                 </div>
               </Link>
-              <button aria-label={`Delete ${s.title}`} onClick={async () => { await deleteSong(s.id); setSongs((l) => l?.filter((x) => x.id !== s.id) ?? null); }} className="press circle-btn label-3 hover:text-felt-hi"><IconTrash width={18} height={18} /></button>
+              <button aria-label={`${t("common.delete")} ${s.title}`} onClick={async () => { await deleteSong(s.id); setSongs((l) => l?.filter((x) => x.id !== s.id) ?? null); }} className="press circle-btn label-3 hover:text-felt-hi"><IconTrash width={18} height={18} /></button>
               <IconChevron className="label-3 -ml-2" width={18} height={18} />
             </motion.li>
           ))}

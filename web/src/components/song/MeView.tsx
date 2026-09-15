@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { usePrefs, setPrefs, toggleKnown, ACCENTS, type Theme } from "@/lib/store/prefs";
 import { IconCheck } from "@/components/ui/Icons";
+import { LANGS, useT } from "@/lib/i18n";
 import { LargeTitle } from "@/components/shell/LargeTitle";
 import { Segmented } from "@/components/ui/Segmented";
 import type { Instrument } from "@/lib/theory/coverage";
@@ -14,6 +15,7 @@ const QUALS: Quality[] = ["maj", "min", "7", "m7", "maj7", "sus4"];
 
 export function MeView() {
   const prefs = usePrefs();
+  const { t, lang } = useT();
   const inst = prefs.instrument;
   const known = new Set(prefs.known[inst]);
   const [peek, setPeek] = useState<string | null>(null);
@@ -22,12 +24,12 @@ export function MeView() {
 
   return (
     <main className="page-pad-bottom">
-      <LargeTitle eyebrow="Chords you can play" title="Me" right={<span className="chordname text-gold-hi ios-title2 pb-1">{known.size}</span>} />
+      <LargeTitle eyebrow={t("me.eyebrow")} title={t("me.title")} right={<span className="chordname text-gold-hi ios-title2 pb-1">{known.size}</span>} />
       <section className="px-5 lg:px-10 space-y-4 lg:max-w-[760px]">
         <Segmented id="inst" value={inst} onChange={(v) => setPrefs({ instrument: v as Instrument })} options={[
-          { value: "guitar", label: "Guitar" }, { value: "piano", label: "Piano" }, { value: "ukulele", label: "Ukulele" },
+          { value: "guitar", label: t("song.guitar") }, { value: "piano", label: t("song.piano") }, { value: "ukulele", label: t("song.ukulele") },
         ]} />
-        <p className="label-2 ios-footnote px-1">Tap a chord to mark it as known. Long-press to see the shape. Songs use this to suggest a capo or key that fits your hands.</p>
+        <p className="label-2 ios-footnote px-1">{t("me.hint")}</p>
 
         <div className="keyboard hairline rounded-[26px] p-3 overflow-x-auto no-scrollbar">
           <div className="grid gap-1.5" style={{ gridTemplateColumns: `36px repeat(${QUALS.length}, minmax(52px, 1fr))` }}>
@@ -37,26 +39,26 @@ export function MeView() {
               <Row key={r} root={r} known={known} onToggle={(c) => toggleKnown(inst, c)} onPeek={setPeek} />
             ))}
           </div>
-          <button onClick={() => setShowAll((s) => !s)} className="press mt-3 text-sm font-medium" style={{ color: "#c9a45c" }}>{showAll ? "Fewer roots" : "Show sharps & flats"}</button>
+          <button onClick={() => setShowAll((s) => !s)} className="press mt-3 text-sm font-medium" style={{ color: "#c9a45c" }}>{showAll ? t("me.fewerRoots") : t("me.showSharps")}</button>
         </div>
 
         <div className="flex gap-2">
-          <button onClick={() => setPrefs({ known: { ...prefs.known, [inst]: [] } })} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">Clear</button>
-          <button onClick={() => setPrefs({ known: { ...prefs.known, [inst]: ROOTS.flatMap((r) => QUALS.map((q) => r + QUALITY_SUFFIX[q])) } })} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">I know them all</button>
+          <button onClick={() => setPrefs({ known: { ...prefs.known, [inst]: [] } })} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">{t("me.clear")}</button>
+          <button onClick={() => setPrefs({ known: { ...prefs.known, [inst]: ROOTS.flatMap((r) => QUALS.map((q) => r + QUALITY_SUFFIX[q])) } })} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">{t("me.knowAll")}</button>
         </div>
 
         {/* Appearance */}
         <div id="appearance" className="pt-6">
-          <div className="eyebrow mb-2 px-4">Appearance</div>
+          <div className="eyebrow mb-2 px-4">{t("me.appearance")}</div>
           <div className="inset-group">
             <div className="row flex-col !items-stretch gap-2 py-3">
-              <div className="ios-body">Theme</div>
+              <div className="ios-body">{t("me.theme")}</div>
               <Segmented id="theme" value={prefs.theme} onChange={(v) => setPrefs({ theme: v as Theme })} options={[
-                { value: "system", label: "System" }, { value: "light", label: "Light" }, { value: "dark", label: "Dark" },
+                { value: "system", label: t("me.system") }, { value: "light", label: t("me.light") }, { value: "dark", label: t("me.dark") },
               ]} />
             </div>
             <div className="row flex-col !items-stretch gap-2 py-3">
-              <div className="ios-body">Accent</div>
+              <div className="ios-body">{t("me.accent")}</div>
               <div className="flex flex-wrap gap-2">
                 {ACCENTS.map((a) => {
                   const on = prefs.accent === a.id;
@@ -65,14 +67,28 @@ export function MeView() {
                       key={a.id}
                       onClick={() => setPrefs({ accent: a.id })}
                       aria-pressed={on}
-                      aria-label={`${a.label} accent`}
-                      title={a.label}
+                      aria-label={t("me.accentLabel", { name: t(`accent.${a.id}` as const) })}
+                      title={t(`accent.${a.id}` as const)}
                       className={`press h-11 pl-1.5 pr-3.5 rounded-full flex items-center gap-2 ios-footnote transition-colors ${on ? "lens text-ivory font-semibold" : "glass label-2"}`}
                     >
                       <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(160deg, ${a.swatch}, color-mix(in srgb, ${a.swatch} 60%, black))`, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4)" }}>
                         {on && <IconCheck width={16} height={16} style={{ color: "#1a1408" }} />}
                       </span>
-                      {a.label}
+                      {t(`accent.${a.id}` as const)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="row flex-col !items-stretch gap-2 py-3">
+              <div className="ios-body">{t("me.language")}</div>
+              <div className="flex flex-wrap gap-2">
+                {LANGS.map((l) => {
+                  const on = lang === l.id;
+                  return (
+                    <button key={l.id} onClick={() => setPrefs({ language: l.id })} aria-pressed={on} lang={l.id}
+                      className={`press h-10 px-4 rounded-full ios-footnote transition-colors ${on ? "lens text-ivory font-semibold" : "glass label-2"}`}>
+                      {l.native}
                     </button>
                   );
                 })}
@@ -89,7 +105,7 @@ export function MeView() {
             <div className="mt-1"><ChordNotes symbol={peek} /></div>
             <div className="mt-4"><ChordDiagram symbol={peek} instrument={inst} size={140} /></div>
             <button onClick={() => { toggleKnown(inst, peek); setPeek(null); }} className="press mt-4 h-11 px-5 rounded-full font-medium gold-fill">
-              {known.has(peek) ? "Forget this chord" : "Mark as known"}
+              {known.has(peek) ? t("song.forgetChord") : t("song.markKnown")}
             </button>
           </div>
         )}
