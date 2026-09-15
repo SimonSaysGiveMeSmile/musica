@@ -53,7 +53,7 @@ export const az: Record<Key, string> = {
   "live.privacyTuner": "Hər dəfə bir simi çəkin və səslənməsinə imkan verin. Audio heç vaxt cihazınızdan çıxmır.",
   "live.micDenied": "Mikrofona giriş rədd edildi. Canlı üçün Ayarlarda icazə verin.", "live.cents": "{n} sent",
   "tuner.inTune": "Kökdədir", "tuner.tuneUp": "Qaldır", "tuner.tuneDown": "Endir", "tuner.playNote": "Bir not çalın",
-  "tuner.strings": "Simlər", "tuner.tuning": "Köklənmə", "tuner.autoDetect": "Ən yaxın simi avtomatik tanıyır. Kilidləmək üçün toxunun, eşitmək üçün ▶.",
+  "tuner.strings": "Simlər", "tuner.tuning": "Köklənmə", "tuner.autoDetect": "Simi eşitmək və ona köklənmək üçün toxunun. Avtomatik rejimə qayıtmaq üçün yenidən toxunun.",
   "tuner.held": "Sabit qaldı, bu sim hazırdır.", "tuner.chromatic": "Xromatik",
   "tuner.chromaticHint": "Hər klaviş bir hədəfdir. Hər dəfə bir not çalın; ekran ən yaxın notu və fərqi göstərir. Klavişi qulaqla yoxlamaq üçün aşağıdakı istinad səsindən istifadə edin.",
   "tuner.reference": "İstinad A4", "tuner.lower": "İstinadı azalt", "tuner.raise": "İstinadı artır", "tuner.playRef": "{note} çal",

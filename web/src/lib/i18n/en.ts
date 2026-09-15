@@ -62,7 +62,7 @@ export const en = {
   "live.micDenied": "Microphone access was denied. Allow it in Settings to use Live.", "live.cents": "{n} cents",
   // tuner
   "tuner.inTune": "In tune", "tuner.tuneUp": "Tune up", "tuner.tuneDown": "Tune down", "tuner.playNote": "Play a note",
-  "tuner.strings": "Strings", "tuner.tuning": "Tuning", "tuner.autoDetect": "Auto-detects the nearest string. Tap one to lock it, tap ▶ to hear it.",
+  "tuner.strings": "Strings", "tuner.tuning": "Tuning", "tuner.autoDetect": "Tap a string to hear it and tune to it. Tap again to go back to auto-detect.",
   "tuner.held": "Held steady, this string is done.", "tuner.chromatic": "Chromatic",
   "tuner.chromaticHint": "Every key is a target. Play one note at a time; the display shows the nearest note and how far it sits. Use the reference tone below to check a key by ear.",
   "tuner.reference": "Reference A4", "tuner.lower": "Lower reference", "tuner.raise": "Raise reference", "tuner.playRef": "Play {note}",

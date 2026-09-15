@@ -53,7 +53,7 @@ export const es: Record<Key, string> = {
   "live.privacyTuner": "Pulsa una cuerda cada vez y déjala sonar. El audio nunca sale de tu dispositivo.",
   "live.micDenied": "Se denegó el acceso al micrófono. Permítelo en Ajustes para usar En vivo.", "live.cents": "{n} cents",
   "tuner.inTune": "Afinado", "tuner.tuneUp": "Sube", "tuner.tuneDown": "Baja", "tuner.playNote": "Toca una nota",
-  "tuner.strings": "Cuerdas", "tuner.tuning": "Afinación", "tuner.autoDetect": "Detecta la cuerda más cercana. Toca una para fijarla, ▶ para oírla.",
+  "tuner.strings": "Cuerdas", "tuner.tuning": "Afinación", "tuner.autoDetect": "Toca una cuerda para oírla y afinar con ella. Toca de nuevo para volver a la detección automática.",
   "tuner.held": "Estable; esta cuerda ya está.", "tuner.chromatic": "Cromático",
   "tuner.chromaticHint": "Cada tecla es un objetivo. Toca una nota cada vez; la pantalla muestra la nota más cercana y la desviación. Usa el tono de referencia de abajo para comprobar una tecla de oído.",
   "tuner.reference": "Referencia A4", "tuner.lower": "Bajar referencia", "tuner.raise": "Subir referencia", "tuner.playRef": "Reproducir {note}",

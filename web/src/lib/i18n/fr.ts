@@ -53,7 +53,7 @@ export const fr: Record<Key, string> = {
   "live.privacyTuner": "Pincez une corde à la fois et laissez-la sonner. L'audio ne quitte jamais votre appareil.",
   "live.micDenied": "Accès au micro refusé. Autorisez-le dans les Réglages pour utiliser Live.", "live.cents": "{n} cents",
   "tuner.inTune": "Accordé", "tuner.tuneUp": "Tendre", "tuner.tuneDown": "Détendre", "tuner.playNote": "Jouez une note",
-  "tuner.strings": "Cordes", "tuner.tuning": "Accordage", "tuner.autoDetect": "Détecte la corde la plus proche. Touchez pour verrouiller, ▶ pour écouter.",
+  "tuner.strings": "Cordes", "tuner.tuning": "Accordage", "tuner.autoDetect": "Touchez une corde pour l'entendre et vous accorder dessus. Touchez à nouveau pour revenir à la détection automatique.",
   "tuner.held": "Stable, cette corde est prête.", "tuner.chromatic": "Chromatique",
   "tuner.chromaticHint": "Chaque touche est une cible. Jouez une note à la fois ; l'écran montre la note la plus proche et l'écart. Utilisez le son de référence ci-dessous pour vérifier une touche à l'oreille.",
   "tuner.reference": "Référence A4", "tuner.lower": "Baisser la référence", "tuner.raise": "Monter la référence", "tuner.playRef": "Jouer {note}",

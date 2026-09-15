@@ -4,12 +4,19 @@ import { resumeAudio } from "./context";
 
 const FRAME = 4096;
 
+/** The live microphone stream, so reference tones can mute it while they play. */
+let activeStream: MediaStream | null = null;
+export function muteMic(muted: boolean) { activeStream?.getAudioTracks().forEach((t) => { t.enabled = !muted; }); }
+
 export interface MicHandle { stop: () => void; sampleRate: number; method: "worklet" | "scriptprocessor" }
 
 export async function startMic(): Promise<MicHandle> {
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
   });
+  activeStream = stream;
+  // Ask iOS for a session that keeps the loudspeaker while recording (Safari 17+).
+  try { const s = (navigator as Navigator & { audioSession?: { type: string } }).audioSession; if (s) s.type = "play-and-record"; } catch {}
   const ctx = await resumeAudio();
   const source = ctx.createMediaStreamSource(stream);
   resetLive();
@@ -24,7 +31,7 @@ export async function startMic(): Promise<MicHandle> {
       source.connect(node); node.connect(sink); sink.connect(ctx.destination);
       return {
         sampleRate: ctx.sampleRate, method: "worklet",
-        stop: () => { node.port.onmessage = null; node.disconnect(); source.disconnect(); sink.disconnect(); stream.getTracks().forEach((t) => t.stop()); },
+        stop: () => { node.port.onmessage = null; node.disconnect(); source.disconnect(); sink.disconnect(); stream.getTracks().forEach((t) => t.stop()); activeStream = null; },
       };
     } catch { /* fall through to ScriptProcessor */ }
   }
@@ -35,7 +42,7 @@ export async function startMic(): Promise<MicHandle> {
   source.connect(proc); proc.connect(sink); sink.connect(ctx.destination);
   return {
     sampleRate: ctx.sampleRate, method: "scriptprocessor",
-    stop: () => { proc.onaudioprocess = null; proc.disconnect(); source.disconnect(); sink.disconnect(); stream.getTracks().forEach((t) => t.stop()); },
+    stop: () => { proc.onaudioprocess = null; proc.disconnect(); source.disconnect(); sink.disconnect(); stream.getTracks().forEach((t) => t.stop()); activeStream = null; },
   };
 }
 

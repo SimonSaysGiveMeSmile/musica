@@ -19,7 +19,7 @@ type Mode = "chords" | "tuner";
 export function LiveView() {
   const prefs = usePrefs();
   const { t } = useT();
-  const [mode, setMode] = useState<Mode>("chords");
+  const [mode, setMode] = useState<Mode>("tuner");
   const [on, setOn] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [frame, setFrame] = useState<LiveFrame | null>(null);
@@ -61,7 +61,7 @@ export function LiveView() {
       <LargeTitle eyebrow={t("live.eyebrow")} title={t("live.title")} />
       <section className="px-5 lg:px-10 lg:max-w-[1000px] space-y-4">
         <div className="flex flex-col sm:flex-row gap-2">
-          <div className="sm:w-[260px]"><Segmented id="live-mode" value={mode} onChange={setMode} options={[{ value: "chords", label: t("live.chordsMode") }, { value: "tuner", label: t("live.tuner") }]} /></div>
+          <div className="sm:w-[260px]"><Segmented id="live-mode" value={mode} onChange={setMode} options={[{ value: "tuner", label: t("live.tuner") }, { value: "chords", label: t("live.chordsMode") }]} /></div>
           <div className="glass rounded-full h-[42px] p-[3px] flex items-center self-start">
             {(["guitar", "piano", "ukulele"] as Instrument[]).map((i) => (
               <button key={i} onClick={() => setPrefs({ instrument: i })} className={`press h-full px-3.5 rounded-full ios-footnote capitalize ${prefs.instrument === i ? "lens text-ivory font-semibold" : "label-2 font-medium"}`}>{t(`song.${i}` as const)}</button>

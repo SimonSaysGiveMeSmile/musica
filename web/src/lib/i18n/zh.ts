@@ -53,7 +53,7 @@ export const zh: Record<Key, string> = {
   "live.privacyTuner": "一次拨一根弦并让它持续振动。音频不会离开你的设备。",
   "live.micDenied": "麦克风权限被拒绝。请在“设置”中允许后使用实时功能。", "live.cents": "{n} 音分",
   "tuner.inTune": "已准", "tuner.tuneUp": "调高", "tuner.tuneDown": "调低", "tuner.playNote": "弹一个音",
-  "tuner.strings": "琴弦", "tuner.tuning": "调弦", "tuner.autoDetect": "自动识别最近的弦。点按锁定，点 ▶ 试听。",
+  "tuner.strings": "琴弦", "tuner.tuning": "调弦", "tuner.autoDetect": "点按一根弦即可试听并按它调音，再点一次恢复自动识别。",
   "tuner.held": "保持稳定，这根弦调好了。", "tuner.chromatic": "半音",
   "tuner.chromaticHint": "每个琴键都是目标。一次弹一个音，屏幕显示最接近的音以及偏差。用下方的参考音按耳朵校对。",
   "tuner.reference": "标准音 A4", "tuner.lower": "降低标准音", "tuner.raise": "升高标准音", "tuner.playRef": "播放 {note}",

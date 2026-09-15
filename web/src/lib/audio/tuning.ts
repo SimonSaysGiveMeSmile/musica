@@ -1,5 +1,6 @@
 import type { Instrument } from "@/lib/theory/coverage";
-import { getAudioContext } from "./context";
+import { resumeAudio } from "./context";
+import { muteMic } from "./mic";
 
 export interface TuningString { label: string; midi: number }
 export type TuningNameKey = "tuner.standard" | "tuner.dropD" | "tuner.halfDown" | "tuner.reentrant" | "tuner.lowG" | "tuner.baritone" | "tuner.chromaticName";
@@ -70,25 +71,32 @@ export class PitchSmoother {
   reset() { this.buf = []; }
 }
 
-/** Play a short reference tone for a target note. */
-export function playReference(midi: number, a4 = 440, seconds = 1.6) {
-  const ctx = getAudioContext();
-  if (ctx.state !== "running") ctx.resume().catch(() => {});
+/** Play a short reference tone for a target note. Resolves when the tone has finished.
+ *  Must be called from a user gesture (a tap) so the browser lets audio start. */
+export async function playReference(midi: number, a4 = 440, seconds = 1.6): Promise<void> {
+  const ctx = await resumeAudio();
   const f = midiToFreq(midi, a4);
+  const t0 = ctx.currentTime + 0.03;
   const g = ctx.createGain();
-  g.gain.setValueAtTime(0.0001, ctx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
-  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + seconds);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(0.32, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + seconds);
   g.connect(ctx.destination);
-  // two partials give a plucked-string feel rather than a raw sine
-  [1, 2, 3].forEach((h, i) => {
+  // three partials give a plucked-string feel rather than a raw sine
+  const oscs = [1, 2, 3].map((h, i) => {
     const o = ctx.createOscillator();
     o.type = "sine";
     o.frequency.value = f * h;
     const pg = ctx.createGain();
     pg.gain.value = [1, 0.35, 0.12][i];
     o.connect(pg).connect(g);
-    o.start();
-    o.stop(ctx.currentTime + seconds + 0.05);
+    o.start(t0);
+    o.stop(t0 + seconds + 0.05);
+    return o;
   });
+  // the tuner must not hear its own tone, and iOS routes output to the earpiece while recording
+  muteMic(true);
+  await new Promise<void>((resolve) => { oscs[0].onended = () => resolve(); setTimeout(resolve, (seconds + 0.3) * 1000); });
+  muteMic(false);
+  g.disconnect();
 }
