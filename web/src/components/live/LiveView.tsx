@@ -7,15 +7,15 @@ import { pitchToNote, startMic, type MicHandle } from "@/lib/audio/mic";
 import { usePrefs, setPrefs } from "@/lib/store/prefs";
 import type { Instrument } from "@/lib/theory/coverage";
 import { ChordDiagram } from "@/components/chords/ChordDiagram";
-import { LargeTitle } from "@/components/shell/LargeTitle";
 import { Segmented } from "@/components/ui/Segmented";
 import { IconLive } from "@/components/ui/Icons";
 import { Tuner } from "./Tuner";
 import { useT } from "@/lib/i18n";
 
 const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-type Mode = "chords" | "tuner";
+type Mode = "tuner" | "chords";
 
+/** Live: one screen, no page scroll. Tuner by default; Chords mode for strumming along. */
 export function LiveView() {
   const prefs = usePrefs();
   const { t } = useT();
@@ -57,46 +57,45 @@ export function LiveView() {
   );
 
   return (
-    <main className="page-pad-bottom">
-      <LargeTitle eyebrow={t("live.eyebrow")} title={t("live.title")} />
-      <section className="px-5 lg:px-10 lg:max-w-[1000px] space-y-4">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="sm:w-[260px]"><Segmented id="live-mode" value={mode} onChange={setMode} options={[{ value: "tuner", label: t("live.tuner") }, { value: "chords", label: t("live.chordsMode") }]} /></div>
-          <div className="glass rounded-full h-[42px] p-[3px] flex items-center self-start">
-            {(["guitar", "piano", "ukulele"] as Instrument[]).map((i) => (
-              <button key={i} onClick={() => setPrefs({ instrument: i })} className={`press h-full px-3.5 rounded-full ios-footnote capitalize ${prefs.instrument === i ? "lens text-ivory font-semibold" : "label-2 font-medium"}`}>{t(`song.${i}` as const)}</button>
-            ))}
-          </div>
+    <main className="h-dvh flex flex-col overflow-hidden" style={{ paddingBottom: "calc(var(--tabbar-h) + var(--sab) + 8px)" }}>
+      <header className="safe-top px-5 lg:px-10 pt-1 pb-2 flex items-center justify-between gap-3 shrink-0">
+        <h1 className="ios-title1 text-ivory">{t("live.title")}</h1>
+        <div className="glass rounded-full h-10 p-[3px] flex items-center">
+          {(["guitar", "piano", "ukulele"] as Instrument[]).map((i) => (
+            <button key={i} onClick={() => setPrefs({ instrument: i })} className={`press h-full px-3 rounded-full ios-footnote capitalize ${prefs.instrument === i ? "lens text-ivory font-semibold" : "label-2 font-medium"}`}>{t(`song.${i}` as const)}</button>
+          ))}
         </div>
+      </header>
+      <div className="px-5 lg:px-10 shrink-0">
+        <Segmented id="live-mode" value={mode} onChange={setMode} options={[{ value: "tuner", label: t("live.tuner") }, { value: "chords", label: t("live.chordsMode") }]} />
+      </div>
 
+      <section className="flex-1 min-h-0 px-5 lg:px-10 pt-3 overflow-y-auto no-scrollbar lg:max-w-[1000px]" style={{ overscrollBehavior: "contain" }}>
         {mode === "tuner" ? (
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5 lg:items-start space-y-4 lg:space-y-0">
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5 lg:items-start space-y-3 lg:space-y-0">
             <Tuner key={prefs.instrument} listening={on} instrument={prefs.instrument} />
-            <div className="space-y-3">
+            <div className="space-y-2">
               {micButton}
               {err && <p className="text-felt-hi ios-footnote">{err}</p>}
-              <p className="label-2 ios-footnote text-center">{t("live.privacyTuner")}</p>
             </div>
           </div>
         ) : (
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5 lg:items-start space-y-4 lg:space-y-0">
-            {/* Chord stage */}
-            <div className="inset-group rounded-[30px] p-6 relative overflow-hidden min-h-[240px] lg:min-h-[420px] flex flex-col items-center justify-center lg:row-span-3">
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5 lg:items-start space-y-3 lg:space-y-0">
+            <div className="inset-group rounded-[30px] p-6 relative overflow-hidden min-h-[220px] lg:min-h-[420px] flex flex-col items-center justify-center lg:row-span-3">
               <div aria-hidden className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(90% 80% at 50% 60%, color-mix(in srgb, var(--gold) ${Math.round(3 + level * 18)}%, transparent), transparent 100%)`, transition: "background 120ms" }} />
               <div className="eyebrow relative">{on ? (stable ? t("live.hearing") : t("live.listening")) : t("live.tapMic")}</div>
-              <motion.div key={stable ?? "none"} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="chordname text-[84px] leading-none text-gold-hi relative mt-2">
+              <motion.div key={stable ?? "none"} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="chordname text-[76px] leading-none text-gold relative mt-2">
                 {stable ?? "—"}
               </motion.div>
-              {stable && <div className="relative mt-3"><ChordDiagram symbol={stable} instrument={prefs.instrument} size={80} /></div>}
+              {stable && <div className="relative mt-3"><ChordDiagram symbol={stable} instrument={prefs.instrument} size={76} /></div>}
               <div className="relative mt-4 w-full h-1 rounded-full tint-2 overflow-hidden"><div className="h-full" style={{ width: `${level * 100}%`, background: "var(--gold)", transition: "width 80ms" }} /></div>
             </div>
 
-            {/* Pitch + chroma */}
             <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
               <div className="inset-group p-4">
                 <div className="eyebrow">{t("live.pitch")}</div>
                 <div className="flex items-baseline gap-1 mt-1">
-                  <span className="chordname text-[40px] leading-none">{note ? note.name : "–"}</span>
+                  <span className="chordname text-[36px] leading-none">{note ? note.name : "–"}</span>
                   <span className="label-2 ios-subhead">{note ? note.octave : ""}</span>
                 </div>
                 <div className="ios-caption label-2 mt-1 tabular-nums">{note ? t("live.cents", { n: `${note.cents > 0 ? "+" : ""}${note.cents}` }) : t("live.singleNotes")}</div>
@@ -104,17 +103,17 @@ export function LiveView() {
               </div>
               <div className="inset-group p-4">
                 <div className="eyebrow">{t("live.chroma")}</div>
-                <div className="grid grid-cols-12 gap-[3px] items-end h-16 mt-2">
+                <div className="grid grid-cols-12 gap-[3px] items-end h-14 mt-2">
                   {NAMES.map((n, i) => {
                     const v = frame?.hpcp?.[i] ?? 0;
-                    return <div key={n} title={n} className="rounded-sm" style={{ height: `${Math.max(6, v * 100)}%`, background: v > 0.7 ? "var(--gold-hi)" : v > 0.35 ? "var(--gold)" : "var(--tint-2)", transition: "height 80ms" }} />;
+                    return <div key={n} title={n} className="rounded-sm" style={{ height: `${Math.max(6, v * 100)}%`, background: v > 0.7 ? "var(--gold)" : v > 0.35 ? "var(--gold-lo)" : "var(--tint-2)", transition: "height 80ms" }} />;
                   })}
                 </div>
                 <div className="grid grid-cols-12 text-[8px] label-3 mt-1 text-center">{NAMES.map((n) => <span key={n}>{n.length === 1 ? n : "·"}</span>)}</div>
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {micButton}
               {err && <p className="text-felt-hi ios-footnote">{err}</p>}
               <p className="label-2 ios-footnote text-center">{t("live.privacyChords")}</p>
