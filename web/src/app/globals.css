@@ -176,6 +176,7 @@ body {
 .ambient {
   position: fixed;
   inset: 0;
+  bottom: calc(0px - var(--ios-bottom-shim));
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
@@ -205,6 +206,7 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
+  bottom: calc(0px - var(--ios-bottom-shim));
   pointer-events: none;
   z-index: 1;
   opacity: 0.035;
@@ -344,14 +346,15 @@ body::before {
   /* status bar sits over the page; give the white clock something dark enough to read on in light mode */
   .statusbar-veil { display: block; }
 }
+/* No blur here. Dark theme needs nothing (white clock on lacquer); light theme gets a soft dark fade
+   behind the status bar so the white clock stays readable. */
 .statusbar-veil {
   display: none;
-  position: fixed; top: 0; left: 0; right: 0; height: var(--sat); z-index: 60; pointer-events: none;
-  -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
+  position: fixed; top: 0; left: 0; right: 0; height: calc(var(--sat) + 8px); z-index: 60; pointer-events: none;
   background: var(--statusbar-tint, transparent);
 }
-:root[data-theme="light"] { --statusbar-tint: rgba(20, 16, 12, 0.55); }
-@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --statusbar-tint: rgba(20, 16, 12, 0.55); } }
+:root[data-theme="light"] { --statusbar-tint: linear-gradient(180deg, rgba(20, 16, 12, 0.62), rgba(20, 16, 12, 0.35) 70%, transparent); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --statusbar-tint: linear-gradient(180deg, rgba(20, 16, 12, 0.62), rgba(20, 16, 12, 0.35) 70%, transparent); } }
 @media (min-width: 1024px) {
   .song-header { background: none; }
   .page-pad-bottom { padding-bottom: 64px; }

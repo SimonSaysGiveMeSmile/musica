@@ -32,6 +32,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       measure();
     }, 160);
     measure();
+    // On launch iOS 26 often reports a viewport short by a phantom toolbar; a display flip makes it re-measure.
+    if (standalone && screen.height - window.innerHeight > 0) { heal(); setTimeout(heal, 900); }
     window.addEventListener("resize", measure);
     window.addEventListener("orientationchange", measure);
     window.visualViewport?.addEventListener("resize", measure);
