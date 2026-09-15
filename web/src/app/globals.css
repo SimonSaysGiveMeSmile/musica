@@ -176,20 +176,22 @@ body {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  /* extend past the viewport so any system strip (status bar, iOS 26 phantom toolbar) is painted the same */
+  top: -160px; bottom: -160px;
   background:
-    radial-gradient(60% 45% at 12% 8%, var(--tint-2), transparent 70%),
-    radial-gradient(45% 40% at 88% 18%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 70%),
-    radial-gradient(55% 40% at 70% 92%, color-mix(in srgb, var(--walnut-hi) 18%, transparent), transparent 70%),
-    radial-gradient(40% 35% at 20% 80%, color-mix(in srgb, var(--gold) 8%, transparent), transparent 70%),
-    linear-gradient(180deg, var(--lacquer-2) 0%, var(--lacquer) 45%, var(--lacquer) 100%);
+    radial-gradient(55% 24% at 14% 32%, var(--tint-2), transparent 70%),
+    radial-gradient(42% 24% at 86% 36%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 70%),
+    radial-gradient(50% 30% at 70% 72%, color-mix(in srgb, var(--walnut-hi) 18%, transparent), transparent 70%),
+    radial-gradient(38% 26% at 22% 66%, color-mix(in srgb, var(--gold) 8%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--lacquer) 0%, var(--lacquer) 12%, var(--lacquer-2) 30%, var(--lacquer) 62%, var(--lacquer) 100%);
 }
 .ambient::after {
   content: "";
   position: absolute;
   inset: -20%;
   background:
-    radial-gradient(30% 30% at 30% 30%, color-mix(in srgb, var(--gold-hi) 8%, transparent), transparent 70%),
-    radial-gradient(28% 28% at 75% 65%, color-mix(in srgb, var(--walnut-hi) 14%, transparent), transparent 70%);
+    radial-gradient(26% 20% at 32% 40%, color-mix(in srgb, var(--gold-hi) 8%, transparent), transparent 70%),
+    radial-gradient(24% 22% at 72% 62%, color-mix(in srgb, var(--walnut-hi) 14%, transparent), transparent 70%);
   animation: drift 40s ease-in-out infinite alternate;
 }
 @keyframes drift {

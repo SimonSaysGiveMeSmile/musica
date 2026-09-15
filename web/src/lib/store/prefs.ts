@@ -44,7 +44,7 @@ export function applyTheme(p: Prefs) {
   if (p.theme === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", p.theme);
   if (p.accent === "gold") root.removeAttribute("data-accent"); else root.setAttribute("data-accent", p.accent);
   const dark = p.theme === "dark" || (p.theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#0b0a09" : "#f5f0e7");
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => { m.setAttribute("content", dark ? "#0b0a09" : "#f5f0e7"); m.removeAttribute("media"); });
 }
 
 let cache: Prefs | null = null;
