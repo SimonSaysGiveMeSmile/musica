@@ -1,6 +1,7 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useT } from "@/lib/i18n";
 
 export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title?: string; children: React.ReactNode }) {
@@ -11,7 +12,10 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
   const { t } = useT();
-  return (
+  // Portal to <body>: a glass ancestor (backdrop-filter) would otherwise become the containing block
+  // for this fixed sheet and push it off-screen.
+  if (typeof document === "undefined") return null;
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -36,6 +40,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
