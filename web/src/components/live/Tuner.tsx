@@ -20,13 +20,17 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
   const [rawReading, setReading] = useState<Reading | null>(null);
   const reading = listening ? rawReading : null;
   const [held, setHeld] = useState(0); // consecutive in-tune frames
+  const [level, setLevel] = useState(0);
+  const [silentFor, setSilentFor] = useState(0); // consecutive near-silent frames
   const smoother = useRef(new PitchSmoother(5));
   const lastGood = useRef(0);
 
   useEffect(() => { try { localStorage.setItem(A4_KEY, String(a4)); } catch {} }, [a4]);
 
   useEffect(() => onLive((frame) => {
-    const good = frame.pitchConfidence > 0.55 && frame.rms > 0.004 && frame.pitch > 25;
+    setLevel(Math.min(1, frame.rms * 14));
+    setSilentFor((n) => (frame.rms < 0.0008 ? n + 1 : 0));
+    const good = frame.pitchConfidence > 0.5 && frame.rms > 0.0015 && frame.pitch > 30;
     if (good) {
       const f = smoother.current.push(frame.pitch);
       const r = readPitch(f, tuning, a4, locked);
@@ -47,7 +51,7 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
     <div className="space-y-4">
       {/* Gauge */}
       <div className="inset-group rounded-[30px] p-5 relative overflow-hidden">
-        <div aria-hidden className="absolute inset-0 pointer-events-none transition-opacity duration-300" style={{ opacity: inTune ? 1 : 0, background: "radial-gradient(60% 60% at 50% 40%, color-mix(in srgb, var(--gold) 22%, transparent), transparent 70%)" }} />
+        <div aria-hidden className="absolute inset-0 pointer-events-none transition-opacity duration-300" style={{ opacity: inTune ? 1 : 0, background: "radial-gradient(100% 90% at 50% 40%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 100%)" }} />
         <div className="relative flex items-end justify-between">
           <div>
             <div className="eyebrow">{listening ? (reading ? (inTune ? t("tuner.inTune") : reading.cents < 0 ? t("tuner.tuneUp") : t("tuner.tuneDown")) : t("tuner.playNote")) : t("live.tapMic")}</div>
@@ -80,7 +84,9 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
           />
           <div className="absolute inset-x-0 -bottom-1 flex justify-between ios-caption2 label-3 px-1"><span>♭ 50</span><span>0</span><span>50 ♯</span></div>
         </div>
+        <div className="relative mt-4 w-full h-1 rounded-full tint-2 overflow-hidden"><div className="h-full" style={{ width: `${(listening ? level : 0) * 100}%`, background: "var(--gold)", transition: "width 80ms" }} /></div>
         {listening && held >= 8 && <div className="relative mt-3 text-center ios-footnote text-gold">{t("tuner.held")}</div>}
+        {listening && silentFor >= 30 && <div className="relative mt-3 text-center ios-footnote text-felt-hi">{t("tuner.noAudio")}</div>}
       </div>
 
       {/* Strings */}

@@ -36,7 +36,7 @@ export function Timeline({ analysis, time, display, onSeek }: { analysis: Analys
                 key={i}
                 onClick={() => onSeek(s.start)}
                 className={`absolute top-6 h-[84px] rounded-[14px] border text-left px-2 pt-2 overflow-hidden transition-colors ${hot ? "border-gold-hi/70 text-on-accent" : "border-(--glass-line) text-ivory tint-1"}`}
-                style={{ left: s.start * PX_PER_SEC + 1, width: Math.max(8, w - 2), background: hot ? "linear-gradient(180deg, var(--gold-hi), var(--gold))" : undefined }}
+                style={{ left: s.start * PX_PER_SEC + 1, width: Math.max(8, w - 2), background: hot ? "var(--gold)" : undefined }}
               >
                 <span className="chordname text-[18px] leading-none">{w > 34 ? display(s.chord) : ""}</span>
                 <span className={`block mt-1 text-[10px] ${hot ? "text-on-accent/70" : "text-ivory-3"}`}>{w > 54 ? t("timeline.beats", { n: Math.round((s.end - s.start) / (60 / analysis.bpm)) }) : ""}</span>

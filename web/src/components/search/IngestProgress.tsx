@@ -17,7 +17,7 @@ export function IngestProgress({ state, title, onDismiss }: { state: IngestState
   const idx = STEPS.findIndex((s) => s.key.includes(state.stage));
   return (
     <div className="inset-group p-4 relative">
-      <div aria-hidden className="absolute inset-x-0 top-0 h-px gold-line opacity-70" />
+      
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="eyebrow">{isError ? t("ingest.failed") : t("ingest.analyzing")}</div>
@@ -32,7 +32,7 @@ export function IngestProgress({ state, title, onDismiss }: { state: IngestState
       ) : (
         <>
           <div className="mt-4 h-1.5 rounded-full tint-2 overflow-hidden">
-            <motion.div className="h-full rounded-full" style={{ background: "linear-gradient(90deg, var(--gold-lo), var(--gold-hi))" }} animate={{ width: `${Math.round(state.pct * 100)}%` }} transition={{ type: "spring", stiffness: 120, damping: 24 }} />
+            <motion.div className="h-full rounded-full" style={{ background: "var(--gold)" }} animate={{ width: `${Math.round(state.pct * 100)}%` }} transition={{ type: "spring", stiffness: 120, damping: 24 }} />
           </div>
           <div className="mt-3 flex items-center justify-between">
             <div className="flex gap-3">

@@ -1,4 +1,5 @@
 import type { Instrument } from "@/lib/theory/coverage";
+import { getAudioContext } from "./context";
 
 export interface TuningString { label: string; midi: number }
 export type TuningNameKey = "tuner.standard" | "tuner.dropD" | "tuner.halfDown" | "tuner.reentrant" | "tuner.lowG" | "tuner.baritone" | "tuner.chromaticName";
@@ -71,8 +72,8 @@ export class PitchSmoother {
 
 /** Play a short reference tone for a target note. */
 export function playReference(midi: number, a4 = 440, seconds = 1.6) {
-  const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-  const ctx = new Ctx();
+  const ctx = getAudioContext();
+  if (ctx.state !== "running") ctx.resume().catch(() => {});
   const f = midiToFreq(midi, a4);
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, ctx.currentTime);
@@ -90,5 +91,4 @@ export function playReference(midi: number, a4 = 440, seconds = 1.6) {
     o.start();
     o.stop(ctx.currentTime + seconds + 0.05);
   });
-  setTimeout(() => ctx.close(), (seconds + 0.2) * 1000);
 }

@@ -1,7 +1,7 @@
 /* Musica service worker: app shell + analysis engine offline. */
-const VERSION = "musica-v6";
+const VERSION = "musica-v7";
 const PRECACHE = ["/", "/library", "/live", "/me", "/manifest.webmanifest",
-  "/essentia/essentia-wasm.web.js?v=5", "/essentia/essentia-wasm.web.wasm", "/essentia/essentia.js-core.umd.min.js?v=5", "/workers/analysis.js?v=5",
+  "/essentia/essentia-wasm.web.js?v=6", "/essentia/essentia-wasm.web.wasm", "/essentia/essentia.js-core.umd.min.js?v=6", "/workers/analysis.js?v=6",
   "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {

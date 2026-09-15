@@ -82,13 +82,13 @@ export function LiveView() {
           <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5 lg:items-start space-y-4 lg:space-y-0">
             {/* Chord stage */}
             <div className="inset-group rounded-[30px] p-6 relative overflow-hidden min-h-[240px] lg:min-h-[420px] flex flex-col items-center justify-center lg:row-span-3">
-              <div aria-hidden className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(60% 50% at 50% 60%, color-mix(in srgb, var(--gold) ${Math.round(5 + level * 25)}%, transparent), transparent 70%)`, transition: "background 120ms" }} />
+              <div aria-hidden className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(90% 80% at 50% 60%, color-mix(in srgb, var(--gold) ${Math.round(3 + level * 18)}%, transparent), transparent 100%)`, transition: "background 120ms" }} />
               <div className="eyebrow relative">{on ? (stable ? t("live.hearing") : t("live.listening")) : t("live.tapMic")}</div>
               <motion.div key={stable ?? "none"} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="chordname text-[84px] leading-none text-gold-hi relative mt-2">
                 {stable ?? "—"}
               </motion.div>
               {stable && <div className="relative mt-3"><ChordDiagram symbol={stable} instrument={prefs.instrument} size={80} /></div>}
-              <div className="relative mt-4 w-full h-1 rounded-full tint-2 overflow-hidden"><div className="h-full" style={{ width: `${level * 100}%`, background: "linear-gradient(90deg, var(--gold-lo), var(--gold-hi))", transition: "width 80ms" }} /></div>
+              <div className="relative mt-4 w-full h-1 rounded-full tint-2 overflow-hidden"><div className="h-full" style={{ width: `${level * 100}%`, background: "var(--gold)", transition: "width 80ms" }} /></div>
             </div>
 
             {/* Pitch + chroma */}

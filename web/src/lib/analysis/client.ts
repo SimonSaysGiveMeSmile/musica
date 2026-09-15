@@ -2,7 +2,7 @@ import type { Analysis, AnalysisStage, LiveFrame, RawAnalysis } from "./types";
 import { toAnalysis } from "./postprocess";
 
 /** Bump when public/workers or public/essentia change so the service worker cache is bypassed. */
-export const ANALYSIS_VERSION = "5";
+export const ANALYSIS_VERSION = "6";
 
 type Listener = (f: LiveFrame) => void;
 

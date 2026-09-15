@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getAudioContext } from "./context";
 
 export interface Loop { a: number; b: number }
 
@@ -95,7 +96,7 @@ export function usePlayer(src: string | null, beats: number[] | undefined, downb
   const toggle = useCallback(() => {
     const a = audioRef.current; if (!a) return;
     if (a.paused) {
-      if (!ctxRef.current) ctxRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      if (!ctxRef.current) ctxRef.current = getAudioContext();
       ctxRef.current.resume();
       nextBeatRef.current = 0;
       a.play().catch(() => {});

@@ -46,7 +46,7 @@ export function ChordSheet({ lines, time, display, onSeek, onChord, known, lang,
             onContextMenu={(e) => e.preventDefault()}
             className={`relative rounded-[18px] px-3 py-2 -mx-1 transition-colors cursor-pointer ${active ? "lens" : "hover:bg-(--tint-1)"}`}
           >
-            {active && <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full" style={{ background: "linear-gradient(180deg, var(--gold-hi), var(--gold-lo))" }} />}
+            {active && <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full" style={{ background: "var(--gold)" }} />}
             {l.instrumental ? (
               <div className="flex flex-wrap gap-2 items-center py-0.5">
                 <span className="eyebrow mr-1">{l.vocal === "no" ? t("sheet.instrumental") : l.vocal === "yes" ? t("sheet.vocalNoLyrics") : "♪"}</span>

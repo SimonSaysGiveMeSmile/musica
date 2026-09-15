@@ -84,8 +84,7 @@ function Ring({ pct }: { pct: number }) {
   return (
     <svg width={88} height={88} viewBox="0 0 88 88" className="shrink-0">
       <circle cx={44} cy={44} r={r} fill="none" stroke="var(--glass-line)" strokeWidth={7} />
-      <circle cx={44} cy={44} r={r} fill="none" stroke="url(#g)" strokeWidth={7} strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} transform="rotate(-90 44 44)" style={{ transition: "stroke-dashoffset 600ms cubic-bezier(.2,.8,.2,1)" }} />
-      <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" style={{ stopColor: "var(--gold-lo)" }} /><stop offset="1" style={{ stopColor: "var(--gold-hi)" }} /></linearGradient></defs>
+      <circle cx={44} cy={44} r={r} fill="none" stroke="var(--gold)" strokeWidth={7} strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} transform="rotate(-90 44 44)" style={{ transition: "stroke-dashoffset 600ms cubic-bezier(.2,.8,.2,1)" }} />
       <text x={44} y={49} textAnchor="middle" fontSize={18} fontWeight={700} fill="var(--ivory)" fontFamily="var(--font-display)">{pct}%</text>
     </svg>
   );

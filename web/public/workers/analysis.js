@@ -1,6 +1,6 @@
 /* Musica analysis worker — Essentia.js (WASM). Plain JS on purpose: no bundler involvement. */
 /* global importScripts, EssentiaWASM, Essentia */
-importScripts("/essentia/essentia-wasm.web.js?v=5", "/essentia/essentia.js-core.umd.min.js?v=5");
+importScripts("/essentia/essentia-wasm.web.js?v=6", "/essentia/essentia.js-core.umd.min.js?v=6");
 
 let essentia = null;
 let wasm = null;
@@ -199,7 +199,8 @@ function liveFrame(frame, sr) {
   const sp = essentia.Spectrum(w.frame, frame.length);
   const pk = essentia.SpectralPeaks(sp.spectrum, 0, 3500, 100, 60, "frequency", sr);
   const h = essentia.HPCP(pk.frequencies, pk.magnitudes, true, 500, 0, 3500, false, 60, true, "unitMax", 440, sr, 12, "squaredCosine", 1);
-  const pitch = essentia.PitchYinFFT(sp.spectrum, frame.length, false, 22050, 20, sr, 0.1);
+  // time-domain YIN: reliable down to the low E of a guitar (the FFT variant loses everything below ~100 Hz)
+  const pitch = essentia.PitchYin(vec, frame.length, false, 2500, 40, sr, 0.15);
   // rms for silence gating
   let rms = 0; for (let i = 0; i < frame.length; i++) rms += frame[i] * frame[i];
   rms = Math.sqrt(rms / frame.length);

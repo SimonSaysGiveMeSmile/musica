@@ -76,7 +76,7 @@ export function MeView() {
                       title={t(`accent.${a.id}` as const)}
                       className={`press h-11 pl-1.5 pr-3.5 rounded-full flex items-center gap-2 ios-footnote transition-colors ${on ? "lens text-ivory font-semibold" : "glass label-2"}`}
                     >
-                      <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(160deg, ${a.swatch}, color-mix(in srgb, ${a.swatch} 60%, black))`, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4)" }}>
+                      <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: a.swatch, boxShadow: "inset 0 0.5px 0 rgba(255,255,255,0.35), inset 0 -6px 10px -8px rgba(0,0,0,0.5)" }}>
                         {on && <IconCheck width={16} height={16} style={{ color: "#1a1408" }} />}
                       </span>
                       {t(`accent.${a.id}` as const)}
