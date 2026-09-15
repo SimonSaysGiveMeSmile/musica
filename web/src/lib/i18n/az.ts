@@ -37,6 +37,7 @@ export const az: Record<Key, string> = {
   "sheet.autoSynced": "Audioya avtomatik sinxronlaşdırılıb ({n} san)",
   "tuner.noAudio": "Mikrofona səs gəlmir. Səssiz rejim düyməsini və Ayarlarda Musica-ya mikrofon icazəsini yoxlayın.",
   "tuner.lockedTo": "Kilid: {note}", "tuner.farOff": "{heard} eşidilir, {target} kilidlənib", "tuner.stringTile": "{note}: bu simi çal və kilidlə", "tuner.playing": "{note} çalınır",
+  "live.micLost": "Mikrofon kəsildi. Yenidən dinləmək üçün Başla düyməsinə toxunun.",
   "timeline.hint": "Vuruş şəbəkəsində akkordlar · keçmək üçün toxunun", "timeline.beats": "{n} vuruş", "timeline.confidence": "Hər blokun altındakı zolaq analizin həmin akkorda nə qədər əmin olduğunu göstərir.",
   "gallery.count": "Bu mahnıda {n} akkord · {instrument}", "gallery.learn": "öyrən", "gallery.known": "bilirəm",
   "learn.youCanPlay": "Artıq çala bilirsiniz", "learn.ofChords": "{n} akkorddan {k}", "learn.makeEasier": "Asanlaşdır", "learn.best": "ən yaxşı",

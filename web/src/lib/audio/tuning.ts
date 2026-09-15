@@ -1,6 +1,6 @@
 import type { Instrument } from "@/lib/theory/coverage";
-import { resumeAudio } from "./context";
-import { muteMic } from "./mic";
+import { resumeAudio, setAudioSession } from "./context";
+import { isMicActive, muteMic } from "./mic";
 
 export interface TuningString { label: string; midi: number }
 export type TuningNameKey = "tuner.standard" | "tuner.dropD" | "tuner.halfDown" | "tuner.reentrant" | "tuner.lowG" | "tuner.baritone" | "tuner.chromaticName";
@@ -98,6 +98,8 @@ export function stopReference() {
  *  Resolves when the tone ends or is replaced. Call from a user gesture so the browser lets audio start. */
 export async function playReference(midi: number, a4 = 440, seconds = 1.6): Promise<void> {
   stopReference();
+  // "playback" so the Ring/Silent switch does not mute the tone; keep the recording session while the mic is open
+  setAudioSession(isMicActive() ? "play-and-record" : "playback");
   const ctx = await resumeAudio();
   const f = midiToFreq(midi, a4);
   const t0 = ctx.currentTime + 0.03;

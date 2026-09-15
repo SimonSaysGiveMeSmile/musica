@@ -37,6 +37,7 @@ export const ru: Record<Key, string> = {
   "sheet.autoSynced": "Автоматически синхронизировано с аудио ({n} с)",
   "tuner.noAudio": "Звук не поступает на микрофон. Проверьте переключатель без звука и разрешение на микрофон для Musica в Настройках.",
   "tuner.lockedTo": "Закреплено: {note}", "tuner.farOff": "Слышу {heard}, закреплено на {target}", "tuner.stringTile": "{note}: сыграть и закрепить эту струну", "tuner.playing": "Звучит {note}",
+  "live.micLost": "Микрофон был прерван. Нажмите «Начать», чтобы слушать снова.",
   "timeline.hint": "Аккорды на сетке долей · нажмите, чтобы перейти", "timeline.beats": "{n} долей", "timeline.confidence": "Полоска под блоком показывает уверенность анализа в этом аккорде.",
   "gallery.count": "{n} аккордов в песне · {instrument}", "gallery.learn": "учить", "gallery.known": "знаю",
   "learn.youCanPlay": "Вы уже умеете играть", "learn.ofChords": "{k} из {n} аккордов", "learn.makeEasier": "Сделать проще", "learn.best": "лучший",

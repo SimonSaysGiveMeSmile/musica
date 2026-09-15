@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getAudioContext } from "./context";
+import { getAudioContext, resumeAudio } from "./context";
 
 export interface Loop { a: number; b: number }
 
@@ -12,7 +12,6 @@ export function usePlayer(src: string | null, beats: number[] | undefined, downb
   const [rate, setRateState] = useState(1);
   const [loop, setLoop] = useState<Loop | null>(null);
   const [metronome, setMetronome] = useState(false);
-  const ctxRef = useRef<AudioContext | null>(null);
   const nextBeatRef = useRef(0);
   const rafRef = useRef(0);
   const lastUiRef = useRef(0);
@@ -47,8 +46,8 @@ export function usePlayer(src: string | null, beats: number[] | undefined, downb
   }, [src]);
 
   const click = useCallback((at: number, accent: boolean) => {
-    const ctx = ctxRef.current;
-    if (!ctx) return;
+    const ctx = getAudioContext();
+    if (ctx.state !== "running") return;
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     o.type = "sine";
@@ -74,8 +73,8 @@ export function usePlayer(src: string | null, beats: number[] | undefined, downb
         const est = a.paused ? a.currentTime : Math.min(a.currentTime + ((now - ctRef.current.at) / 1000) * a.playbackRate, a.currentTime + 0.35);
         if (now - lastUiRef.current > 40) { lastUiRef.current = now; setTime(est); }
         const b = beatsRef.current;
-        if (metroRef.current && !a.paused && b && ctxRef.current) {
-          const ctx = ctxRef.current;
+        if (metroRef.current && !a.paused && b) {
+          const ctx = getAudioContext();
           const horizon = t + 0.25;
           let i = nextBeatRef.current;
           if (i === 0 || b[i - 1] > t) { i = 0; while (i < b.length && b[i] < t) i++; }
@@ -96,8 +95,7 @@ export function usePlayer(src: string | null, beats: number[] | undefined, downb
   const toggle = useCallback(() => {
     const a = audioRef.current; if (!a) return;
     if (a.paused) {
-      if (!ctxRef.current) ctxRef.current = getAudioContext();
-      ctxRef.current.resume();
+      resumeAudio().catch(() => {});
       nextBeatRef.current = 0;
       a.play().catch(() => {});
     } else a.pause();

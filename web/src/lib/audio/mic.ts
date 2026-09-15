@@ -1,49 +1,60 @@
 "use client";
 import { resetLive, sendLiveFrame } from "@/lib/analysis/client";
-import { resumeAudio } from "./context";
+import { resumeAudio, setAudioSession } from "./context";
 
 const FRAME = 4096;
+const WORKLET_VERSION = "2";
+
+export interface MicHandle {
+  stop: () => void;
+  sampleRate: number;
+  method: "worklet" | "scriptprocessor";
+  /** Fired when iOS takes the microphone away (lock screen, app switch, phone call) or the track ends. */
+  onLost?: (reason: "ended" | "muted") => void;
+}
 
 /** The live microphone stream, so reference tones can mute it while they play. */
 let activeStream: MediaStream | null = null;
+export function isMicActive() { return activeStream !== null; }
 export function muteMic(muted: boolean) { activeStream?.getAudioTracks().forEach((t) => { t.enabled = !muted; }); }
 
-export interface MicHandle { stop: () => void; sampleRate: number; method: "worklet" | "scriptprocessor" }
-
 export async function startMic(): Promise<MicHandle> {
+  // Ask iOS for a recording session that keeps the loudspeaker, before the hardware route is decided.
+  setAudioSession("play-and-record");
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
   });
   activeStream = stream;
-  // Ask iOS for a session that keeps the loudspeaker while recording (Safari 17+).
-  try { const s = (navigator as Navigator & { audioSession?: { type: string } }).audioSession; if (s) s.type = "play-and-record"; } catch {}
   const ctx = await resumeAudio();
   const source = ctx.createMediaStreamSource(stream);
   resetLive();
 
+  const handle: MicHandle = { stop: () => {}, sampleRate: ctx.sampleRate, method: "worklet" };
+  const track = stream.getAudioTracks()[0];
+  track.addEventListener("ended", () => handle.onLost?.("ended"));
+  track.addEventListener("mute", () => handle.onLost?.("muted"));
+  const finish = () => { stream.getTracks().forEach((t) => t.stop()); activeStream = null; setAudioSession("playback"); };
+
   // Preferred: AudioWorklet (runs off the main thread, not deprecated, works on iOS 14.5+).
   if (ctx.audioWorklet) {
     try {
-      await ctx.audioWorklet.addModule("/workers/mic-processor.js?v=1");
+      await ctx.audioWorklet.addModule(`/workers/mic-processor.js?v=${WORKLET_VERSION}`);
       const node = new AudioWorkletNode(ctx, "mic-processor", { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 });
       node.port.onmessage = (e: MessageEvent<Float32Array>) => sendLiveFrame(e.data, ctx.sampleRate);
       const sink = ctx.createGain(); sink.gain.value = 0;
       source.connect(node); node.connect(sink); sink.connect(ctx.destination);
-      return {
-        sampleRate: ctx.sampleRate, method: "worklet",
-        stop: () => { node.port.onmessage = null; node.disconnect(); source.disconnect(); sink.disconnect(); stream.getTracks().forEach((t) => t.stop()); activeStream = null; },
-      };
-    } catch { /* fall through to ScriptProcessor */ }
+      handle.stop = () => { node.port.postMessage("stop"); node.port.onmessage = null; node.disconnect(); source.disconnect(); sink.disconnect(); finish(); };
+      return handle;
+    } catch (e) { console.warn("AudioWorklet unavailable, using ScriptProcessor", e); }
   }
 
   const proc = ctx.createScriptProcessor(FRAME, 1, 1);
   proc.onaudioprocess = (e) => sendLiveFrame(new Float32Array(e.inputBuffer.getChannelData(0)), ctx.sampleRate);
   const sink = ctx.createGain(); sink.gain.value = 0;
   source.connect(proc); proc.connect(sink); sink.connect(ctx.destination);
-  return {
-    sampleRate: ctx.sampleRate, method: "scriptprocessor",
-    stop: () => { proc.onaudioprocess = null; proc.disconnect(); source.disconnect(); sink.disconnect(); stream.getTracks().forEach((t) => t.stop()); activeStream = null; },
-  };
+  handle.method = "scriptprocessor";
+  handle.stop = () => { proc.onaudioprocess = null; proc.disconnect(); source.disconnect(); sink.disconnect(); finish(); };
+  return handle;
 }
 
 export function pitchToNote(freq: number): { name: string; octave: number; cents: number } | null {

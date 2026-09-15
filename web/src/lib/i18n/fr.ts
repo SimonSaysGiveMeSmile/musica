@@ -37,6 +37,7 @@ export const fr: Record<Key, string> = {
   "sheet.autoSynced": "Synchronisé automatiquement sur l'audio ({n} s)",
   "tuner.noAudio": "Aucun son n'atteint le micro. Vérifiez le bouton silencieux et que Musica est autorisée à utiliser le micro dans les Réglages.",
   "tuner.lockedTo": "Verrouillé : {note}", "tuner.farOff": "J'entends {heard}, verrouillé sur {target}", "tuner.stringTile": "{note} : jouer et verrouiller cette corde", "tuner.playing": "Lecture de {note}",
+  "live.micLost": "Le micro a été interrompu. Touchez Démarrer pour écouter à nouveau.",
   "timeline.hint": "Accords sur la grille de temps · touchez pour sauter", "timeline.beats": "{n} temps", "timeline.confidence": "La barre sous chaque bloc indique la confiance de l'analyse pour cet accord.",
   "gallery.count": "{n} accords dans cette chanson · {instrument}", "gallery.learn": "à apprendre", "gallery.known": "connu",
   "learn.youCanPlay": "Vous savez déjà jouer", "learn.ofChords": "{k} accords sur {n}", "learn.makeEasier": "Simplifier", "learn.best": "meilleur",

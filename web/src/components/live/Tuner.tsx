@@ -24,6 +24,7 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
   const [playing, setPlaying] = useState<number | null>(null);
   const smoother = useRef(new PitchSmoother(5));
   const lastGood = useRef(0);
+  const lastFrame = useRef(0);
 
   // reset per-session counters when listening starts or stops (adjust-state-during-render pattern)
   const [prevListening, setPrevListening] = useState(listening);
@@ -33,7 +34,15 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
   useEffect(() => { smoother.current.reset(); if (!listening) stopReference(); }, [listening]);
   useEffect(() => () => stopReference(), []);
 
+  // if frames stop arriving (interrupted context, ended track) the needle must not freeze on a stale reading
+  useEffect(() => {
+    if (!listening) return;
+    const id = setInterval(() => { if (performance.now() - lastFrame.current > 1200) { setReading(null); setHeld(0); setLevel(0); } }, 400);
+    return () => clearInterval(id);
+  }, [listening]);
+
   useEffect(() => onLive((frame) => {
+    lastFrame.current = performance.now();
     if (referencePlaying()) return; // the mic is muted while our own tone sounds; those frames mean nothing
     setLevel(Math.min(1, frame.rms * 14));
     setSilentFor((n) => (frame.rms < 0.0008 ? n + 1 : 0));

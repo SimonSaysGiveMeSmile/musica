@@ -37,6 +37,7 @@ export const de: Record<Key, string> = {
   "sheet.autoSynced": "Automatisch zum Audio synchronisiert ({n} s)",
   "tuner.noAudio": "Am Mikrofon kommt kein Ton an. Prüfe den Stummschalter und ob Musica in den Einstellungen das Mikrofon nutzen darf.",
   "tuner.lockedTo": "Fixiert: {note}", "tuner.farOff": "Höre {heard}, fixiert auf {target}", "tuner.stringTile": "{note}: Saite anspielen und fixieren", "tuner.playing": "{note} wird gespielt",
+  "live.micLost": "Das Mikrofon wurde unterbrochen. Tippe auf Start, um weiter zuzuhören.",
   "timeline.hint": "Akkorde auf dem Beat-Raster · tippen zum Springen", "timeline.beats": "{n} Beats", "timeline.confidence": "Der Balken unter jedem Block zeigt, wie sicher die Analyse bei diesem Akkord ist.",
   "gallery.count": "{n} Akkorde in diesem Song · {instrument}", "gallery.learn": "lernen", "gallery.known": "bekannt",
   "learn.youCanPlay": "Das kannst du schon", "learn.ofChords": "{k} von {n} Akkorden", "learn.makeEasier": "Einfacher machen", "learn.best": "beste",

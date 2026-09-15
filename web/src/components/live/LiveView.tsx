@@ -46,6 +46,12 @@ export function LiveView() {
   }, [on, mode]);
 
   useEffect(() => { aliveRef.current = true; return () => { aliveRef.current = false; micRef.current?.stop(); micRef.current = null; }; }, []);
+  // going to the background releases the microphone (privacy, battery); the user taps Start again on return
+  useEffect(() => {
+    const onVis = () => { if (document.hidden && micRef.current) { micRef.current.stop(); micRef.current = null; setOn(false); setFrame(null); setStable(null); } };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
 
   const toggle = async () => {
     if (startingRef.current) return; // a second tap while the permission prompt is up must not open a second pipeline
@@ -55,6 +61,11 @@ export function LiveView() {
     try {
       const handle = await startMic();
       if (!aliveRef.current) { handle.stop(); return; } // navigated away while the prompt was open
+      handle.onLost = () => { // lock screen, app switch, phone call: iOS takes the mic; say so instead of showing a frozen needle
+        if (micRef.current !== handle) return;
+        handle.stop(); micRef.current = null; setOn(false); setFrame(null); setStable(null);
+        if (aliveRef.current) setErr(t("live.micLost"));
+      };
       micRef.current = handle; setOn(true);
     } catch (e) {
       if (aliveRef.current) setErr((e as Error).name === "NotAllowedError" ? t("live.micDenied") : (e as Error).message);

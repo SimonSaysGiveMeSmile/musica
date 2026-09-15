@@ -42,6 +42,7 @@ export const en = {
   "sheet.autoSynced": "Auto-synced to the audio ({n} s)",
   "tuner.noAudio": "No sound is reaching the microphone. Check the mute switch, and that Musica is allowed to use the mic in Settings.",
   "tuner.lockedTo": "Locked to {note}", "tuner.farOff": "Hearing {heard}, locked to {target}", "tuner.stringTile": "{note}: play and lock this string", "tuner.playing": "Playing {note}",
+  "live.micLost": "The microphone was interrupted. Tap Start to listen again.",
   "timeline.hint": "Chords on the beat grid · tap to jump", "timeline.beats": "{n} beats", "timeline.confidence": "Bar under each block shows how confident the analysis is for that chord.",
   "gallery.count": "{n} chords in this song · {instrument}", "gallery.learn": "learn", "gallery.known": "known",
   // learn
