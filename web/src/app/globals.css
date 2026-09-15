@@ -37,7 +37,7 @@
   /* iOS label hierarchy */
   --label: var(--ivory);
   --label-2: color-mix(in srgb, var(--ivory) 62%, transparent);
-  --label-3: color-mix(in srgb, var(--ivory) 34%, transparent);
+  --label-3: color-mix(in srgb, var(--ivory) 46%, transparent);
   --separator: color-mix(in srgb, var(--ivory) 14%, transparent);
   /* Liquid Glass */
   --lg-fill: rgba(255, 255, 255, 0.07);
@@ -100,6 +100,7 @@
   --ivory: #1c1814;
   --ivory-2: #4a423a;
   --ivory-3: #7c7263;
+  --label-3: color-mix(in srgb, #1c1814 56%, transparent);
   --gold: var(--a-l);
   --gold-hi: var(--a-hi-l);
   --gold-lo: var(--a-lo-l);
@@ -128,6 +129,7 @@
     --ivory: #1c1814;
     --ivory-2: #4a423a;
     --ivory-3: #7c7263;
+    --label-3: color-mix(in srgb, #1c1814 56%, transparent);
     --gold: var(--a-l);
     --gold-hi: var(--a-hi-l);
     --gold-lo: var(--a-lo-l);

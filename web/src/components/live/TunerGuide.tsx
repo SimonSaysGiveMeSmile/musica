@@ -1,11 +1,11 @@
 "use client";
-import { midiName } from "@/lib/audio/tuning";
+import { midiName, splitNote } from "@/lib/audio/tuning";
 import type { TuningString } from "@/lib/audio/tuning";
 
 /** Headstock with tappable tuning pegs. 3+3 for guitar, 2+2 for ukulele: the left pegs carry the low
  *  strings from the nut upward, the right pegs the high strings, as on the instrument. */
-export function HeadstockGuide({ strings, active, locked, sounding, inTune, onTap }: {
-  strings: TuningString[]; active: number | null; locked: number | null; sounding: number | null; inTune: boolean; onTap: (i: number) => void;
+export function HeadstockGuide({ strings, active, locked, sounding, inTune, onTap, tileLabel }: {
+  strings: TuningString[]; active: number | null; locked: number | null; sounding: number | null; inTune: boolean; onTap: (i: number) => void; tileLabel?: (label: string) => string;
 }) {
   const n = strings.length, perSide = Math.ceil(n / 2);
   const W = 320, H = 150;
@@ -42,14 +42,14 @@ export function HeadstockGuide({ strings, active, locked, sounding, inTune, onTa
         const isActive = active === i, isLocked = locked === i, hot = isActive || sounding === s.midi;
         const labelX = p.side === "L" ? p.x - 26 : p.x + 26;
         return (
-          <g key={s.label} onClick={() => onTap(i)} className="cursor-pointer" role="button" aria-pressed={isLocked} aria-label={s.label}>
+          <g key={s.label} onClick={() => onTap(i)} className="cursor-pointer" role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onTap(i); } }} aria-pressed={isLocked} aria-label={tileLabel ? tileLabel(s.label) : s.label}>
             {/* generous invisible hit area */}
             <circle cx={p.x} cy={p.y} r={24} fill="transparent" />
             {/* peg button: a lacquered knob, gold when it is the string in play */}
             <circle cx={p.x} cy={p.y} r={14} fill={hot ? "var(--gold)" : "var(--lacquer-3)"} stroke={isLocked ? "var(--gold)" : "rgba(255,255,255,0.14)"} strokeWidth={isLocked ? 2 : 1} />
             <circle cx={p.x} cy={p.y} r={5} fill={hot ? "var(--on-accent)" : "var(--ivory-3)"} opacity={0.9} />
             <text x={labelX} y={p.y + 5} textAnchor="middle" fontSize={14} fontWeight={600} fill={hot ? "var(--gold)" : "var(--ivory)"} fontFamily="var(--font-sf-rounded)" style={{ pointerEvents: "none" }}>
-              {s.label.replace(/\d+$/, "")}<tspan fontSize={9} fill="var(--label-2)" dy={1}>{s.label.match(/\d+$/)?.[0]}</tspan>
+              {splitNote(s.label).letter}<tspan fontSize={10} dy={-4}>{splitNote(s.label).accidental}</tspan><tspan fontSize={9} fill="var(--label-2)" dy={5}>{splitNote(s.label).octave}</tspan>
             </text>
           </g>
         );

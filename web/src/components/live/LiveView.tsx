@@ -26,8 +26,14 @@ export function LiveView() {
   const [stable, setStable] = useState<string | null>(null);
   const micRef = useRef<MicHandle | null>(null);
   const histRef = useRef<string[]>([]);
+  const aliveRef = useRef(true);
+  const startingRef = useRef(false);
+  const [starting, setStarting] = useState(false);
 
-  useEffect(() => onLive((f) => {
+  useEffect(() => {
+    if (!on || mode !== "chords") return; // the Tuner has its own subscription; nothing here renders otherwise
+    histRef.current = [];
+    return onLive((f) => {
     setFrame(f);
     const h = histRef.current;
     h.push(f.chord); if (h.length > 6) h.shift();
@@ -36,22 +42,30 @@ export function LiveView() {
     let best: string | null = null, n = 0;
     for (const [c, k] of counts) if (k > n) { best = c; n = k; }
     setStable(n >= 4 && best !== "N" ? best : null);
-  }), []);
+    });
+  }, [on, mode]);
 
-  useEffect(() => () => { micRef.current?.stop(); }, []);
+  useEffect(() => { aliveRef.current = true; return () => { aliveRef.current = false; micRef.current?.stop(); micRef.current = null; }; }, []);
 
   const toggle = async () => {
+    if (startingRef.current) return; // a second tap while the permission prompt is up must not open a second pipeline
     if (on) { micRef.current?.stop(); micRef.current = null; setOn(false); setFrame(null); setStable(null); histRef.current = []; return; }
     setErr(null);
-    try { micRef.current = await startMic(); setOn(true); }
-    catch (e) { setErr((e as Error).name === "NotAllowedError" ? t("live.micDenied") : (e as Error).message); }
+    startingRef.current = true; setStarting(true);
+    try {
+      const handle = await startMic();
+      if (!aliveRef.current) { handle.stop(); return; } // navigated away while the prompt was open
+      micRef.current = handle; setOn(true);
+    } catch (e) {
+      if (aliveRef.current) setErr((e as Error).name === "NotAllowedError" ? t("live.micDenied") : (e as Error).message);
+    } finally { startingRef.current = false; if (aliveRef.current) setStarting(false); }
   };
 
   const note = frame && frame.pitchConfidence > 0.6 && frame.rms > 0.005 ? pitchToNote(frame.pitch) : null;
   const level = Math.min(1, (frame?.rms ?? 0) * 12);
 
   const micButton = (
-    <button onClick={toggle} className={`press w-full h-[52px] rounded-full ios-headline flex items-center justify-center gap-2 ${on ? "glass text-felt-hi pulse-gold" : "gold-fill"}`}>
+    <button onClick={toggle} disabled={starting} aria-busy={starting} className={`press w-full h-[52px] rounded-full ios-headline flex items-center justify-center gap-2 disabled:opacity-60 ${on ? "glass text-felt-hi pulse-gold" : "gold-fill"}`}>
       <IconLive /> {on ? t("live.stop") : t("live.start")}
     </button>
   );

@@ -36,6 +36,7 @@ export const zh: Record<Key, string> = {
   "install.title": "把 Musica 添加到主屏幕", "install.subtitle": "全屏打开、离线可用、没有浏览器栏。", "install.show": "查看步骤", "install.later": "暂不", "install.meRow": "添加到主屏幕", "install.installed": "已作为应用安装", "install.ios1": "点按 Safari 工具栏中的“分享”按钮。", "install.ios2": "向下滑动，点按“添加到主屏幕”。", "install.ios3": "点按右上角的“添加”。", "install.android1": "点按 Chrome 的 ⋮ 菜单。", "install.android2": "点按“添加到主屏幕”，然后点按“安装”。", "install.wechat": "微信内无法安装应用。请先点按右上角的 ··· 并选择“在 Safari 中打开”，再按以下步骤操作。", "install.desktop": "在 iPhone 上用 Safari 打开 musicaa.site，然后按以下步骤操作。",
   "sheet.autoSynced": "已根据音频自动同步（{n} 秒）",
   "tuner.noAudio": "麦克风没有收到声音。请检查静音开关，并在“设置”中允许 Musica 使用麦克风。",
+  "tuner.lockedTo": "已锁定 {note} · 再点弦钮可解除", "tuner.farOff": "听到的是 {heard}，已锁定 {target}", "tuner.stringTile": "{note}：试听并锁定这根弦", "tuner.playing": "正在播放 {note}",
   "timeline.hint": "节拍网格上的和弦 · 点按跳转", "timeline.beats": "{n} 拍", "timeline.confidence": "每个色块下方的横条表示该和弦的分析置信度。",
   "gallery.count": "这首歌有 {n} 个和弦 · {instrument}", "gallery.learn": "待学", "gallery.known": "已会",
   "learn.youCanPlay": "你已经会弹", "learn.ofChords": "已会 {k} / {n} 个和弦", "learn.makeEasier": "让它更简单", "learn.best": "最佳",

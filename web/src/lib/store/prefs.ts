@@ -24,6 +24,8 @@ export interface Prefs {
   theme: Theme;
   accent: Accent;
   language: "auto" | "en" | "zh" | "de" | "fr" | "es" | "az" | "ru";
+  a4: number;                                  // tuner reference pitch
+  tuning: Partial<Record<Instrument, string>>; // chosen tuning id per instrument
 }
 
 const KEY = "musica.prefs.v1";
@@ -35,6 +37,8 @@ const DEFAULTS: Prefs = {
   theme: "system",
   accent: "gold",
   language: "auto",
+  a4: 440,
+  tuning: {},
 };
 
 /** Push theme + accent onto <html>. The inline script in layout.tsx does the same before first paint. */

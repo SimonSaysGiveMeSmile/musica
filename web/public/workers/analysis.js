@@ -1,10 +1,12 @@
 /* Musica analysis worker — Essentia.js (WASM). Plain JS on purpose: no bundler involvement. */
 /* global importScripts, EssentiaWASM, Essentia */
-importScripts("/essentia/essentia-wasm.web.js?v=6", "/essentia/essentia.js-core.umd.min.js?v=6");
+/* The version comes from this worker's own URL (client.ts ANALYSIS_VERSION), and is applied to every essentia file. */
+const V = (new URL(self.location.href).searchParams.get("v")) || "0";
+importScripts(`/essentia/essentia-wasm.web.js?v=${V}`, `/essentia/essentia.js-core.umd.min.js?v=${V}`);
 
 let essentia = null;
 let wasm = null;
-const ready = EssentiaWASM({ locateFile: (p) => "/essentia/" + p }).then((m) => {
+const ready = EssentiaWASM({ locateFile: (p) => `/essentia/${p}?v=${V}` }).then((m) => {
   wasm = m;
   essentia = new Essentia(m);
   postMessage({ type: "ready", version: essentia.version });
@@ -194,42 +196,44 @@ function analyze(id, audio, sr) {
 const live = { hpcps: [], max: 12, sr: 48000 };
 
 function liveFrame(frame, sr) {
-  const vec = essentia.arrayToVector(frame);
-  const w = essentia.Windowing(vec, true, frame.length, "hann");
-  const sp = essentia.Spectrum(w.frame, frame.length);
-  const pk = essentia.SpectralPeaks(sp.spectrum, 0, 3500, 100, 60, "frequency", sr);
-  const h = essentia.HPCP(pk.frequencies, pk.magnitudes, true, 500, 0, 3500, false, 60, true, "unitMax", 440, sr, 12, "squaredCosine", 1);
-  // time-domain YIN: reliable down to the low E of a guitar (the FFT variant loses everything below ~100 Hz)
-  const pitch = essentia.PitchYin(vec, frame.length, false, 2500, 40, sr, 0.15);
-  // rms for silence gating
-  let rms = 0; for (let i = 0; i < frame.length; i++) rms += frame[i] * frame[i];
-  rms = Math.sqrt(rms / frame.length);
+  if (!frame || frame.length !== FRAME) return; // the worklet always sends 4096; anything else is not ours
+  const owned = [];
+  const own = (v) => { owned.push(v); return v; };
+  try {
+    const vec = own(essentia.arrayToVector(frame));
+    const w = essentia.Windowing(vec, true, FRAME, "hann"); own(w.frame);
+    const sp = essentia.Spectrum(w.frame, FRAME); own(sp.spectrum);
+    const pk = essentia.SpectralPeaks(sp.spectrum, 0, 3500, 100, 60, "frequency", sr); own(pk.frequencies); own(pk.magnitudes);
+    const h = essentia.HPCP(pk.frequencies, pk.magnitudes, true, 500, 0, 3500, false, 60, true, "unitMax", 440, sr, 12, "squaredCosine", 1); own(h.hpcp);
+    // time-domain YIN with interpolation: sub-sample accuracy, reliable down to the low E of a guitar
+    const pitch = essentia.PitchYin(vec, FRAME, true, 2500, 40, sr, 0.15);
+    let rms = 0; for (let i = 0; i < frame.length; i++) rms += frame[i] * frame[i];
+    rms = Math.sqrt(rms / frame.length);
 
-  const hpcpArr = essentia.vectorToArray(h.hpcp);
-  live.hpcps.push(hpcpArr);
-  if (live.hpcps.length > live.max) live.hpcps.shift();
+    const QUIET = 0.004;
+    const hpcpArr = essentia.vectorToArray(h.hpcp);
+    // silence normalises to a full-scale chroma (unitMax), so only speaking frames enter the chord window
+    if (rms > QUIET) { live.hpcps.push(hpcpArr); if (live.hpcps.length > live.max) live.hpcps.shift(); }
 
-  let chord = "N", strength = 0;
-  if (rms > 0.004 && live.hpcps.length >= 3) {
-    const vv = new wasm.VectorVectorFloat();
-    const tmp = [];
-    for (const a of live.hpcps) { const v = essentia.arrayToVector(a); vv.push_back(v); tmp.push(v); }
-    const cd = essentia.ChordsDetection(vv, frame.length, sr, (live.hpcps.length * frame.length) / sr);
-    const n = cd.chords.size();
-    chord = cd.chords.get(n - 1);
-    strength = cd.strength.get(n - 1);
-    vv.delete(); cd.chords.delete(); cd.strength.delete();
-    for (const v of tmp) v.delete();
+    let chord = "N", strength = 0;
+    if (rms > QUIET && live.hpcps.length >= 3) {
+      const vv = own(new wasm.VectorVectorFloat());
+      for (const a of live.hpcps) vv.push_back(own(essentia.arrayToVector(a)));
+      const cd = essentia.ChordsDetection(vv, FRAME, sr, (live.hpcps.length * FRAME) / sr); own(cd.chords); own(cd.strength);
+      const n = cd.chords.size();
+      chord = cd.chords.get(n - 1);
+      strength = cd.strength.get(n - 1);
+    }
+    postMessage({
+      type: "live",
+      chord, strength,
+      pitch: pitch.pitch, pitchConfidence: pitch.pitchConfidence,
+      rms,
+      hpcp: rms > QUIET ? Array.from({ length: 12 }, (_, k) => hpcpArr[(k + 3) % 12]) : new Array(12).fill(0), // C-based for display
+    });
+  } finally {
+    for (const v of owned) { try { v.delete(); } catch (e) { /* already freed */ } }
   }
-  vec.delete(); w.frame.delete(); sp.spectrum.delete(); pk.frequencies.delete(); pk.magnitudes.delete(); h.hpcp.delete();
-
-  postMessage({
-    type: "live",
-    chord, strength,
-    pitch: pitch.pitch, pitchConfidence: pitch.pitchConfidence,
-    rms,
-    hpcp: Array.from({ length: 12 }, (_, k) => hpcpArr[(k + 3) % 12]), // C-based for display
-  });
 }
 
 onmessage = async (e) => {

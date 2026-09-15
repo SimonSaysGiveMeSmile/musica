@@ -1,35 +1,40 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionValueEvent, useSpring } from "motion/react";
-import { HeadstockGuide, KeyboardGuide } from "./TunerGuide";
 import { onLive } from "@/lib/analysis/client";
 import type { Instrument } from "@/lib/theory/coverage";
-import { PitchSmoother, TUNINGS, playReference, readPitch, type Reading } from "@/lib/audio/tuning";
+import { PitchSmoother, TUNINGS, midiName, playReference, readPitch, referencePlaying, splitNote, stopReference, type Reading } from "@/lib/audio/tuning";
+import { setPrefs, usePrefs } from "@/lib/store/prefs";
 import { useT } from "@/lib/i18n";
+import { HeadstockGuide, KeyboardGuide } from "./TunerGuide";
 
-const A4_KEY = "musica.tuner.a4";
-
-/** One card: what you hear, how far off it is, and the strings to tune. */
+/** One card: the note you are playing, how far off it sits, and the instrument to tune. */
 export function Tuner({ listening, instrument }: { listening: boolean; instrument: Instrument }) {
   const { t } = useT();
+  const prefs = usePrefs();
+  const a4 = prefs.a4;
   const tunings = TUNINGS[instrument];
   const tuningName = (tn: (typeof tunings)[number]) => (tn.id === "dadgad" ? "DADGAD" : t(tn.name));
-  const [tuningId, setTuningId] = useState(tunings[0].id);
-  const tuning = tunings.find((x) => x.id === tuningId) ?? tunings[0];
+  const tuning = tunings.find((x) => x.id === prefs.tuning[instrument]) ?? tunings[0];
   const [locked, setLocked] = useState<number | null>(null);
-  const [a4, setA4] = useState(() => { try { const v = Number(localStorage.getItem(A4_KEY)); return v >= 415 && v <= 466 ? v : 440; } catch { return 440; } });
   const [rawReading, setReading] = useState<Reading | null>(null);
-  const reading = listening ? rawReading : null;
   const [held, setHeld] = useState(0);
   const [level, setLevel] = useState(0);
   const [silentFor, setSilentFor] = useState(0);
-  const [playing, setPlaying] = useState<number | null>(null); // midi of the tone sounding now
+  const [playing, setPlaying] = useState<number | null>(null);
   const smoother = useRef(new PitchSmoother(5));
   const lastGood = useRef(0);
 
-  useEffect(() => { try { localStorage.setItem(A4_KEY, String(a4)); } catch {} }, [a4]);
+  // reset per-session counters when listening starts or stops (adjust-state-during-render pattern)
+  const [prevListening, setPrevListening] = useState(listening);
+  if (prevListening !== listening) { setPrevListening(listening); setReading(null); setHeld(0); setSilentFor(0); setLevel(0); }
+  const reading = listening ? rawReading : null;
+
+  useEffect(() => { smoother.current.reset(); if (!listening) stopReference(); }, [listening]);
+  useEffect(() => () => stopReference(), []);
 
   useEffect(() => onLive((frame) => {
+    if (referencePlaying()) return; // the mic is muted while our own tone sounds; those frames mean nothing
     setLevel(Math.min(1, frame.rms * 14));
     setSilentFor((n) => (frame.rms < 0.0008 ? n + 1 : 0));
     const good = frame.pitchConfidence > 0.5 && frame.rms > 0.0015 && frame.pitch > 30;
@@ -45,16 +50,27 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
   }), [tuning, a4, locked]);
 
   const play = async (midi: number) => {
-    if (playing !== null) return;
     setPlaying(midi);
-    try { await playReference(midi, a4); } finally { setPlaying(null); }
+    try { await playReference(midi, a4); } finally { setPlaying((p) => (p === midi ? null : p)); }
   };
+  const tapString = (i: number) => { setLocked(locked === i ? null : i); play(tuning.strings[i].midi); };
 
+  const farOff = !!reading && Math.abs(reading.cents) > 50;
   const cents = reading ? Math.max(-50, Math.min(50, reading.cents)) : 0;
-  const inTune = !!reading && Math.abs(reading.cents) <= 5;
+  const inTune = !!reading && Math.abs(Math.round(reading.cents)) <= 5;
   const tone = useMemo(() => (inTune ? "var(--gold)" : Math.abs(cents) < 15 ? "var(--ivory)" : "var(--felt-hi)"), [inTune, cents]);
   const chromatic = tuning.strings.length === 0;
-  const status = !listening ? t("live.tapMic") : reading ? (inTune ? t("tuner.inTune") : reading.cents < 0 ? t("tuner.tuneUp") : t("tuner.tuneDown")) : silentFor >= 30 ? t("tuner.noAudio") : t("tuner.playNote");
+  const note = reading ? splitNote(reading.targetLabel) : null;
+
+  // one short line under the note; long diagnostics live in their own reserved slot
+  const guidance = playing !== null ? t("tuner.playing", { note: midiName(playing) })
+    : !listening ? t("live.tapMic")
+    : farOff ? t("tuner.farOff", { heard: midiName(Math.round(reading!.midi)), target: reading!.targetLabel })
+    : reading ? (inTune ? t("tuner.inTune") : reading.cents < 0 ? t("tuner.tuneUp") : t("tuner.tuneDown"))
+    : t("tuner.playNote");
+  const readout = reading && !farOff ? `${reading.cents > 0 ? "+" : ""}${Math.round(reading.cents)}¢ · ${reading.freq.toFixed(1)} Hz · ` : "";
+  const noAudio = listening && playing === null && silentFor >= 30;
+  const lockedLabel = locked !== null && !chromatic ? tuning.strings[locked].label : null;
 
   return (
     <div className="inset-group rounded-[30px] px-5 pt-4 pb-4 relative overflow-hidden flex flex-col">
@@ -62,59 +78,72 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
 
       {/* the note */}
       <div className="relative text-center">
-        <div className="flex items-baseline justify-center gap-1">
-          <motion.span key={reading?.targetLabel ?? "-"} initial={{ opacity: 0.4, y: 4 }} animate={{ opacity: 1, y: 0 }} className="chordname text-[68px] leading-none" style={{ color: reading ? tone : "var(--label-3)" }}>
-            {reading ? reading.targetLabel.replace(/\d+$/, "") : "·"}
+        <div className="flex items-start justify-center gap-0.5 h-[72px]">
+          <motion.span key={chromatic ? reading?.targetLabel ?? "-" : reading?.stringIndex ?? "-"} initial={{ opacity: 0.4, y: 4 }} animate={{ opacity: 1, y: 0 }}
+            className="chordname text-[68px] leading-none" style={{ color: reading ? tone : "var(--label-3)" }}>
+            {note ? note.letter : "·"}
           </motion.span>
-          <span className="ios-title2 label-2">{reading ? reading.targetLabel.match(/\d+$/)?.[0] : ""}</span>
+          {note && (
+            <span className="flex flex-col items-start pt-1 leading-none">
+              <span className="chordname text-[26px]" style={{ color: tone }}>{note.accidental}</span>
+              <span className="ios-footnote label-2 mt-auto">{note.octave}</span>
+            </span>
+          )}
         </div>
-        <div className="ios-subhead mt-1 tabular-nums" style={{ color: reading ? tone : "var(--label-2)" }}>
-          {reading ? `${reading.cents > 0 ? "+" : ""}${Math.round(reading.cents)}¢ · ${reading.freq.toFixed(1)} Hz` : status}
+        <div className="ios-subhead h-5 truncate tabular-nums" aria-live="polite" style={{ color: reading && !farOff ? tone : "var(--label-2)" }}>
+          {readout}{guidance}
         </div>
       </div>
 
-      {/* the dial: a VU-meter arc, ±50 cents across 160°, needle sprung from the base */}
+      {/* the dial */}
       <div className="relative mt-1 mx-auto w-full max-w-[300px]">
-        <Dial cents={cents} live={!!reading} inTune={inTune} tone={tone} />
+        <Dial cents={cents} live={!!reading && !farOff} inTune={inTune} tone={tone} />
         <div className="absolute inset-x-0 bottom-0 flex justify-between ios-caption2 label-3 px-1"><span>♭ 50</span><span>50 ♯</span></div>
       </div>
 
-      {/* input level */}
+      {/* level + reserved status slot (never shifts the layout) */}
       <div className="relative mt-2 h-[3px] rounded-full tint-2 overflow-hidden"><div className="h-full" style={{ width: `${(listening ? level : 0) * 100}%`, background: "var(--gold)", transition: "width 80ms" }} /></div>
-      {listening && held >= 8 && <div className="relative mt-2 text-center ios-footnote text-gold">{t("tuner.held")}</div>}
+      <div className="relative h-[22px] mt-1 text-center ios-footnote" aria-live="polite">
+        <span className={`transition-opacity ${listening && held >= 8 ? "opacity-100 text-gold" : noAudio ? "opacity-100 text-felt-hi" : "opacity-0"}`}>
+          {noAudio ? t("tuner.noAudio") : t("tuner.held")}
+        </span>
+      </div>
 
       {/* the instrument: pegs and keys are the buttons */}
-      <div className="relative mt-3">
-        <div className="flex items-center justify-between mb-1">
-          <span className="eyebrow">{chromatic ? t("tuner.chromatic") : t("tuner.strings")}</span>
+      <div className="relative mt-1">
+        <div className="flex items-center justify-between mb-1 gap-3">
+          <span className="eyebrow truncate">{lockedLabel ? t("tuner.lockedTo", { note: lockedLabel }) : chromatic ? t("tuner.chromatic") : t("tuner.strings")}</span>
           {!chromatic && tunings.length > 1 && (
-            <select value={tuningId} onChange={(e) => { setTuningId(e.target.value); setLocked(null); }} className="glass rounded-full h-8 px-3 ios-footnote text-ivory bg-transparent outline-none" aria-label={t("tuner.tuning")}>
-              {tunings.map((tn) => <option key={tn.id} value={tn.id} className="text-black">{tuningName(tn)}</option>)}
-            </select>
+            <span className="relative shrink-0">
+              <select value={tuning.id} onChange={(e) => { setPrefs({ tuning: { ...prefs.tuning, [instrument]: e.target.value } }); setLocked(null); }}
+                className="glass rounded-full h-9 pl-3 pr-8 ios-footnote text-ivory appearance-none outline-none" aria-label={t("tuner.tuning")}>
+                {tunings.map((tn) => <option key={tn.id} value={tn.id}>{tuningName(tn)}</option>)}
+              </select>
+              <span aria-hidden className="absolute right-3 top-1/2 -translate-y-1/2 label-2 text-[10px]">▾</span>
+            </span>
           )}
         </div>
         {!chromatic ? (
-          <HeadstockGuide strings={tuning.strings} active={reading?.stringIndex ?? null} locked={locked} sounding={playing} inTune={inTune}
-            onTap={(i) => { setLocked(locked === i ? null : i); play(tuning.strings[i].midi); }} />
+          <HeadstockGuide strings={tuning.strings} active={reading?.stringIndex ?? null} locked={locked} sounding={playing} inTune={inTune} onTap={tapString}
+            tileLabel={(label) => t("tuner.stringTile", { note: label })} />
         ) : (
           <KeyboardGuide activeMidi={reading ? reading.nearestMidi : null} sounding={playing} inTune={inTune} onTap={(m) => play(m)} />
         )}
       </div>
 
       {/* reference pitch, one quiet line */}
-      <div className="relative mt-3 flex items-center justify-between">
-        <span className="ios-footnote label-2">{t("tuner.reference")}</span>
-        <div className="flex items-center gap-1">
-          <button onClick={() => setA4((v) => Math.max(415, v - 1))} className="press circle-btn !w-8 !h-8 glass text-ivory" aria-label={t("tuner.lower")}>−</button>
+      <div className="relative mt-3 flex items-center justify-between gap-3">
+        <span className="ios-footnote label-2 whitespace-nowrap">{t("tuner.reference")}</span>
+        <div className="flex items-center shrink-0">
+          <button onClick={() => setPrefs({ a4: Math.max(415, a4 - 1) })} className="press circle-btn text-ivory ios-title3" aria-label={t("tuner.lower")}>−</button>
           <span className="chordname ios-subhead tabular-nums w-16 text-center text-gold">{a4} Hz</span>
-          <button onClick={() => setA4((v) => Math.min(466, v + 1))} className="press circle-btn !w-8 !h-8 glass text-ivory" aria-label={t("tuner.raise")}>+</button>
-          {a4 !== 440 && <button onClick={() => setA4(440)} className="press ios-footnote text-gold ml-1">{t("common.reset")}</button>}
+          <button onClick={() => setPrefs({ a4: Math.min(466, a4 + 1) })} className="press circle-btn text-ivory ios-title3" aria-label={t("tuner.raise")}>+</button>
+          <button onClick={() => setPrefs({ a4: 440 })} disabled={a4 === 440} className={`press circle-btn text-ivory transition-opacity ${a4 === 440 ? "opacity-25" : "opacity-100 text-gold"}`} aria-label={t("common.reset")}>↺</button>
         </div>
       </div>
     </div>
   );
 }
-
 
 /** Arc gauge. Angles run from -80° (flat) to +80° (sharp); 0 is straight up. The needle is rotated with an
  *  SVG transform about the pivot point itself, which every browser honours (CSS transform-origin on SVG does not). */

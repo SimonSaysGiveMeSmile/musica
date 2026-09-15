@@ -27,6 +27,12 @@ const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 export function midiToFreq(midi: number, a4 = 440) { return a4 * Math.pow(2, (midi - 69) / 12); }
 export function freqToMidi(freq: number, a4 = 440) { return 69 + 12 * Math.log2(freq / a4); }
 export function midiName(midi: number) { const r = Math.round(midi); return `${NAMES[((r % 12) + 12) % 12]}${Math.floor(r / 12) - 1}`; }
+/** "Eb2" → { letter: "E", accidental: "♭", octave: "2" } for typographic display. */
+export function splitNote(label: string) {
+  const m = label.match(/^([A-G])([#b]?)(\d*)$/);
+  if (!m) return { letter: label, accidental: "", octave: "" };
+  return { letter: m[1], accidental: m[2] === "#" ? "♯" : m[2] === "b" ? "♭" : "", octave: m[3] };
+}
 
 export interface Reading {
   freq: number;
@@ -52,9 +58,7 @@ export function readPitch(freq: number, tuning: Tuning, a4: number, lockedString
     idx = best;
   }
   const target = tuning.strings[idx];
-  let cents = (midi - target.midi) * 100;
-  // If a locked string is more than an octave off, still show but clamp the needle.
-  cents = Math.max(-50, Math.min(50, cents)) === cents ? cents : cents;
+  const cents = (midi - target.midi) * 100; // unclamped: the UI clamps the needle and reports "far off" beyond ±50
   return { freq, midi, nearestMidi: target.midi, cents, targetLabel: target.label, stringIndex: idx };
 }
 
@@ -71,17 +75,37 @@ export class PitchSmoother {
   reset() { this.buf = []; }
 }
 
-/** Play a short reference tone for a target note. Resolves when the tone has finished.
- *  Must be called from a user gesture (a tap) so the browser lets audio start. */
+/* One reference tone at a time, process-wide (the Tuner may remount while a tone sounds). */
+let current: { gain: GainNode; oscs: OscillatorNode[]; done: Promise<void>; resolve: () => void } | null = null;
+
+/** Fade out and drop the tone that is sounding now, if any. */
+export function stopReference() {
+  const c = current;
+  if (!c) return;
+  current = null;
+  try {
+    const ctx = c.gain.context;
+    c.gain.gain.cancelScheduledValues(ctx.currentTime);
+    c.gain.gain.setValueAtTime(Math.max(0.0001, c.gain.gain.value), ctx.currentTime);
+    c.gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
+    c.oscs.forEach((o) => o.stop(ctx.currentTime + 0.06));
+  } catch {}
+  muteMic(false);
+  c.resolve();
+}
+
+/** Play a short reference tone for a target note. Any tone already sounding is replaced.
+ *  Resolves when the tone ends or is replaced. Call from a user gesture so the browser lets audio start. */
 export async function playReference(midi: number, a4 = 440, seconds = 1.6): Promise<void> {
+  stopReference();
   const ctx = await resumeAudio();
   const f = midiToFreq(midi, a4);
   const t0 = ctx.currentTime + 0.03;
-  const g = ctx.createGain();
-  g.gain.setValueAtTime(0.0001, t0);
-  g.gain.exponentialRampToValueAtTime(0.32, t0 + 0.02);
-  g.gain.exponentialRampToValueAtTime(0.0001, t0 + seconds);
-  g.connect(ctx.destination);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(0.32, t0 + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + seconds);
+  gain.connect(ctx.destination);
   // three partials give a plucked-string feel rather than a raw sine
   const oscs = [1, 2, 3].map((h, i) => {
     const o = ctx.createOscillator();
@@ -89,14 +113,23 @@ export async function playReference(midi: number, a4 = 440, seconds = 1.6): Prom
     o.frequency.value = f * h;
     const pg = ctx.createGain();
     pg.gain.value = [1, 0.35, 0.12][i];
-    o.connect(pg).connect(g);
+    o.connect(pg).connect(gain);
     o.start(t0);
     o.stop(t0 + seconds + 0.05);
     return o;
   });
+  let resolve!: () => void;
+  const done = new Promise<void>((r) => { resolve = r; });
+  const entry = { gain, oscs, done, resolve };
+  current = entry;
   // the tuner must not hear its own tone, and iOS routes output to the earpiece while recording
   muteMic(true);
-  await new Promise<void>((resolve) => { oscs[0].onended = () => resolve(); setTimeout(resolve, (seconds + 0.3) * 1000); });
-  muteMic(false);
-  g.disconnect();
+  const timer = setTimeout(() => { if (current === entry) { current = null; muteMic(false); resolve(); } }, (seconds + 0.25) * 1000);
+  oscs[0].onended = () => { if (current === entry) { current = null; muteMic(false); resolve(); } };
+  await done;
+  clearTimeout(timer);
+  try { gain.disconnect(); } catch {}
 }
+
+/** True while a reference tone is sounding (frames captured then are our own tone, not the player). */
+export function referencePlaying(): boolean { return current !== null; }
