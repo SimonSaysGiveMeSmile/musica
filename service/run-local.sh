@@ -7,7 +7,7 @@ set -e
 cd "$(dirname "$0")"
 [ -d .venv ] || (python3 -m venv .venv && . .venv/bin/activate && pip install -q -r requirements.txt)
 . .venv/bin/activate
-export ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3100,https://musica-mauve-pi.vercel.app}"
+export ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3100,https://musica-mauve-pi.vercel.app,https://www.musicaa.site,https://musicaa.site}"
 uvicorn main:app --port 8787 &
 UV=$!
 trap 'kill $UV' EXIT

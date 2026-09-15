@@ -4,7 +4,7 @@ Any song, in your hands. A mobile-first PWA that turns a YouTube link, Spotify l
 
 Read the product spec in [`docs/PRD.md`](docs/PRD.md).
 
-**Live:** https://musica-mauve-pi.vercel.app (Vercel project `musica`). On a phone, open it in Safari or Chrome, then Share → Add to Home Screen.
+**Live:** https://www.musicaa.site (Vercel project `musica`, also https://musica-mauve-pi.vercel.app). On a phone, open it in Safari or Chrome, then Share → Add to Home Screen.
 
 > The audio service currently runs on the development Mac behind a Cloudflare quick tunnel (`service/run-local.sh`). That URL dies when the Mac sleeps and changes on every restart. Move it to Railway with the steps below, then point `NEXT_PUBLIC_AUDIO_API` at the Railway URL.
 
