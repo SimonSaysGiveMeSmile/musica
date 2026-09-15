@@ -17,14 +17,15 @@ export function plainToLines(plain: string): LyricLine[] {
   return plain.split(/\r?\n/).map((text) => ({ time: -1, text: text.trim() }));
 }
 
-/** English titles use the original direct lookup (one title/artist query). Other languages try
- *  every plausible reading of the title ("Artist - Title", "Title - Artist", 《Title》, script splits). */
+/** English titles use a direct title/artist query; other languages also try every plausible reading of the
+ *  title ("Artist - Title", "Title - Artist", 《Title》, script splits). Every language prefers the lyric
+ *  file whose recording length is closest to this audio, which is what keeps the timing right. */
 export async function fetchLyrics(title: string, artist: string | undefined, duration: number, channel?: string, rawTitle?: string): Promise<Lyrics | null> {
   const titleLang = detectLang(rawTitle ?? title);
   const english = titleLang === "en" || titleLang === "und";
   const cands = english ? [{ title, artist }] : titleVariants(rawTitle ?? title, artist, channel);
   if (!english && !cands.some((c) => c.title === title && (c.artist ?? "") === (artist ?? ""))) cands.unshift({ title, artist });
-  const q = new URLSearchParams({ duration: String(Math.round(duration)), cands: JSON.stringify(cands.slice(0, 8)), strict: english ? "0" : "1" });
+  const q = new URLSearchParams({ duration: String(Math.round(duration)), cands: JSON.stringify(cands.slice(0, 8)), strict: "1", artistCheck: english ? "1" : "0" });
   const res = await fetch(`/api/lyrics?${q}`);
   if (!res.ok) return null;
   const data = await res.json();

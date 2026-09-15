@@ -32,6 +32,7 @@ export const az: Record<Key, string> = {
   "sheet.lyricsIn": "Sözlər: {lang}",
   "sheet.sync": "Sinxron", "sheet.earlier": "Daha erkən", "sheet.later": "Daha gec", "sheet.offset": "{n} san", "sheet.syncHint": "Sözləri musiqi ilə uyğunlaşdırmaq üçün oxunan sətri basılı saxlayın.",
   "sheet.vocalNoLyrics": "Oxunur · söz tapılmadı", "sheet.auto": "Avto", "ingest.vocals": "Səs dinlənilir",
+  "sheet.anchors": "{n} sabitlənmiş sətir", "sheet.anchorHint": "Bu sözlərin vaxtı yoxdur. Mahnı çalınarkən oxunan sətri basılı saxlayıb sabitləyin; sonrakı sətirlər növbəti sabitlənmiş sətrə qədər paylanır.",
   "timeline.hint": "Vuruş şəbəkəsində akkordlar · keçmək üçün toxunun", "timeline.beats": "{n} vuruş", "timeline.confidence": "Hər blokun altındakı zolaq analizin həmin akkorda nə qədər əmin olduğunu göstərir.",
   "gallery.count": "Bu mahnıda {n} akkord · {instrument}", "gallery.learn": "öyrən", "gallery.known": "bilirəm",
   "learn.youCanPlay": "Artıq çala bilirsiniz", "learn.ofChords": "{n} akkorddan {k}", "learn.makeEasier": "Asanlaşdır", "learn.best": "ən yaxşı",

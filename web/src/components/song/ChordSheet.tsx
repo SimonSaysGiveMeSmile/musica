@@ -4,8 +4,8 @@ import type { SheetLine } from "@/lib/lyrics/align";
 import { useT } from "@/lib/i18n";
 import { langTag, type SongLang } from "@/lib/lyrics/lang";
 
-export function ChordSheet({ lines, time, display, onSeek, onChord, known, lang, onSync, playing }: {
-  lines: SheetLine[]; time: number; display: (s: string) => string; onSeek: (t: number) => void; onChord: (c: string) => void; known: Set<string>; lang?: SongLang; onSync?: (lineTime: number) => void; playing?: boolean;
+export function ChordSheet({ lines, time, display, onSeek, onChord, known, lang, onSync, onAnchor, playing }: {
+  lines: SheetLine[]; time: number; display: (s: string) => string; onSeek: (t: number) => void; onChord: (c: string) => void; known: Set<string>; lang?: SongLang; onSync?: (lineTime: number) => void; onAnchor?: (lineIndex: number) => void; playing?: boolean;
 }) {
   const { t } = useT();
   const activeRef = useRef<HTMLDivElement>(null);
@@ -35,7 +35,8 @@ export function ChordSheet({ lines, time, display, onSeek, onChord, known, lang,
             onPointerDown={(e) => {
               pressRef.current.long = false; pressRef.current.x = e.clientX; pressRef.current.y = e.clientY; cancelPress();
               // a long press syncs only while the song is playing; a scroll or any movement cancels it
-              if (onSync && playing) pressRef.current.timer = setTimeout(() => { pressRef.current.timer = null; pressRef.current.long = true; onSync(l.time); }, 600);
+              const act = onSync ?? (onAnchor ? () => onAnchor(lines.slice(0, i).filter((x) => !x.instrumental).length) : undefined);
+              if (act && playing) pressRef.current.timer = setTimeout(() => { pressRef.current.timer = null; pressRef.current.long = true; if (onSync) onSync(l.time); else act(l.time); }, 600);
             }}
             onPointerMove={(e) => { if (Math.abs(e.clientX - pressRef.current.x) > 6 || Math.abs(e.clientY - pressRef.current.y) > 6) cancelPress(); }}
             onPointerUp={cancelPress}

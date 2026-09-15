@@ -32,6 +32,7 @@ export const de: Record<Key, string> = {
   "sheet.lyricsIn": "Text: {lang}",
   "sheet.sync": "Sync", "sheet.earlier": "Früher", "sheet.later": "Später", "sheet.offset": "{n} s", "sheet.syncHint": "Halte eine Zeile gedrückt, während sie gesungen wird, um den Text zur Musik zu synchronisieren.",
   "sheet.vocalNoLyrics": "Gesang · kein Text gefunden", "sheet.auto": "Auto", "ingest.vocals": "Stimme wird gesucht",
+  "sheet.anchors": "{n} fixierte Zeilen", "sheet.anchorHint": "Dieser Text hat keine Zeitangaben. Halte beim Abspielen eine Zeile gedrückt, während sie gesungen wird, um sie zu fixieren; die folgenden Zeilen verteilen sich bis zur nächsten Fixierung.",
   "timeline.hint": "Akkorde auf dem Beat-Raster · tippen zum Springen", "timeline.beats": "{n} Beats", "timeline.confidence": "Der Balken unter jedem Block zeigt, wie sicher die Analyse bei diesem Akkord ist.",
   "gallery.count": "{n} Akkorde in diesem Song · {instrument}", "gallery.learn": "lernen", "gallery.known": "bekannt",
   "learn.youCanPlay": "Das kannst du schon", "learn.ofChords": "{k} von {n} Akkorden", "learn.makeEasier": "Einfacher machen", "learn.best": "beste",

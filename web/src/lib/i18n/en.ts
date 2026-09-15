@@ -37,6 +37,7 @@ export const en = {
   "sheet.lyricsIn": "Lyrics: {lang}",
   "sheet.sync": "Sync", "sheet.earlier": "Earlier", "sheet.later": "Later", "sheet.offset": "{n} s", "sheet.syncHint": "Long-press a line while it is sung to sync the lyrics to the music.",
   "sheet.vocalNoLyrics": "Sung · no lyrics found", "sheet.auto": "Auto", "ingest.vocals": "Listening for the voice",
+  "sheet.anchors": "{n} pinned lines", "sheet.anchorHint": "These lyrics have no timing. While the song plays, long-press a line as it is sung to pin it; the lines after it spread out to the next pin.",
   "timeline.hint": "Chords on the beat grid · tap to jump", "timeline.beats": "{n} beats", "timeline.confidence": "Bar under each block shows how confident the analysis is for that chord.",
   "gallery.count": "{n} chords in this song · {instrument}", "gallery.learn": "learn", "gallery.known": "known",
   // learn

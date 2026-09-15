@@ -19,6 +19,7 @@ import { ChordDiagram, ChordNotes } from "@/components/chords/ChordDiagram";
 import { alignSheet } from "@/lib/lyrics/align";
 import { fetchLyrics, userLyrics } from "@/lib/lyrics/lrclib";
 import { LANG_NAMES } from "@/lib/lyrics/lang";
+import { leadInSeconds } from "@/lib/lyrics/align";
 import { useT } from "@/lib/i18n";
 
 type View = "sheet" | "timeline" | "chords" | "learn";
@@ -68,8 +69,9 @@ export function SongView({ id }: { id: string }) {
   const sheetLines = useMemo(() => {
     if (!analysis) return [];
     const lines = (song?.lyrics?.lines ?? []).map((l) => (l.time >= 0 ? { ...l, time: Math.max(0, l.time + lyricsOffset) } : l));
-    return alignSheet(lines, analysis.chords, analysis.duration, (a, b) => vocalActivityIn(analysis, a, b));
-  }, [analysis, song?.lyrics, lyricsOffset]);
+    const leadIn = leadInSeconds(song?.peaks, analysis.duration);
+    return alignSheet(lines, analysis.chords, analysis.duration, (a, b) => vocalActivityIn(analysis, a, b), song?.lyricAnchors, leadIn);
+  }, [analysis, song?.lyrics, song?.peaks, song?.lyricAnchors, lyricsOffset]);
   const nudge = useCallback((d: number) => update({ lyricsOffset: Math.round(((song?.lyricsOffset ?? 0) + d) * 10) / 10 }), [song?.lyricsOffset, update]);
   /** Align the first sung line with the first detected singing. */
   const autoSync = () => {
@@ -82,6 +84,13 @@ export function SongView({ id }: { id: string }) {
     update({ lyricsOffset: Math.abs(off) <= 12 ? off : 0 });
   };
   const canAutoSync = !!analysis?.vocals && firstVocalOnset(analysis) !== null;
+  /** Unsynced lyrics: long-press pins that line to the current moment; later lines re-spread to the next pin. */
+  const anchorLine = useCallback((lineIndex: number) => {
+    if (!song) return;
+    const next = { ...(song.lyricAnchors ?? {}), [lineIndex]: Math.round(player.time * 10) / 10 };
+    update({ lyricAnchors: next });
+  }, [song, player.time, update]);
+  const anchorCount = Object.keys(song?.lyricAnchors ?? {}).length;
   /** Long-press on a line: make that line start right now. */
   const syncLineToNow = useCallback((originalTime: number) => {
     const off = Math.round((player.time - originalTime) * 10) / 10;
@@ -166,7 +175,17 @@ export function SongView({ id }: { id: string }) {
       <section className="flex-1 px-4 pt-3 pb-[calc(var(--sab)+190px)] lg:px-0 lg:pb-0 lg:min-w-0">
         {view === "sheet" && (
           <>
-            <ChordSheet lines={sheetLines} time={player.time} display={display} onSeek={player.seek} onChord={setOpenChord} known={new Set(prefs.known[instrument])} lang={song.lyrics?.lang} playing={player.playing} onSync={song.lyrics?.synced ? (t) => syncLineToNow(t - lyricsOffset) : undefined} />
+            <ChordSheet lines={sheetLines} time={player.time} display={display} onSeek={player.seek} onChord={setOpenChord} known={new Set(prefs.known[instrument])} lang={song.lyrics?.lang} playing={player.playing} onSync={song.lyrics?.synced ? (t) => syncLineToNow(t - lyricsOffset) : undefined} onAnchor={song.lyrics && !song.lyrics.synced ? anchorLine : undefined} />
+            {song.lyrics && !song.lyrics.synced && (
+              <div className="mt-5 inset-group">
+                <div className="row">
+                  <span className="ios-body flex-1">{t("sheet.sync")}</span>
+                  <span className="ios-footnote label-2 tabular-nums">{t("sheet.anchors", { n: anchorCount })}</span>
+                  {anchorCount > 0 && <button onClick={() => update({ lyricAnchors: {} })} className="press ios-footnote text-gold ml-2">{t("common.reset")}</button>}
+                </div>
+                <div className="row !min-h-0 py-2"><span className="ios-caption label-3">{t("sheet.anchorHint")}</span></div>
+              </div>
+            )}
             {song.lyrics?.synced && (
               <div className="mt-5 inset-group">
                 <div className="row">
