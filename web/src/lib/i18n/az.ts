@@ -29,6 +29,8 @@ export const az: Record<Key, string> = {
   "song.playingNow": "İndi çalınır", "song.knowThisOne": "Bunu bilirəm ✓", "song.markKnown": "Bilirəm kimi işarələ", "song.forgetChord": "Bu akkordu unut",
   "player.now": "İndi", "player.next": "Növbəti", "player.loop": "Bu takta dövr et", "player.metronome": "Metronom", "player.play": "Çal", "player.pause": "Dayandır", "player.speed": "Çalma sürəti",
   "sheet.instrumental": "İnstrumental", "sheet.noLyrics": "Bu mahnı üçün hələ söz yoxdur. Vuruşlar görünüşündən istifadə edin və ya aşağıda sözləri yapışdırın.", "sheet.notKnown": "{chord} · hələ akkordlarınızda deyil",
+  "sheet.lyricsIn": "Sözlər: {lang}",
+  "sheet.sync": "Sinxron", "sheet.earlier": "Daha erkən", "sheet.later": "Daha gec", "sheet.offset": "{n} san", "sheet.syncHint": "Sözləri musiqi ilə uyğunlaşdırmaq üçün oxunan sətri basılı saxlayın.",
   "timeline.hint": "Vuruş şəbəkəsində akkordlar · keçmək üçün toxunun", "timeline.beats": "{n} vuruş", "timeline.confidence": "Hər blokun altındakı zolaq analizin həmin akkorda nə qədər əmin olduğunu göstərir.",
   "gallery.count": "Bu mahnıda {n} akkord · {instrument}", "gallery.learn": "öyrən", "gallery.known": "bilirəm",
   "learn.youCanPlay": "Artıq çala bilirsiniz", "learn.ofChords": "{n} akkorddan {k}", "learn.makeEasier": "Asanlaşdır", "learn.best": "ən yaxşı",

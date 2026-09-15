@@ -29,6 +29,8 @@ export const de: Record<Key, string> = {
   "song.playingNow": "Läuft gerade", "song.knowThisOne": "Kann ich ✓", "song.markKnown": "Als bekannt markieren", "song.forgetChord": "Akkord vergessen",
   "player.now": "Jetzt", "player.next": "Nächster", "player.loop": "Diesen Takt loopen", "player.metronome": "Metronom", "player.play": "Abspielen", "player.pause": "Pause", "player.speed": "Wiedergabetempo",
   "sheet.instrumental": "Instrumental", "sheet.noLyrics": "Noch kein Text für diesen Song. Nutze die Beats-Ansicht oder füge unten Text ein.", "sheet.notKnown": "{chord} · noch nicht in deinen Akkorden",
+  "sheet.lyricsIn": "Text: {lang}",
+  "sheet.sync": "Sync", "sheet.earlier": "Früher", "sheet.later": "Später", "sheet.offset": "{n} s", "sheet.syncHint": "Halte eine Zeile gedrückt, während sie gesungen wird, um den Text zur Musik zu synchronisieren.",
   "timeline.hint": "Akkorde auf dem Beat-Raster · tippen zum Springen", "timeline.beats": "{n} Beats", "timeline.confidence": "Der Balken unter jedem Block zeigt, wie sicher die Analyse bei diesem Akkord ist.",
   "gallery.count": "{n} Akkorde in diesem Song · {instrument}", "gallery.learn": "lernen", "gallery.known": "bekannt",
   "learn.youCanPlay": "Das kannst du schon", "learn.ofChords": "{k} von {n} Akkorden", "learn.makeEasier": "Einfacher machen", "learn.best": "beste",

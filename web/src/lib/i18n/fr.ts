@@ -29,6 +29,8 @@ export const fr: Record<Key, string> = {
   "song.playingNow": "En cours", "song.knowThisOne": "Je le connais ✓", "song.markKnown": "Marquer comme connu", "song.forgetChord": "Oublier cet accord",
   "player.now": "Maintenant", "player.next": "Suivant", "player.loop": "Boucler cette mesure", "player.metronome": "Métronome", "player.play": "Lecture", "player.pause": "Pause", "player.speed": "Vitesse de lecture",
   "sheet.instrumental": "Instrumental", "sheet.noLyrics": "Pas encore de paroles pour cette chanson. Utilisez la vue Temps ou collez des paroles ci-dessous.", "sheet.notKnown": "{chord} · pas encore dans vos accords",
+  "sheet.lyricsIn": "Paroles : {lang}",
+  "sheet.sync": "Synchro", "sheet.earlier": "Plus tôt", "sheet.later": "Plus tard", "sheet.offset": "{n} s", "sheet.syncHint": "Appuyez longuement sur une ligne pendant qu'elle est chantée pour caler les paroles sur la musique.",
   "timeline.hint": "Accords sur la grille de temps · touchez pour sauter", "timeline.beats": "{n} temps", "timeline.confidence": "La barre sous chaque bloc indique la confiance de l'analyse pour cet accord.",
   "gallery.count": "{n} accords dans cette chanson · {instrument}", "gallery.learn": "à apprendre", "gallery.known": "connu",
   "learn.youCanPlay": "Vous savez déjà jouer", "learn.ofChords": "{k} accords sur {n}", "learn.makeEasier": "Simplifier", "learn.best": "meilleur",

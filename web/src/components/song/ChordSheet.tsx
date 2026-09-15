@@ -2,12 +2,14 @@
 import { useEffect, useRef } from "react";
 import type { SheetLine } from "@/lib/lyrics/align";
 import { useT } from "@/lib/i18n";
+import { langTag, type SongLang } from "@/lib/lyrics/lang";
 
-export function ChordSheet({ lines, time, display, onSeek, onChord, known }: {
-  lines: SheetLine[]; time: number; display: (s: string) => string; onSeek: (t: number) => void; onChord: (c: string) => void; known: Set<string>;
+export function ChordSheet({ lines, time, display, onSeek, onChord, known, lang, onSync }: {
+  lines: SheetLine[]; time: number; display: (s: string) => string; onSeek: (t: number) => void; onChord: (c: string) => void; known: Set<string>; lang?: SongLang; onSync?: (lineTime: number) => void;
 }) {
   const { t } = useT();
   const activeRef = useRef<HTMLDivElement>(null);
+  const pressRef = useRef<{ timer: ReturnType<typeof setTimeout> | null; long: boolean }>({ timer: null, long: false });
   const activeIdx = lines.findIndex((l) => time >= l.time && time < l.end);
 
   useEffect(() => {
@@ -20,7 +22,7 @@ export function ChordSheet({ lines, time, display, onSeek, onChord, known }: {
   if (!lines.length) return <p className="label-2 ios-subhead mt-4">{t("sheet.noLyrics")}</p>;
 
   return (
-    <div className="space-y-1 ios-body lg:text-[19px] lg:leading-[26px] lg:max-w-[64ch]">
+    <div className="space-y-1 ios-body lg:text-[19px] lg:leading-[26px] lg:max-w-[64ch]" lang={lang ? langTag(lang) || undefined : undefined}>
       {lines.map((l, i) => {
         const active = i === activeIdx;
         const past = time >= l.end;
@@ -28,7 +30,11 @@ export function ChordSheet({ lines, time, display, onSeek, onChord, known }: {
           <div
             key={i}
             ref={active ? activeRef : undefined}
-            onClick={() => onSeek(l.time)}
+            onClick={() => { if (pressRef.current.long) { pressRef.current.long = false; return; } onSeek(l.time); }}
+            onPointerDown={() => { pressRef.current.long = false; if (onSync) pressRef.current.timer = setTimeout(() => { pressRef.current.long = true; onSync(l.time); }, 480); }}
+            onPointerUp={() => { if (pressRef.current.timer) clearTimeout(pressRef.current.timer); }}
+            onPointerLeave={() => { if (pressRef.current.timer) clearTimeout(pressRef.current.timer); }}
+            onContextMenu={(e) => e.preventDefault()}
             className={`relative rounded-[18px] px-3 py-2 -mx-1 transition-colors cursor-pointer ${active ? "lens" : "hover:bg-(--tint-1)"}`}
           >
             {active && <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full" style={{ background: "linear-gradient(180deg, var(--gold-hi), var(--gold-lo))" }} />}

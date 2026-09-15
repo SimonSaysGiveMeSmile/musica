@@ -15,6 +15,7 @@ export function usePlayer(src: string | null, beats: number[] | undefined, downb
   const nextBeatRef = useRef(0);
   const rafRef = useRef(0);
   const lastUiRef = useRef(0);
+  const ctRef = useRef({ value: 0, at: 0 }); // last distinct currentTime and when it changed
   const loopRef = useRef(loop);
   const metroRef = useRef(metronome);
   const rateRef = useRef(rate);
@@ -67,7 +68,10 @@ export function usePlayer(src: string | null, beats: number[] | undefined, downb
         const lp = loopRef.current;
         if (lp && !a.paused && t >= lp.b) { a.currentTime = lp.a; nextBeatRef.current = 0; }
         const now = performance.now();
-        if (now - lastUiRef.current > 40) { lastUiRef.current = now; setTime(a.currentTime); }
+        // iOS updates currentTime only a few times a second; interpolate between updates for smooth highlighting
+        if (a.currentTime !== ctRef.current.value) ctRef.current = { value: a.currentTime, at: now };
+        const est = a.paused ? a.currentTime : Math.min(a.currentTime + ((now - ctRef.current.at) / 1000) * a.playbackRate, a.currentTime + 0.35);
+        if (now - lastUiRef.current > 40) { lastUiRef.current = now; setTime(est); }
         const b = beatsRef.current;
         if (metroRef.current && !a.paused && b && ctxRef.current) {
           const ctx = ctxRef.current;

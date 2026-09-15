@@ -23,7 +23,7 @@ export interface Prefs {
   installDismissed: boolean;
   theme: Theme;
   accent: Accent;
-  language: "auto" | "en" | "zh" | "de" | "fr" | "es" | "az";
+  language: "auto" | "en" | "zh" | "de" | "fr" | "es" | "az" | "ru";
 }
 
 const KEY = "musica.prefs.v1";

@@ -31,7 +31,7 @@ async function fetchWithProgress(url: string, onPct: (p: number) => void): Promi
   return new Blob(chunks as BlobPart[], { type: res.headers.get("Content-Type") ?? "audio/mp4" });
 }
 
-async function run(id: string, meta: Omit<Song, "id" | "hasAudio" | "transpose" | "capo" | "createdAt" | "updatedAt">, getBlob: (r: Report) => Promise<Blob>, report: Report): Promise<string> {
+async function run(id: string, meta: Omit<Song, "id" | "hasAudio" | "transpose" | "capo" | "createdAt" | "updatedAt">, getBlob: (r: Report) => Promise<Blob>, report: Report, hints: { rawTitle?: string; channel?: string } = {}): Promise<string> {
   const existing = await getSong(id);
   if (existing?.analysis) { report({ stage: "done", pct: 1, detail: "ingest.already", songId: id }); return id; }
 
@@ -46,7 +46,7 @@ async function run(id: string, meta: Omit<Song, "id" | "hasAudio" | "transpose" 
 
   report({ stage: "lyrics", pct: 0.88, detail: "ingest.lyrics" });
   let lyrics = null;
-  try { lyrics = await fetchLyrics(meta.title, meta.artist, duration); } catch { /* offline: fine */ }
+  try { lyrics = await fetchLyrics(meta.title, meta.artist, duration, hints.channel, hints.rawTitle); } catch { /* offline: fine */ }
 
   report({ stage: "saving", pct: 0.95, detail: "ingest.saving" });
   const song: Song = {
@@ -69,6 +69,7 @@ export function ingestResolved(r: Resolved, report: Report): Promise<string> {
       return fetchWithProgress(audioUrl(r.id), (p) => rep({ stage: "fetching", pct: 0.02 + 0.26 * p, detail: "ingest.pulling" }));
     },
     report,
+    { rawTitle: r.title, channel: (r as Resolved & { channel?: string }).channel },
   );
 }
 
@@ -83,5 +84,6 @@ export async function ingestFile(file: File, report: Report): Promise<string> {
     { source: "file", title: split.title, artist: split.artist, durationSec: 0 },
     async () => new Blob([buf], { type: file.type || "audio/mpeg" }),
     report,
+    { rawTitle: name },
   );
 }

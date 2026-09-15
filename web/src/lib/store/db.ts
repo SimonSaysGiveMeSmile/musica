@@ -17,6 +17,7 @@ export interface Song {
   analysis?: Analysis;
   peaks?: number[];
   lyrics?: Lyrics;
+  lyricsOffset?: number; // seconds added to lyric timestamps to match this recording
   transpose: number;
   capo: number;
   instrument?: Instrument;

@@ -5,9 +5,10 @@ import { de } from "./de";
 import { fr } from "./fr";
 import { es } from "./es";
 import { az } from "./az";
+import { ru } from "./ru";
 import { usePrefs } from "@/lib/store/prefs";
 
-export type Lang = "en" | "zh" | "de" | "fr" | "es" | "az";
+export type Lang = "en" | "zh" | "de" | "fr" | "es" | "az" | "ru";
 export const LANGS: { id: Lang; label: string; native: string }[] = [
   { id: "en", label: "English", native: "English" },
   { id: "zh", label: "Chinese", native: "中文" },
@@ -15,10 +16,11 @@ export const LANGS: { id: Lang; label: string; native: string }[] = [
   { id: "fr", label: "French", native: "Français" },
   { id: "es", label: "Spanish", native: "Español" },
   { id: "az", label: "Azerbaijani", native: "Azərbaycanca" },
+  { id: "ru", label: "Russian", native: "Русский" },
 ];
 
-const DICTS: Record<Lang, Record<Key, string>> = { en, zh, de, fr, es, az };
-const HTML_LANG: Record<Lang, string> = { en: "en", zh: "zh-Hans", de: "de", fr: "fr", es: "es", az: "az" };
+const DICTS: Record<Lang, Record<Key, string>> = { en, zh, de, fr, es, az, ru };
+const HTML_LANG: Record<Lang, string> = { en: "en", zh: "zh-Hans", de: "de", fr: "fr", es: "es", az: "az", ru: "ru" };
 
 export type Vars = Record<string, string | number>;
 
@@ -31,6 +33,7 @@ export function detectLang(): Lang {
     if (l.startsWith("fr")) return "fr";
     if (l.startsWith("es")) return "es";
     if (l.startsWith("az")) return "az";
+    if (l.startsWith("ru")) return "ru";
     if (l.startsWith("en")) return "en";
   }
   return "en";

@@ -29,6 +29,8 @@ export const es: Record<Key, string> = {
   "song.playingNow": "Sonando ahora", "song.knowThisOne": "Este me lo sé ✓", "song.markKnown": "Marcar como conocido", "song.forgetChord": "Olvidar este acorde",
   "player.now": "Ahora", "player.next": "Siguiente", "player.loop": "Repetir este compás", "player.metronome": "Metrónomo", "player.play": "Reproducir", "player.pause": "Pausa", "player.speed": "Velocidad de reproducción",
   "sheet.instrumental": "Instrumental", "sheet.noLyrics": "Todavía no hay letra para esta canción. Usa la vista Pulsos o pega la letra abajo.", "sheet.notKnown": "{chord} · aún no está entre tus acordes",
+  "sheet.lyricsIn": "Letra: {lang}",
+  "sheet.sync": "Sincronizar", "sheet.earlier": "Antes", "sheet.later": "Después", "sheet.offset": "{n} s", "sheet.syncHint": "Mantén pulsada una línea mientras se canta para sincronizar la letra con la música.",
   "timeline.hint": "Acordes en la rejilla de pulsos · toca para saltar", "timeline.beats": "{n} pulsos", "timeline.confidence": "La barra bajo cada bloque muestra la confianza del análisis en ese acorde.",
   "gallery.count": "{n} acordes en esta canción · {instrument}", "gallery.learn": "aprender", "gallery.known": "conocido",
   "learn.youCanPlay": "Ya sabes tocar", "learn.ofChords": "{k} de {n} acordes", "learn.makeEasier": "Hazlo más fácil", "learn.best": "mejor",

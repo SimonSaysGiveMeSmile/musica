@@ -55,7 +55,8 @@ There is **no generative AI, no LLM tokens, and no per-request compute cost**. A
 - **F2.6** Target: ≤ 15 s for a 4-minute track on an iPhone 14-class device. Audio is downmixed to mono and resampled to 22.05 kHz before analysis.
 
 ### 4.3 Lyrics
-- **F3.1** Fetch synced lyrics from LRCLIB (free, no key) by title, artist, and duration; fall back to search, then to plain lyrics, then to "no lyrics" with a chords-only timeline.
+- **F3.1** Fetch synced lyrics from LRCLIB (free, no key) in any language. The video title's language is detected from its script (Han, Kana, Hangul, Cyrillic, Latin with diacritics), uploader noise for that language is stripped ("官方MV", "Официальное видео", "Video Oficial", …), and up to six readings of the title are tried in order: "Artist – Title", "Title – Artist", quoted CJK titles like Artist《Title》, and title-only. Results more than 25 s off the recording's duration are rejected; synced lyrics win over plain. The lyrics' own language is detected from the text and tagged on the sheet for correct typography.
+- **F3.4** Lyric sync: a per-song offset (nudged in 0.2 s steps) and long-press on any line to snap it to the current playhead. Playback time is interpolated between the browser's coarse time updates so highlighting stays on the beat on iOS.
 - **F3.2** Align chord segments to lyric lines by timestamp. A chord whose onset falls inside a line is placed above the word at the proportional position; chords between lines become standalone chord rows.
 - **F3.3** Users can edit or paste their own lyrics; alignment is recomputed.
 
@@ -84,7 +85,7 @@ There is **no generative AI, no LLM tokens, and no per-request compute cost**. A
 - **F7.3** Installable: web manifest, iOS meta tags, standalone display, safe-area-aware layout.
 
 ### 4.8 Languages
-- **F8.1** The whole interface is available in English, Chinese (Simplified), German, French, Spanish and Azerbaijani. The language follows the device by default and can be set in Me → Appearance → Language. Chord and note names stay in international notation.
+- **F8.1** The whole interface is available in English, Chinese (Simplified), German, French, Spanish, Azerbaijani and Russian. The language follows the device by default and can be set in Me → Appearance → Language. Chord and note names stay in international notation.
 
 ## 5. Non-functional requirements
 

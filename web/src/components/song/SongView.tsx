@@ -17,7 +17,8 @@ import { ChordGallery } from "./ChordGallery";
 import { Learn } from "./Learn";
 import { ChordDiagram, ChordNotes } from "@/components/chords/ChordDiagram";
 import { alignSheet } from "@/lib/lyrics/align";
-import { fetchLyrics, plainToLines } from "@/lib/lyrics/lrclib";
+import { fetchLyrics, userLyrics } from "@/lib/lyrics/lrclib";
+import { LANG_NAMES } from "@/lib/lyrics/lang";
 import { useT } from "@/lib/i18n";
 
 type View = "sheet" | "timeline" | "chords" | "learn";
@@ -61,24 +62,30 @@ export function SongView({ id }: { id: string }) {
 
   const display = useCallback((sym: string) => transposeSymbol(sym, shift, flats), [shift, flats]);
 
+  const lyricsOffset = song?.lyricsOffset ?? 0;
   const sheetLines = useMemo(() => {
     if (!analysis) return [];
-    const lines = song?.lyrics?.lines ?? [];
+    const lines = (song?.lyrics?.lines ?? []).map((l) => (l.time >= 0 ? { ...l, time: Math.max(0, l.time + lyricsOffset) } : l));
     return alignSheet(lines, analysis.chords, analysis.duration);
-  }, [analysis, song?.lyrics]);
+  }, [analysis, song?.lyrics, lyricsOffset]);
+  const nudge = useCallback((d: number) => update({ lyricsOffset: Math.round(((song?.lyricsOffset ?? 0) + d) * 10) / 10 }), [song?.lyricsOffset, update]);
+  /** Long-press on a line: make that line start right now. */
+  const syncLineToNow = useCallback((originalTime: number) => {
+    update({ lyricsOffset: Math.round((player.time - originalTime) * 10) / 10 });
+  }, [player.time, update]);
 
   const current = analysis ? chordAt(analysis, player.time) : null;
   const chords = useMemo(() => (analysis ? distinctChords(analysis) : []), [analysis]);
 
   const saveLyrics = useCallback(() => {
-    update({ lyrics: { synced: false, lines: plainToLines(lyricsDraft), source: "user" } });
+    update({ lyrics: userLyrics(lyricsDraft) });
     setEditingLyrics(false);
   }, [lyricsDraft, update]);
 
   const retryLyrics = useCallback(async () => {
     if (!song) return;
     setLyricsBusy(true);
-    try { const l = await fetchLyrics(song.title, song.artist, song.durationSec); if (l) update({ lyrics: l }); }
+    try { const l = await fetchLyrics(song.title, song.artist, song.durationSec, undefined, song.title); if (l) update({ lyrics: l }); }
     finally { setLyricsBusy(false); }
   }, [song, update]);
 
@@ -145,10 +152,23 @@ export function SongView({ id }: { id: string }) {
       <section className="flex-1 px-4 pt-3 pb-[calc(var(--sab)+190px)] lg:px-0 lg:pb-0 lg:min-w-0">
         {view === "sheet" && (
           <>
-            <ChordSheet lines={sheetLines} time={player.time} display={display} onSeek={player.seek} onChord={setOpenChord} known={new Set(prefs.known[instrument])} />
-            <div className="mt-6 flex flex-wrap gap-2 text-[13px]">
+            <ChordSheet lines={sheetLines} time={player.time} display={display} onSeek={player.seek} onChord={setOpenChord} known={new Set(prefs.known[instrument])} lang={song.lyrics?.lang} onSync={song.lyrics?.synced ? (t) => syncLineToNow(t - lyricsOffset) : undefined} />
+            {song.lyrics?.synced && (
+              <div className="mt-5 inset-group">
+                <div className="row">
+                  <span className="ios-body flex-1">{t("sheet.sync")}</span>
+                  <button onClick={() => nudge(-0.2)} className="press glass rounded-full h-9 px-3 ios-footnote text-ivory">{t("sheet.earlier")}</button>
+                  <span className="chordname ios-subhead tabular-nums w-14 text-center text-gold-hi">{t("sheet.offset", { n: `${lyricsOffset > 0 ? "+" : ""}${lyricsOffset.toFixed(1)}` })}</span>
+                  <button onClick={() => nudge(0.2)} className="press glass rounded-full h-9 px-3 ios-footnote text-ivory">{t("sheet.later")}</button>
+                  {lyricsOffset !== 0 && <button onClick={() => update({ lyricsOffset: 0 })} className="press ios-footnote text-gold ml-1">{t("common.reset")}</button>}
+                </div>
+                <div className="row !min-h-0 py-2"><span className="ios-caption label-3">{t("sheet.syncHint")}</span></div>
+              </div>
+            )}
+            <div className="mt-4 flex flex-wrap gap-2 text-[13px]">
               {!song.lyrics && <button onClick={retryLyrics} disabled={lyricsBusy} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">{lyricsBusy ? t("song.searching") : t("song.findLyricsAgain")}</button>}
               <button onClick={() => { setLyricsDraft(song.lyrics?.lines.map((l) => l.text).join("\n") ?? ""); setEditingLyrics(true); }} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">{song.lyrics ? t("song.editLyrics") : t("song.pasteLyrics")}</button>
+              {song.lyrics?.lang && song.lyrics.lang !== "und" && <span className="self-center ios-footnote label-3">{t("sheet.lyricsIn", { lang: LANG_NAMES[song.lyrics.lang] })}</span>}
               {song.lyrics && !song.lyrics.synced && <span className="self-center ios-footnote label-2">{t("song.unsynced")}</span>}
             </div>
           </>
