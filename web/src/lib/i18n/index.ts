@@ -26,6 +26,8 @@ export type Vars = Record<string, string | number>;
 
 export function detectLang(): Lang {
   if (typeof navigator === "undefined") return "en";
+  // Inside WeChat's in-app browser, default to Chinese regardless of the phone's language.
+  if (/MicroMessenger/i.test(navigator.userAgent)) return "zh";
   for (const raw of navigator.languages ?? [navigator.language]) {
     const l = raw.toLowerCase();
     if (l.startsWith("zh")) return "zh";

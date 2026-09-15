@@ -15,7 +15,7 @@ const QUALS: Quality[] = ["maj", "min", "7", "m7", "maj7", "sus4"];
 
 export function MeView() {
   const prefs = usePrefs();
-  const { t, lang } = useT();
+  const { t } = useT();
   const inst = prefs.instrument;
   const known = new Set(prefs.known[inst]);
   const [peek, setPeek] = useState<string | null>(null);
@@ -83,8 +83,12 @@ export function MeView() {
             <div className="row flex-col !items-stretch gap-2 py-3">
               <div className="ios-body">{t("me.language")}</div>
               <div className="flex flex-wrap gap-2">
+                <button onClick={() => setPrefs({ language: "auto" })} aria-pressed={prefs.language === "auto"}
+                  className={`press h-10 px-4 rounded-full ios-footnote transition-colors ${prefs.language === "auto" ? "lens text-ivory font-semibold" : "glass label-2"}`}>
+                  {t("me.system")}
+                </button>
                 {LANGS.map((l) => {
-                  const on = lang === l.id;
+                  const on = prefs.language === l.id;
                   return (
                     <button key={l.id} onClick={() => setPrefs({ language: l.id })} aria-pressed={on} lang={l.id}
                       className={`press h-10 px-4 rounded-full ios-footnote transition-colors ${on ? "lens text-ivory font-semibold" : "glass label-2"}`}>
