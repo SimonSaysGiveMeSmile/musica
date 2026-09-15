@@ -20,6 +20,7 @@ import { alignSheet } from "@/lib/lyrics/align";
 import { fetchLyrics, userLyrics } from "@/lib/lyrics/lrclib";
 import { LANG_NAMES } from "@/lib/lyrics/lang";
 import { leadInSeconds } from "@/lib/lyrics/align";
+import { estimateOffset } from "@/lib/lyrics/sync";
 import { useT } from "@/lib/i18n";
 
 type View = "sheet" | "timeline" | "chords" | "learn";
@@ -72,11 +73,14 @@ export function SongView({ id }: { id: string }) {
     const leadIn = leadInSeconds(song?.peaks, analysis.duration);
     return alignSheet(lines, analysis.chords, analysis.duration, (a, b) => vocalActivityIn(analysis, a, b), song?.lyricAnchors, leadIn);
   }, [analysis, song?.lyrics, song?.peaks, song?.lyricAnchors, lyricsOffset]);
-  const nudge = useCallback((d: number) => update({ lyricsOffset: Math.round(((song?.lyricsOffset ?? 0) + d) * 10) / 10 }), [song?.lyricsOffset, update]);
+  const nudge = useCallback((d: number) => update({ lyricsOffset: Math.round(((song?.lyricsOffset ?? 0) + d) * 10) / 10, lyricsAutoSynced: false }), [song?.lyricsOffset, update]);
   /** Align the first sung line with the first detected singing. */
   const autoSync = () => {
     if (!analysis || !song?.lyrics) return;
-    // align the first line with the first sustained singing, if that is a modest correction
+    // 1. match phrase starts against detected vocal onsets
+    const est = estimateOffset(song.lyrics.lines, analysis.vocals);
+    if (est && est.score >= 0.2 && Math.abs(est.offset) <= 12) { update({ lyricsOffset: est.offset, lyricsAutoSynced: true }); return; }
+    // 2. otherwise align the first line with the first sustained singing, if that is a modest correction
     const onset = firstVocalOnset(analysis);
     const first = song.lyrics.lines.find((l) => l.time >= 0 && l.text.trim());
     if (onset === null || !first) { update({ lyricsOffset: 0 }); return; }
@@ -94,7 +98,7 @@ export function SongView({ id }: { id: string }) {
   /** Long-press on a line: make that line start right now. */
   const syncLineToNow = useCallback((originalTime: number) => {
     const off = Math.round((player.time - originalTime) * 10) / 10;
-    if (Math.abs(off) <= 30) update({ lyricsOffset: off });
+    if (Math.abs(off) <= 30) update({ lyricsOffset: off, lyricsAutoSynced: false });
   }, [player.time, update]);
 
   const current = analysis ? chordAt(analysis, player.time) : null;
@@ -108,7 +112,10 @@ export function SongView({ id }: { id: string }) {
   const retryLyrics = useCallback(async () => {
     if (!song) return;
     setLyricsBusy(true);
-    try { const l = await fetchLyrics(song.title, song.artist, song.durationSec, undefined, song.title); if (l) update({ lyrics: l }); }
+    try {
+      const l = await fetchLyrics(song.title, song.artist, song.durationSec, undefined, song.title);
+      if (l) { const est = l.synced ? estimateOffset(l.lines, analysis?.vocals) : null; update({ lyrics: l, lyricsOffset: est?.confident ? est.offset : 0, lyricsAutoSynced: !!est?.confident, lyricAnchors: {} }); }
+    }
     finally { setLyricsBusy(false); }
   }, [song, update]);
 
@@ -196,7 +203,7 @@ export function SongView({ id }: { id: string }) {
                   {canAutoSync && <button onClick={autoSync} className="press gold-fill rounded-full h-9 px-3 ios-footnote">{t("sheet.auto")}</button>}
                   {lyricsOffset !== 0 && <button onClick={() => update({ lyricsOffset: 0 })} className="press ios-footnote text-gold ml-1">{t("common.reset")}</button>}
                 </div>
-                <div className="row !min-h-0 py-2"><span className="ios-caption label-3">{t("sheet.syncHint")}</span></div>
+                <div className="row !min-h-0 py-2"><span className="ios-caption label-3">{song.lyricsAutoSynced && lyricsOffset !== 0 ? `${t("sheet.autoSynced", { n: `${lyricsOffset > 0 ? "+" : ""}${lyricsOffset.toFixed(1)}` })} · ` : ""}{t("sheet.syncHint")}</span></div>
               </div>
             )}
             <div className="mt-4 flex flex-wrap gap-2 text-[13px]">

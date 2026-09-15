@@ -18,6 +18,7 @@ export interface Song {
   peaks?: number[];
   lyrics?: Lyrics;
   lyricsOffset?: number; // seconds added to lyric timestamps to match this recording
+  lyricsAutoSynced?: boolean; // the offset was estimated from the audio
   lyricAnchors?: Record<number, number>; // for unsynced lyrics: line index → time set by the user
   transpose: number;
   capo: number;

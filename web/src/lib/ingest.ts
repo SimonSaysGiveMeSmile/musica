@@ -6,6 +6,7 @@ import { fetchLyrics } from "@/lib/lyrics/lrclib";
 import { getSong, saveAudio, saveSong, type Song } from "@/lib/store/db";
 import { getPrefs } from "@/lib/store/prefs";
 import type { Key } from "@/lib/i18n/en";
+import { estimateOffset } from "@/lib/lyrics/sync";
 
 export type IngestStage = "fetching" | "decoding" | "analyzing" | "lyrics" | "saving" | "done" | "error";
 export interface IngestState { stage: IngestStage; pct: number; detail: Key | ""; songId?: string; error?: string }
@@ -49,8 +50,15 @@ async function run(id: string, meta: Omit<Song, "id" | "hasAudio" | "transpose" 
   try { lyrics = await fetchLyrics(meta.title, meta.artist, duration, hints.channel, hints.rawTitle); } catch { /* offline: fine */ }
 
   report({ stage: "saving", pct: 0.95, detail: "ingest.saving" });
+  // Line up a timestamped lyric file with this recording (a different edit often has a longer intro).
+  let lyricsOffset = 0, lyricsAutoSynced = false;
+  if (lyrics?.synced) {
+    const est = estimateOffset(lyrics.lines, analysis.vocals);
+    if (est?.confident) { lyricsOffset = est.offset; lyricsAutoSynced = true; }
+  }
   const song: Song = {
     id, ...meta, durationSec: duration, hasAudio: true, analysis, peaks: Array.from(peaks), lyrics: lyrics ?? undefined,
+    lyricsOffset, lyricsAutoSynced,
     transpose: 0, capo: 0, instrument: getPrefs().instrument, createdAt: Date.now(), updatedAt: Date.now(),
   };
   await saveAudio(id, blob);
