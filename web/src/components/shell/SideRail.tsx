@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconLibrary, IconLive, IconMe, IconSearch } from "@/components/ui/Icons";
 import { useT, type Key } from "@/lib/i18n";
+import { Credit } from "@/components/ui/Credit";
 
 const TABS: { href: string; label: Key; Icon: typeof IconSearch }[] = [
   { href: "/", label: "nav.search", Icon: IconSearch },
@@ -40,7 +41,7 @@ export function SideRail() {
       </nav>
       <div className="mt-auto px-3 ios-caption label-3">
         {t("rail.privacy")}
-        <div className="mt-3">{t("credit.madeBy")}</div>
+        <div className="mt-3"><Credit /></div>
       </div>
     </aside>
   );

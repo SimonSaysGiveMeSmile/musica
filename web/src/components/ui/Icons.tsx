@@ -59,6 +59,16 @@ export const IconPlus = (p: SVGProps<SVGSVGElement>) => (
 export const IconMinus = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}><path d="M5 12h14" /></svg>
 );
+/** Heart for the credit line: same stroke grammar as the rest of the set, filled with the accent. */
+export const IconHeart = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)} strokeWidth={1.4}>
+    <path
+      d="M12 20.3s-7.2-4.6-9.1-9.2C1.6 7.9 3.6 4.7 6.9 4.7c2 0 3.4 1.1 5.1 3 1.7-1.9 3.1-3 5.1-3 3.3 0 5.3 3.2 4 6.4-1.9 4.6-9.1 9.2-9.1 9.2z"
+      style={{ fill: "var(--gold)", stroke: "var(--gold-hi)" }}
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 export const IconShare = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}><path d="M12 3v12M8 7l4-4 4 4" /><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" /></svg>
 );

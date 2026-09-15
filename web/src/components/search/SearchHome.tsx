@@ -10,6 +10,7 @@ import { fmtTime } from "@/lib/audio/player";
 import { IngestProgress } from "./IngestProgress";
 import Link from "next/link";
 import { useT } from "@/lib/i18n";
+import { Credit } from "@/components/ui/Credit";
 
 export function SearchHome() {
   const router = useRouter();
@@ -180,7 +181,7 @@ export function SearchHome() {
       )}
 
       <footer className="px-5 lg:px-0 mt-14 text-center lg:text-left">
-        <p className="ios-footnote label-3">{t("credit.madeBy")}</p>
+        <p className="ios-footnote label-3"><Credit /></p>
       </footer>
     </main>
   );

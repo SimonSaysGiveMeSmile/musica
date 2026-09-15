@@ -1,7 +1,7 @@
 export const en = {
   // navigation
   "nav.search": "Search", "nav.library": "Library", "nav.live": "Live", "nav.me": "Me",
-  "credit.madeBy": "Made with ❤️ by Simon",
+  "credit.madeBy": "Made with {heart} by Simon",
   "rail.privacy": "Analysis runs on this device. Nothing you play is uploaded.",
   // home
   "home.tagline1": "Sing any song", "home.tagline2": "in just a minute.",
