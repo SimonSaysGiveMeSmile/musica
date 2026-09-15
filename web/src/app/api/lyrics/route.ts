@@ -10,6 +10,7 @@ type Hit = { duration: number; syncedLyrics?: string; plainLyrics?: string; trac
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const duration = Number(sp.get("duration") ?? 0);
+  const strict = sp.get("strict") !== "0"; // English path: rank by duration but never reject outright (original behaviour)
   let cands: { title: string; artist?: string }[] = [];
   try { cands = JSON.parse(sp.get("cands") ?? "[]"); } catch { cands = []; }
   if (!cands.length && sp.get("title")) cands = [{ title: sp.get("title")!.trim(), artist: sp.get("artist")?.trim() || undefined }];
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
     for (const h of hits) {
       if (!h || (!h.syncedLyrics && !h.plainLyrics)) continue;
       // a duration more than 25 s off is almost certainly a different recording
-      if (duration && h.duration && Math.abs(h.duration - duration) > 25) continue;
+      if (strict && duration && h.duration && Math.abs(h.duration - duration) > 25) continue;
       if (!best || rank(h) < rank(best)) best = h;
     }
   };
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
       }
       const s = await fetch(`${LRCLIB}/search?${new URLSearchParams({ q: c.artist ? `${c.artist} ${c.title}` : c.title })}`, { headers, next: { revalidate: 86400 } });
       if (s.ok) { consider(await s.json()); if (best && (best as Hit).syncedLyrics) return withCache(NextResponse.json(best)); }
-      if (c.artist) {
+      if (c.artist && strict) {
         // title-only search catches databases that spell the artist differently (transliteration, CJK vs latin)
         const s2 = await fetch(`${LRCLIB}/search?${new URLSearchParams({ track_name: c.title })}`, { headers, next: { revalidate: 86400 } });
         if (s2.ok) { consider(await s2.json()); if (best && (best as Hit).syncedLyrics) return withCache(NextResponse.json(best)); }
