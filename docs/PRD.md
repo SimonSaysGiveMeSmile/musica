@@ -75,6 +75,7 @@ There is **no generative AI, no LLM tokens, and no per-request compute cost**. A
 ### 4.6 Live mode (real-time)
 - **F6.1** Microphone input through Web Audio; frames sent to the analysis worker every ~90 ms.
 - **F6.2** Displays the current chord (HPCP → `ChordsDetection` on a rolling 1-second window), the dominant pitch and cents offset (tuner via `PitchYinFFT`), and a 12-bin chroma wheel.
+- **F6.4** Built-in tuner (Live → Tuner): string targets for guitar (standard, drop D, half-step down, DADGAD) and ukulele (re-entrant, low G, baritone), chromatic mode for piano, cents needle with in-tune hold, median-smoothed pitch, adjustable A4 reference (415–466 Hz), and reference tones per string.
 - **F6.3** *(v1.1)* "Follow the song" mode: compare the detected chord to the expected chord at the current playback time. Deferred because playing the track through the speaker while listening on the mic needs echo handling.
 
 ### 4.7 Library and offline
@@ -158,7 +159,7 @@ Rate limit: 30 requests/min/IP. CORS: only the deployed web origin plus localhos
 - **Color tokens:** `--lacquer #0B0A09`, `--lacquer-2 #161412`, `--ivory #F3EDE2`, `--walnut #4A3222`, `--walnut-hi #8A5A3A`, `--gold #C9A45C`, `--gold-hi #E8C77E`, `--felt #7A1F2B` (accent for record/live).
 - **Motion:** one orchestrated page reveal (staggered 40 ms); chord blocks slide with spring physics; playhead is a continuous transform, never a re-render; all motion disabled under reduced-motion.
 - **Layout:** on phones, a large title, a floating glass tab bar (Search, Library, Live, Me) and a persistent glass player above it. On screens 1024 px and wider, a left navigation rail, a wide sheet column (max 64 characters), and the player docked as a sticky side panel with the current chord's diagram beneath it.
-- **Themes:** dark is the brand default; a full light palette (warm ivory ground, lacquer text) follows the system setting or an explicit System / Light / Dark choice in Me → Appearance. Six accents (Gold, Copper, Rose, Sage, Sky, Silver) each carry tuned dark and light values so contrast holds in both themes. Every surface is token-driven; the piano keyboard on the Me page keeps its own black-key palette in both themes on purpose.
+- **Themes:** dark is the brand default; a full light palette (warm ivory ground, lacquer text) follows the system setting or an explicit System / Light / Dark choice in Me → Appearance. Nine accents (Gold, Copper, Rose, Sage, Sky, Silver, Orchid, Gliver, Sunrise) each carry tuned dark and light values so contrast holds in both themes. Every surface is token-driven; the piano keyboard on the Me page keeps its own black-key palette in both themes on purpose.
 
 ## 8. Milestones
 

@@ -86,6 +86,9 @@
 :root[data-accent="sage"]   { --a-hi-d: #bfd6aa; --a-d: #93b17b; --a-lo-d: #5e7c4a; --a-hi-l: #678a50; --a-l: #547343; --a-lo-l: #3c5530; }
 :root[data-accent="sky"]    { --a-hi-d: #b0d0ea; --a-d: #7fabd0; --a-lo-d: #4d7192; --a-hi-l: #4a7ba3; --a-l: #3d688c; --a-lo-l: #2b4a65; }
 :root[data-accent="silver"] { --a-hi-d: #e6e2da; --a-d: #bdb8ae; --a-lo-d: #7f7a70; --a-hi-l: #6f6a60; --a-l: #5d584f; --a-lo-l: #3f3b34; }
+:root[data-accent="orchid"] { --a-hi-d: #e6b6f2; --a-d: #c084d6; --a-lo-d: #7f5194; --a-hi-l: #9a5cb4; --a-l: #82459b; --a-lo-l: #5a2f6e; }
+:root[data-accent="gliver"] { --a-hi-d: #efe6cc; --a-d: #d6c9a3; --a-lo-d: #948868; --a-hi-l: #8c7f5a; --a-l: #766a4b; --a-lo-l: #524834; }
+:root[data-accent="sunrise"] { --a-hi-d: #ffb37c; --a-d: #f0824f; --a-lo-d: #a9522b; --a-hi-l: #cf6330; --a-l: #b15427; --a-lo-l: #7d3a19; }
 
 /* ───────────────────────────── Light theme ─────────────────────────────
    Dark is the brand default. The same block is applied for an explicit choice
@@ -227,10 +230,7 @@ body::before {
   -webkit-backdrop-filter: blur(22px) saturate(190%);
   backdrop-filter: blur(22px) saturate(190%);
   border: 0.5px solid var(--lg-edge-soft);
-  box-shadow:
-    inset 0.6px 0.8px 0 var(--lg-edge),
-    inset -0.4px -0.6px 0 rgba(255, 255, 255, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0.6px 0.8px 0 var(--lg-edge);
 }
 .glass-strong {
   background: var(--lg-fill-strong);
@@ -332,6 +332,13 @@ body::before {
 .safe-top { padding-top: max(var(--sat), 12px); }
 .page-pad-bottom { padding-bottom: calc(var(--tabbar-h) + var(--sab) + 96px); }
 .song-header { background: linear-gradient(180deg, var(--ground-veil) 70%, transparent); }
+/* Installed on the Home Screen: no browser chrome, content runs under the status bar and home indicator. */
+@media (display-mode: standalone) {
+  html { -webkit-user-select: none; user-select: none; }
+  input, textarea { -webkit-user-select: text; user-select: text; }
+  .safe-top { padding-top: max(var(--sat), 20px); }
+  body { overscroll-behavior: none; }
+}
 @media (min-width: 1024px) {
   .song-header { background: none; }
   .page-pad-bottom { padding-bottom: 64px; }

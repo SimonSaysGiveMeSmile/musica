@@ -3,7 +3,7 @@ import { useSyncExternalStore } from "react";
 import type { Instrument } from "@/lib/theory/coverage";
 
 export type Theme = "system" | "light" | "dark";
-export type Accent = "gold" | "copper" | "rose" | "sage" | "sky" | "silver";
+export type Accent = "gold" | "copper" | "rose" | "sage" | "sky" | "silver" | "orchid" | "gliver" | "sunrise";
 export const ACCENTS: { id: Accent; label: string; swatch: string }[] = [
   { id: "gold", label: "Gold", swatch: "#c9a45c" },
   { id: "copper", label: "Copper", swatch: "#c97c53" },
@@ -11,6 +11,9 @@ export const ACCENTS: { id: Accent; label: string; swatch: string }[] = [
   { id: "sage", label: "Sage", swatch: "#93b17b" },
   { id: "sky", label: "Sky", swatch: "#7fabd0" },
   { id: "silver", label: "Silver", swatch: "#bdb8ae" },
+  { id: "orchid", label: "Orchid", swatch: "#c084d6" },
+  { id: "gliver", label: "Gliver", swatch: "#d6c9a3" },
+  { id: "sunrise", label: "Sunrise", swatch: "#f0824f" },
 ];
 
 export interface Prefs {

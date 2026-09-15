@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Any song, in your hands. Chords, key, tempo and lyrics from YouTube, Spotify or your own files, analyzed on your phone.",
   applicationName: "Musica",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Musica" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Musica" },
   formatDetection: { telephone: false },
   icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
 };

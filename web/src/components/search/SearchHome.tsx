@@ -87,7 +87,7 @@ export function SearchHome() {
             enterKeyHint="search"
             autoCapitalize="off"
             autoCorrect="off"
-            className="flex-1 bg-transparent outline-none h-11 ios-body placeholder:text-(--label-3) min-w-0"
+            className="flex-1 bg-transparent border-0 outline-none h-11 ios-body placeholder:text-(--label-3) min-w-0 appearance-none"
           />
           <button type="submit" disabled={busy || !q.trim()} className="press h-11 px-4 rounded-full ios-headline gold-fill disabled:opacity-40">
             {detectLink(q) ? "Analyze" : "Search"}
