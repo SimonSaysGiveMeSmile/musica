@@ -11,6 +11,7 @@ import { IngestProgress } from "./IngestProgress";
 import Link from "next/link";
 import { useT } from "@/lib/i18n";
 import { Credit } from "@/components/ui/Credit";
+import { InstallCard } from "@/components/ui/InstallGuide";
 
 export function SearchHome() {
   const router = useRouter();
@@ -144,6 +145,8 @@ export function SearchHome() {
           </ul>
         </section>
       )}
+
+      {!results && !searching && !ingest && <InstallCard />}
 
       {/* Recent */}
       {!results && !searching && recent.length > 0 && (

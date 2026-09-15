@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { usePrefs, setPrefs, toggleKnown, ACCENTS, type Theme } from "@/lib/store/prefs";
 import { IconCheck } from "@/components/ui/Icons";
 import { LANGS, useT } from "@/lib/i18n";
+import { InstallRow } from "@/components/ui/InstallGuide";
 import { LargeTitle } from "@/components/shell/LargeTitle";
 import { Segmented } from "@/components/ui/Segmented";
 import type { Instrument } from "@/lib/theory/coverage";
@@ -48,7 +49,11 @@ export function MeView() {
         </div>
 
         {/* Appearance */}
-        <div id="appearance" className="pt-6">
+        <div className="pt-6">
+          <div className="inset-group"><InstallRow /></div>
+        </div>
+
+        <div id="appearance" className="pt-2">
           <div className="eyebrow mb-2 px-4">{t("me.appearance")}</div>
           <div className="inset-group">
             <div className="row flex-col !items-stretch gap-2 py-3">
