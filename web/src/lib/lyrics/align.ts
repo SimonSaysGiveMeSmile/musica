@@ -27,8 +27,9 @@ export function alignSheet(lines: LyricLine[], segments: ChordSegment[], duratio
   const pushInstrumental = (from: number, to: number) => {
     const inGap = segments.filter((s) => s.start >= from && s.start < to && s.chord !== "N");
     if (!inGap.length) return;
+    // Say "instrumental" only when the voice is clearly absent over a real gap; the detector under-reports singing.
     const a = activity ? activity(from, to) : null;
-    const vocal = a === null ? "unknown" : a >= 0.2 ? "yes" : "no";
+    const vocal = a === null ? "unknown" : a >= 0.35 ? "yes" : a <= 0.05 && to - from >= 4 ? "no" : "unknown";
     out.push({ time: from, end: to, text: "", instrumental: true, vocal, chords: inGap.map((s, i) => ({ chord: s.chord, at: i, time: s.start })) });
   };
 

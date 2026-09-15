@@ -62,7 +62,9 @@ export function SongView({ id }: { id: string }) {
 
   const display = useCallback((sym: string) => transposeSymbol(sym, shift, flats), [shift, flats]);
 
-  const lyricsOffset = song?.lyricsOffset ?? 0;
+  // an accidental sync can leave a wild offset behind; anything beyond ±30 s is treated as none
+  const rawOffset = song?.lyricsOffset ?? 0;
+  const lyricsOffset = Math.abs(rawOffset) <= 30 ? rawOffset : 0;
   const sheetLines = useMemo(() => {
     if (!analysis) return [];
     const lines = (song?.lyrics?.lines ?? []).map((l) => (l.time >= 0 ? { ...l, time: Math.max(0, l.time + lyricsOffset) } : l));
@@ -72,16 +74,18 @@ export function SongView({ id }: { id: string }) {
   /** Align the first sung line with the first detected singing. */
   const autoSync = () => {
     if (!analysis || !song?.lyrics) return;
+    // align the first line with the first sustained singing, if that is a modest correction
     const onset = firstVocalOnset(analysis);
     const first = song.lyrics.lines.find((l) => l.time >= 0 && l.text.trim());
-    if (onset === null || !first) return;
+    if (onset === null || !first) { update({ lyricsOffset: 0 }); return; }
     const off = Math.round((onset - first.time) * 10) / 10;
-    if (Math.abs(off) <= 30) update({ lyricsOffset: off });
+    update({ lyricsOffset: Math.abs(off) <= 12 ? off : 0 });
   };
   const canAutoSync = !!analysis?.vocals && firstVocalOnset(analysis) !== null;
   /** Long-press on a line: make that line start right now. */
   const syncLineToNow = useCallback((originalTime: number) => {
-    update({ lyricsOffset: Math.round((player.time - originalTime) * 10) / 10 });
+    const off = Math.round((player.time - originalTime) * 10) / 10;
+    if (Math.abs(off) <= 30) update({ lyricsOffset: off });
   }, [player.time, update]);
 
   const current = analysis ? chordAt(analysis, player.time) : null;
@@ -162,7 +166,7 @@ export function SongView({ id }: { id: string }) {
       <section className="flex-1 px-4 pt-3 pb-[calc(var(--sab)+190px)] lg:px-0 lg:pb-0 lg:min-w-0">
         {view === "sheet" && (
           <>
-            <ChordSheet lines={sheetLines} time={player.time} display={display} onSeek={player.seek} onChord={setOpenChord} known={new Set(prefs.known[instrument])} lang={song.lyrics?.lang} onSync={song.lyrics?.synced ? (t) => syncLineToNow(t - lyricsOffset) : undefined} />
+            <ChordSheet lines={sheetLines} time={player.time} display={display} onSeek={player.seek} onChord={setOpenChord} known={new Set(prefs.known[instrument])} lang={song.lyrics?.lang} playing={player.playing} onSync={song.lyrics?.synced ? (t) => syncLineToNow(t - lyricsOffset) : undefined} />
             {song.lyrics?.synced && (
               <div className="mt-5 inset-group">
                 <div className="row">

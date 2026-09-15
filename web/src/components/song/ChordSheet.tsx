@@ -4,12 +4,13 @@ import type { SheetLine } from "@/lib/lyrics/align";
 import { useT } from "@/lib/i18n";
 import { langTag, type SongLang } from "@/lib/lyrics/lang";
 
-export function ChordSheet({ lines, time, display, onSeek, onChord, known, lang, onSync }: {
-  lines: SheetLine[]; time: number; display: (s: string) => string; onSeek: (t: number) => void; onChord: (c: string) => void; known: Set<string>; lang?: SongLang; onSync?: (lineTime: number) => void;
+export function ChordSheet({ lines, time, display, onSeek, onChord, known, lang, onSync, playing }: {
+  lines: SheetLine[]; time: number; display: (s: string) => string; onSeek: (t: number) => void; onChord: (c: string) => void; known: Set<string>; lang?: SongLang; onSync?: (lineTime: number) => void; playing?: boolean;
 }) {
   const { t } = useT();
   const activeRef = useRef<HTMLDivElement>(null);
-  const pressRef = useRef<{ timer: ReturnType<typeof setTimeout> | null; long: boolean }>({ timer: null, long: false });
+  const pressRef = useRef<{ timer: ReturnType<typeof setTimeout> | null; long: boolean; x: number; y: number }>({ timer: null, long: false, x: 0, y: 0 });
+  const cancelPress = () => { if (pressRef.current.timer) { clearTimeout(pressRef.current.timer); pressRef.current.timer = null; } };
   const activeIdx = lines.findIndex((l) => time >= l.time && time < l.end);
 
   useEffect(() => {
@@ -31,9 +32,16 @@ export function ChordSheet({ lines, time, display, onSeek, onChord, known, lang,
             key={i}
             ref={active ? activeRef : undefined}
             onClick={() => { if (pressRef.current.long) { pressRef.current.long = false; return; } onSeek(l.time); }}
-            onPointerDown={() => { pressRef.current.long = false; if (onSync) pressRef.current.timer = setTimeout(() => { pressRef.current.long = true; onSync(l.time); }, 480); }}
-            onPointerUp={() => { if (pressRef.current.timer) clearTimeout(pressRef.current.timer); }}
-            onPointerLeave={() => { if (pressRef.current.timer) clearTimeout(pressRef.current.timer); }}
+            onPointerDown={(e) => {
+              pressRef.current.long = false; pressRef.current.x = e.clientX; pressRef.current.y = e.clientY; cancelPress();
+              // a long press syncs only while the song is playing; a scroll or any movement cancels it
+              if (onSync && playing) pressRef.current.timer = setTimeout(() => { pressRef.current.timer = null; pressRef.current.long = true; onSync(l.time); }, 600);
+            }}
+            onPointerMove={(e) => { if (Math.abs(e.clientX - pressRef.current.x) > 6 || Math.abs(e.clientY - pressRef.current.y) > 6) cancelPress(); }}
+            onPointerUp={cancelPress}
+            onPointerCancel={cancelPress}
+            onPointerLeave={cancelPress}
+            onTouchMove={cancelPress}
             onContextMenu={(e) => e.preventDefault()}
             className={`relative rounded-[18px] px-3 py-2 -mx-1 transition-colors cursor-pointer ${active ? "lens" : "hover:bg-(--tint-1)"}`}
           >
