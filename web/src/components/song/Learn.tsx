@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { evaluateOptions, suggestions, type CoverageOption, type Instrument } from "@/lib/theory/coverage";
 import { toggleKnown } from "@/lib/store/prefs";
-import { IconCheck } from "@/components/ui/Icons";
+import { IconCheck, IconChevron } from "@/components/ui/Icons";
 
 export function Learn({ chords, instrument, known, transpose, capo, onApply, onChord }: {
   chords: string[]; instrument: Instrument; known: string[]; transpose: number; capo: number;
@@ -15,35 +15,35 @@ export function Learn({ chords, instrument, known, transpose, capo, onApply, onC
   const sugg = useMemo(() => suggestions(current?.unknown ?? [], known), [current, known]);
   const pct = Math.round((current?.coverage ?? 0) * 100);
 
-  if (!chords.length) return <p className="text-ivory-3">No chords detected.</p>;
+  if (!chords.length) return <p className="label-2">No chords detected.</p>;
 
   return (
     <div className="space-y-5 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
       {/* Coverage */}
-      <div className="lacquer rounded-[26px] p-5 flex items-center gap-5 relative overflow-hidden lg:col-span-2">
+      <div className="inset-group p-5 flex items-center gap-5 relative lg:col-span-2">
         <Ring pct={pct} />
         <div className="min-w-0">
           <div className="eyebrow">You can already play</div>
-          <div className="display text-[28px] font-semibold leading-tight">{current.known.length} of {current.shapes.length} chords</div>
-          <div className="text-ivory-3 text-[13px] mt-1">{current.reason}</div>
+          <div className="ios-title1">{current.known.length} of {current.shapes.length} chords</div>
+          <div className="label-2 ios-footnote mt-1">{current.reason}</div>
         </div>
       </div>
 
       {/* Options */}
       <div>
         <div className="eyebrow mb-2">Make it easier</div>
-        <ul className="space-y-2">
+        <ul className="inset-group">
           {top.map((o) => {
             const active = o.capo === capo && o.transpose === transpose;
             return (
               <li key={`${o.capo}-${o.transpose}`}>
-                <button onClick={() => onApply({ capo: o.capo, transpose: o.transpose })} className={`press w-full text-left rounded-[20px] px-4 py-3 flex items-center gap-3 border ${active ? "border-gold-hi/50 bg-gold/[0.08]" : "border-(--glass-line) tint-1"}`}>
-                  <span className={`chordname text-[20px] w-16 shrink-0 ${active ? "text-gold-hi" : "text-ivory"}`}>{Math.round(o.coverage * 100)}%</span>
+                <button onClick={() => onApply({ capo: o.capo, transpose: o.transpose })} className="row press w-full text-left">
+                  <span className={`chordname ios-title3 w-14 shrink-0 tabular-nums ${active ? "text-gold-hi" : "text-ivory"}`}>{Math.round(o.coverage * 100)}%</span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[14px] font-medium">{label(o)}{o === best ? <span className="ml-2 text-[10px] uppercase tracking-wider text-gold">best</span> : null}</span>
-                    <span className="block text-[12px] text-ivory-3 truncate">{o.shapes.join("  ")}</span>
+                    <span className="block ios-body">{label(o)}{o === best ? <span className="ml-2 ios-caption2 uppercase tracking-wide text-gold font-semibold">best</span> : null}</span>
+                    <span className="block ios-footnote label-2 truncate">{o.shapes.join("  ")}</span>
                   </span>
-                  {active && <IconCheck className="text-gold-hi shrink-0" />}
+                  {active ? <IconCheck className="text-gold-hi shrink-0" /> : <IconChevron className="label-3 shrink-0" width={18} height={18} />}
                 </button>
               </li>
             );
@@ -55,18 +55,18 @@ export function Learn({ chords, instrument, known, transpose, capo, onApply, onC
       {sugg.length > 0 && (
         <div>
           <div className="eyebrow mb-2">Left to learn</div>
-          <ul className="space-y-2">
+          <ul className="inset-group">
             {sugg.map((s) => (
-              <li key={s.chord} className="rounded-[20px] px-4 py-3 tint-1 border border-(--glass-line) flex items-center gap-3">
-                <button onClick={() => onChord(s.chord)} className="chordname press text-[22px] text-felt-hi w-16 text-left shrink-0">{s.chord}</button>
-                <span className="flex-1 text-[13px] text-ivory-2">{s.note}</span>
-                <button onClick={() => toggleKnown(instrument, s.chord)} className="press text-[12px] font-medium text-gold whitespace-nowrap">Got it</button>
+              <li key={s.chord} className="row">
+                <button onClick={() => onChord(s.chord)} className="chordname press ios-title3 text-ivory w-14 text-left shrink-0">{s.chord}</button>
+                <span className="flex-1 ios-footnote label-2">{s.note}</span>
+                <button onClick={() => toggleKnown(instrument, s.chord)} className="press ios-subhead font-semibold text-gold whitespace-nowrap">Got it</button>
               </li>
             ))}
           </ul>
         </div>
       )}
-      {sugg.length === 0 && <p className="text-gold text-sm">Every chord here is in your hands. Go play it.</p>}
+      {sugg.length === 0 && <p className="text-gold ios-subhead">Every chord here is in your hands. Go play it.</p>}
     </div>
   );
 }

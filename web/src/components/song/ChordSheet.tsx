@@ -15,10 +15,10 @@ export function ChordSheet({ lines, time, display, onSeek, onChord, known }: {
     if (r.top < 140 || r.bottom > window.innerHeight - 260) el.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [activeIdx]);
 
-  if (!lines.length) return <p className="text-ivory-3 text-sm mt-4">No lyrics for this song yet. Use the Beats view, or paste lyrics below.</p>;
+  if (!lines.length) return <p className="label-2 ios-subhead mt-4">No lyrics for this song yet. Use the Beats view, or paste lyrics below.</p>;
 
   return (
-    <div className="space-y-1.5 text-[17px] lg:text-[19px] leading-[1.35] lg:max-w-[64ch]">
+    <div className="space-y-1 ios-body lg:text-[19px] lg:leading-[26px] lg:max-w-[64ch]">
       {lines.map((l, i) => {
         const active = i === activeIdx;
         const past = time >= l.end;
@@ -27,7 +27,7 @@ export function ChordSheet({ lines, time, display, onSeek, onChord, known }: {
             key={i}
             ref={active ? activeRef : undefined}
             onClick={() => onSeek(l.time)}
-            className={`relative rounded-[16px] px-3 py-2 -mx-1 transition-colors cursor-pointer ${active ? "tint-2" : "hover:bg-(--tint-1)"}`}
+            className={`relative rounded-[18px] px-3 py-2 -mx-1 transition-colors cursor-pointer ${active ? "lens" : "hover:bg-(--tint-1)"}`}
           >
             {active && <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full" style={{ background: "linear-gradient(180deg, var(--gold-hi), var(--gold-lo))" }} />}
             {l.instrumental ? (
@@ -79,7 +79,7 @@ function ChordTag({ symbol, known, onChord, hot, inline }: { symbol: string; kno
       type="button"
       onClick={(e) => { e.stopPropagation(); onChord(symbol); }}
       className={`chordname press rounded-md px-1.5 ${inline ? "text-[14px] lg:text-[15px] h-[20px] -ml-1" : "text-[15px] h-7 px-2.5 rounded-full"} leading-none inline-flex items-center gap-1 transition-colors ${
-        hot ? "gold-fill" : unknown ? "text-ivory-2" : "text-gold-hi"
+        hot ? "gold-fill" : unknown ? "label-2" : "text-gold-hi"
       }`}
       title={unknown ? `${symbol} · not in your chords yet` : symbol}
     >

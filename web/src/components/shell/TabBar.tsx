@@ -1,52 +1,53 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "motion/react";
 import { IconLibrary, IconLive, IconMe, IconSearch } from "@/components/ui/Icons";
 
 const TABS = [
-  { href: "/", label: "Search", Icon: IconSearch },
   { href: "/library", label: "Library", Icon: IconLibrary },
   { href: "/live", label: "Live", Icon: IconLive },
   { href: "/me", label: "Me", Icon: IconMe },
 ];
 
+/** iOS 26/27 tab bar: a glass capsule with a sliding lens, and Search as its own detached circle. */
 export function TabBar() {
   const path = usePathname();
   if (path.startsWith("/song/")) return null;
+  const searchActive = path === "/";
   return (
     <nav
       aria-label="Primary"
-      className="fixed left-1/2 -translate-x-1/2 z-40 w-[min(420px,calc(100%-32px))] lg:hidden"
-      style={{ bottom: "calc(var(--sab) + 14px)" }}
+      className="fixed left-1/2 -translate-x-1/2 z-40 w-[min(430px,calc(100%-24px))] flex items-center gap-2 lg:hidden"
+      style={{ bottom: "calc(var(--sab) + 12px)" }}
     >
-      <div className="glass-strong rounded-full px-2 py-2 flex items-center justify-between relative">
+      <div className="glass-strong rounded-full p-1 flex items-center flex-1 relative">
         {TABS.map(({ href, label, Icon }) => {
-          const active = href === "/" ? path === "/" : path.startsWith(href);
+          const active = path.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`press relative flex flex-col items-center justify-center gap-0.5 h-12 flex-1 rounded-full transition-colors ${
-                active ? "text-gold-hi" : "text-ivory-3 hover:text-ivory-2"
-              }`}
+              className={`press relative flex flex-col items-center justify-center gap-[3px] h-[52px] flex-1 rounded-full transition-colors ${active ? "text-gold-hi" : "label-2"}`}
             >
               {active && (
-                <span
-                  aria-hidden
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: "linear-gradient(180deg, color-mix(in srgb, var(--gold-hi) 14%, transparent), color-mix(in srgb, var(--gold) 5%, transparent))",
-                    boxShadow: "inset 0 1px 0 var(--tint-2), inset 0 0 0 1px color-mix(in srgb, var(--gold) 22%, transparent)",
-                  }}
-                />
+                <motion.span layoutId="tab-lens" aria-hidden className="absolute inset-0 rounded-full lens" transition={{ type: "spring", stiffness: 520, damping: 38 }} />
               )}
-              <Icon className="relative" />
-              <span className="relative text-[10px] font-medium tracking-wide">{label}</span>
+              <Icon className="relative" width={24} height={24} strokeWidth={1.7} />
+              <span className="relative ios-caption2 font-medium">{label}</span>
             </Link>
           );
         })}
       </div>
+      <Link
+        href="/"
+        aria-label="Search"
+        aria-current={searchActive ? "page" : undefined}
+        className={`press glass-strong circle-btn !w-[60px] !h-[60px] shrink-0 ${searchActive ? "text-gold-hi" : "label-2"}`}
+      >
+        <span className={`circle-btn !w-[52px] !h-[52px] ${searchActive ? "lens" : ""}`}><IconSearch width={24} height={24} strokeWidth={1.9} /></span>
+      </Link>
     </nav>
   );
 }

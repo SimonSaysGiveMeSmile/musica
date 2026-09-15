@@ -30,6 +30,21 @@
   --glass-line: rgba(255, 255, 255, 0.085);
   --glass-line-hi: rgba(255, 255, 255, 0.16);
   --rail-w: 232px;
+  --font-sf: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Helvetica Neue", system-ui, sans-serif;
+  --font-sf-rounded: ui-rounded, "SF Pro Rounded", var(--font-sf);
+  --font-display: var(--font-sf);
+  --font-body: var(--font-sf);
+  /* iOS label hierarchy */
+  --label: var(--ivory);
+  --label-2: color-mix(in srgb, var(--ivory) 62%, transparent);
+  --label-3: color-mix(in srgb, var(--ivory) 34%, transparent);
+  --separator: color-mix(in srgb, var(--ivory) 14%, transparent);
+  /* Liquid Glass */
+  --lg-fill: rgba(255, 255, 255, 0.07);
+  --lg-fill-strong: rgba(30, 27, 24, 0.55);
+  --lg-lens: rgba(255, 255, 255, 0.16);
+  --lg-edge: rgba(255, 255, 255, 0.22);
+  --lg-edge-soft: rgba(255, 255, 255, 0.08);
   --radius-xl: 28px;
   --radius-lg: 22px;
   --radius-md: 16px;
@@ -56,8 +71,8 @@
   --color-felt: var(--felt);
   --color-felt-hi: var(--felt-hi);
   --color-on-accent: var(--on-accent);
-  --font-display: var(--font-display), ui-sans-serif, sans-serif;
-  --font-sans: var(--font-body), ui-sans-serif, sans-serif;
+  --font-display: var(--font-sf);
+  --font-sans: var(--font-sf);
   --radius-xl: var(--radius-xl);
   --radius-lg: var(--radius-lg);
   --radius-md: var(--radius-md);
@@ -95,6 +110,11 @@
   --tint-2: rgba(28, 24, 20, 0.07);
   --ground-veil: rgba(245, 240, 231, 0.9);
   --strong-glass: rgba(250, 247, 240, 0.6);
+  --lg-fill: rgba(255, 255, 255, 0.42);
+  --lg-fill-strong: rgba(250, 247, 240, 0.68);
+  --lg-lens: rgba(255, 255, 255, 0.85);
+  --lg-edge: rgba(255, 255, 255, 0.9);
+  --lg-edge-soft: rgba(28, 24, 20, 0.08);
   color-scheme: light;
 }
 @media (prefers-color-scheme: light) {
@@ -118,6 +138,11 @@
     --tint-2: rgba(28, 24, 20, 0.07);
     --ground-veil: rgba(245, 240, 231, 0.9);
     --strong-glass: rgba(250, 247, 240, 0.6);
+    --lg-fill: rgba(255, 255, 255, 0.42);
+    --lg-fill-strong: rgba(250, 247, 240, 0.68);
+    --lg-lens: rgba(255, 255, 255, 0.85);
+    --lg-edge: rgba(255, 255, 255, 0.9);
+    --lg-edge-soft: rgba(28, 24, 20, 0.08);
     color-scheme: light;
   }
 }
@@ -132,8 +157,11 @@ html {
 body {
   background: var(--lacquer);
   color: var(--ivory);
-  font-family: var(--font-sans);
-  font-feature-settings: "ss01", "cv11";
+  font-family: var(--font-sf);
+  font-size: 17px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-feature-settings: "tnum";
   overscroll-behavior-y: none;
   min-height: 100dvh;
 }
@@ -190,32 +218,55 @@ body::before {
    Three tiers. hairline: an edge only. glass: a breath of fill over blur.
    glass-strong: for things that float over content and must stay legible. */
 .hairline {
-  border: 1px solid var(--glass-line);
-  box-shadow: inset 0 1px 0 var(--tint-1);
+  border: 0.5px solid var(--lg-edge-soft);
+  box-shadow: inset 0 0.5px 0 var(--lg-edge-soft);
 }
+/* Liquid Glass: a lens of light over whatever sits behind it. */
 .glass {
-  background: var(--glass);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  backdrop-filter: blur(18px) saturate(150%);
-  border: 1px solid var(--glass-line);
-  box-shadow: inset 0 1px 0 var(--tint-2);
+  background: var(--lg-fill);
+  -webkit-backdrop-filter: blur(22px) saturate(190%);
+  backdrop-filter: blur(22px) saturate(190%);
+  border: 0.5px solid var(--lg-edge-soft);
+  box-shadow:
+    inset 0.6px 0.8px 0 var(--lg-edge),
+    inset -0.4px -0.6px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.12);
 }
 .glass-strong {
-  background: var(--strong-glass);
-  -webkit-backdrop-filter: blur(28px) saturate(170%);
-  backdrop-filter: blur(28px) saturate(170%);
-  border: 1px solid var(--glass-line-hi);
+  background: var(--lg-fill-strong);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(32px) saturate(200%);
+  border: 0.5px solid var(--lg-edge-soft);
   box-shadow:
-    inset 0 1px 0 var(--tint-2),
-    0 24px 60px -30px rgba(0, 0, 0, 0.5);
+    inset 0.6px 0.8px 0 var(--lg-edge),
+    inset -0.4px -0.6px 0 rgba(255, 255, 255, 0.05),
+    0 12px 40px -18px rgba(0, 0, 0, 0.6);
 }
-/* kept as an alias: former solid card, now a quiet glass tier */
-.lacquer {
-  background: var(--tint-1);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--glass-line);
-  box-shadow: inset 0 1px 0 var(--tint-1);
+/* the raised lens: selected segment, selected tab, a pressed control */
+.lens {
+  background: var(--lg-lens);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  backdrop-filter: blur(20px) saturate(200%);
+  box-shadow:
+    inset 0.8px 1px 0 var(--lg-edge),
+    inset -0.5px -0.8px 0 rgba(255, 255, 255, 0.08),
+    0 6px 16px -8px rgba(0, 0, 0, 0.5);
+}
+/* inset grouped list, the iOS workhorse */
+.lacquer, .inset-group {
+  background: var(--lg-fill);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 0.5px solid var(--lg-edge-soft);
+  box-shadow: inset 0 0.5px 0 var(--lg-edge-soft);
+}
+.inset-group { border-radius: 26px; overflow: hidden; }
+.row { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 10px 16px; position: relative; }
+.row + .row::before { content: ""; position: absolute; left: 16px; right: 0; top: 0; height: 0.5px; background: var(--separator); }
+.row.press:active { background: var(--tint-2); }
+.circle-btn {
+  width: 44px; height: 44px; border-radius: 9999px;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .tint-1 { background: var(--tint-1); }
 .tint-2 { background: var(--tint-2); }
@@ -256,26 +307,23 @@ body::before {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 24px -12px rgba(201, 164, 92, 0.7);
 }
 
-/* ───────────────────────────── Type ───────────────────────────── */
-.display {
-  font-family: var(--font-display);
-  font-variation-settings: "wdth" 100, "opsz" 96;
-  letter-spacing: -0.02em;
-  font-feature-settings: "tnum";
-}
-.chordname {
-  font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  font-feature-settings: "tnum";
-}
-.eyebrow {
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ivory-3);
-  font-weight: 500;
-}
+/* ───────────────────────────── Type (iOS text styles) ───────────────────────────── */
+.display { font-family: var(--font-sf); letter-spacing: -0.022em; font-feature-settings: "tnum"; }
+.ios-large-title { font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: -0.012em; }
+.ios-title1 { font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: -0.01em; }
+.ios-title2 { font-size: 22px; line-height: 28px; font-weight: 700; letter-spacing: -0.008em; }
+.ios-title3 { font-size: 20px; line-height: 25px; font-weight: 600; }
+.ios-headline { font-size: 17px; line-height: 22px; font-weight: 600; }
+.ios-body { font-size: 17px; line-height: 22px; font-weight: 400; }
+.ios-callout { font-size: 16px; line-height: 21px; }
+.ios-subhead { font-size: 15px; line-height: 20px; }
+.ios-footnote { font-size: 13px; line-height: 18px; }
+.ios-caption { font-size: 12px; line-height: 16px; }
+.ios-caption2 { font-size: 11px; line-height: 13px; }
+.chordname { font-family: var(--font-sf-rounded); font-weight: 600; letter-spacing: -0.01em; font-feature-settings: "tnum"; }
+.eyebrow { font-size: 13px; line-height: 18px; letter-spacing: 0.02em; text-transform: uppercase; color: var(--label-2); font-weight: 400; }
+.label-2 { color: var(--label-2); }
+.label-3 { color: var(--label-3); }
 }
 
 /* ───────────────────────────── Utilities ───────────────────────────── */
@@ -289,8 +337,8 @@ body::before {
   .page-pad-bottom { padding-bottom: 64px; }
   .safe-top { padding-top: 28px; }
 }
-.press { transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 160ms; }
-.press:active { transform: scale(0.97); }
+.press { transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms, background-color 180ms; }
+.press:active { transform: scale(0.96); }
 
 .rise { animation: rise 640ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes rise {

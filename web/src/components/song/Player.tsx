@@ -56,35 +56,35 @@ export function Player({ player, peaks, duration, beats, current, next }: { play
 
   return (
     <div className="fixed left-1/2 -translate-x-1/2 w-[min(560px,100%)] z-40 px-3 lg:static lg:translate-x-0 lg:w-full lg:px-0" style={{ bottom: "calc(var(--sab) + 10px)" }}>
-      <div className="glass-strong rounded-[30px] p-3 lg:p-4">
+      <div className="glass-strong rounded-[34px] p-3 lg:p-4">
         {/* now / next */}
         <div className="flex items-end justify-between px-2 mb-2">
           <div>
             <div className="eyebrow">Now</div>
-            <div className="chordname text-[34px] lg:text-[44px] leading-none text-gold-hi min-h-[34px]">{current ?? "—"}</div>
+            <div className="chordname text-[36px] lg:text-[44px] leading-none text-gold-hi min-h-[36px]">{current ?? "—"}</div>
           </div>
           <div className="text-right">
             <div className="eyebrow">Next</div>
-            <div className="chordname text-[20px] leading-none text-ivory-2 min-h-[20px]">{next ?? "—"}</div>
+            <div className="chordname text-[20px] leading-none label-2 min-h-[20px]">{next ?? "—"}</div>
           </div>
         </div>
         <canvas ref={canvasRef} onPointerDown={onScrub} onPointerMove={(e) => { if (e.buttons) onScrub(e); }} className="w-full h-12 touch-none rounded-lg cursor-pointer" />
         <div className="flex items-center justify-between mt-2 px-1">
-          <span className="text-[12px] text-ivory-3 tabular-nums w-12">{fmtTime(player.time)}</span>
+          <span className="ios-caption label-2 tabular-nums w-12">{fmtTime(player.time)}</span>
           <div className="flex items-center gap-2">
-            <button aria-pressed={!!player.loop} onClick={setLoopHere} className={`press h-10 w-10 rounded-full flex items-center justify-center ${player.loop ? "gold-fill" : "text-ivory-2 hairline"}`} title="Loop this bar"><IconLoop width={18} height={18} /></button>
-            <button onClick={player.toggle} aria-label={player.playing ? "Pause" : "Play"} className="press h-14 w-14 rounded-full flex items-center justify-center gold-fill">
+            <button aria-pressed={!!player.loop} onClick={setLoopHere} className={`press circle-btn ${player.loop ? "gold-fill" : "glass text-ivory"}`} title="Loop this bar"><IconLoop width={18} height={18} /></button>
+            <button onClick={player.toggle} aria-label={player.playing ? "Pause" : "Play"} className="press circle-btn !w-16 !h-16 gold-fill">
               {player.playing ? <IconPause width={26} height={26} /> : <IconPlay width={26} height={26} />}
             </button>
-            <button aria-pressed={player.metronome} onClick={() => player.setMetronome(!player.metronome)} className={`press h-10 w-10 rounded-full flex items-center justify-center ${player.metronome ? "gold-fill" : "text-ivory-2 hairline"}`} title="Metronome"><IconMetronome width={18} height={18} /></button>
+            <button aria-pressed={player.metronome} onClick={() => player.setMetronome(!player.metronome)} className={`press circle-btn ${player.metronome ? "gold-fill" : "glass text-ivory"}`} title="Metronome"><IconMetronome width={18} height={18} /></button>
           </div>
-          <button onClick={() => setShowSpeed((s) => !s)} className="press text-[12px] font-medium tabular-nums w-12 text-right text-gold">{Math.round(player.rate * 100)}%</button>
+          <button onClick={() => setShowSpeed((s) => !s)} className="press ios-caption font-semibold tabular-nums w-12 text-right text-gold">{Math.round(player.rate * 100)}%</button>
         </div>
         {showSpeed && (
           <div className="px-2 pt-1 flex items-center gap-3">
-            <span className="text-[11px] text-ivory-3">50%</span>
+            <span className="ios-caption2 label-2">50%</span>
             <input type="range" min={0.5} max={1} step={0.05} value={player.rate} onChange={(e) => player.setRate(Number(e.target.value))} style={{ ["--fill" as string]: `${((player.rate - 0.5) / 0.5) * 100}%` }} aria-label="Playback speed" />
-            <span className="text-[11px] text-ivory-3">100%</span>
+            <span className="ios-caption2 label-2">100%</span>
           </div>
         )}
       </div>

@@ -13,5 +13,5 @@ export function ChordDiagram({ symbol, instrument, size = 96 }: { symbol: string
 export function ChordNotes({ symbol, flats }: { symbol: string; flats?: boolean }) {
   const c = parseChord(symbol);
   if (!c) return null;
-  return <span className="text-ivory-3 text-xs tracking-wide">{chordPitchClasses(c).map((p) => pcName(p, flats)).join(" · ")}</span>;
+  return <span className="label-2 ios-caption tracking-wide">{chordPitchClasses(c).map((p) => pcName(p, flats)).join(" · ")}</span>;
 }

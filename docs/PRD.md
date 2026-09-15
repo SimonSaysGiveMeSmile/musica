@@ -118,7 +118,7 @@ There is **no generative AI, no LLM tokens, and no per-request compute cost**. A
 ### 6.1 Stack
 - **Web:** Next.js 16 (App Router, TypeScript), Tailwind CSS 4, Motion, `idb-keyval`, Essentia.js 0.1.3 (Web Worker), custom service worker.
 - **Audio service:** Python 3.12, FastAPI, yt-dlp, ffmpeg. Dockerfile for Railway (or Fly.io / any container host).
-- **Fonts:** Bricolage Grotesque (display) and Instrument Sans (UI/body), self-hosted through `next/font`.
+- **Fonts:** none loaded; the system font stack (SF Pro on Apple platforms).
 
 ### 6.2 Data model (client)
 ```ts
@@ -153,7 +153,8 @@ Rate limit: 30 requests/min/IP. CORS: only the deployed web origin plus localhos
 
 **Concept: "the closed lid of a concert grand."** A deep piano-black lacquer field with soft specular reflections, a band of walnut grain for warmth, and hairline brushed-gold accents used sparingly for the active state. Text is ivory. Glass surfaces (iOS 26 Liquid Glass) float over the lacquer: translucent, blurred, with a bright top edge and concentric corner radii.
 
-- **Typography:** Bricolage Grotesque for titles and chord names (wide, confident, tabular numerals); Instrument Sans for UI and lyrics. No Inter, no system fonts.
+- **Typography:** the system font only (SF Pro on Apple devices, with SF Pro Rounded for chord names), set on the iOS text-style scale: Large Title 34/700, Title 1 28, Title 2 22, Headline 17/600, Body 17, Subheadline 15, Footnote 13, Caption 12/11. No web fonts are loaded.
+- **Surfaces (iOS 26/27 Liquid Glass):** translucent lenses with a specular top-left edge over a blurred, saturated backdrop. A raised "lens" marks the selected segment or tab. Lists are inset grouped cards with hairline separators and chevrons; icon actions are 44 pt glass circles; the tab bar is a glass capsule with Search as its own detached circle.
 - **Color tokens:** `--lacquer #0B0A09`, `--lacquer-2 #161412`, `--ivory #F3EDE2`, `--walnut #4A3222`, `--walnut-hi #8A5A3A`, `--gold #C9A45C`, `--gold-hi #E8C77E`, `--felt #7A1F2B` (accent for record/live).
 - **Motion:** one orchestrated page reveal (staggered 40 ms); chord blocks slide with spring physics; playhead is a continuous transform, never a re-render; all motion disabled under reduced-motion.
 - **Layout:** on phones, a large title, a floating glass tab bar (Search, Library, Live, Me) and a persistent glass player above it. On screens 1024 px and wider, a left navigation rail, a wide sheet column (max 64 characters), and the player docked as a sticky side panel with the current chord's diagram beneath it.

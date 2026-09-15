@@ -50,7 +50,7 @@ export function Timeline({ analysis, time, display, onSeek }: { analysis: Analys
           ))}
         </div>
       </div>
-      <p className="text-ivory-3 text-xs mt-2">Bar under each block shows how confident the analysis is for that chord.</p>
+      <p className="label-2 ios-footnote mt-2">Bar under each block shows how confident the analysis is for that chord.</p>
     </div>
   );
 }

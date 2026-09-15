@@ -14,19 +14,19 @@ export function IngestProgress({ state, title, onDismiss }: { state: IngestState
   const isError = state.stage === "error";
   const idx = STEPS.findIndex((s) => s.key.includes(state.stage));
   return (
-    <div className="lacquer rounded-[24px] p-4 relative overflow-hidden">
+    <div className="inset-group p-4 relative">
       <div aria-hidden className="absolute inset-x-0 top-0 h-px gold-line opacity-70" />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="eyebrow">{isError ? "Could not analyze" : "Analyzing"}</div>
-          <div className="font-semibold truncate mt-1">{title}</div>
+          <div className="ios-headline truncate mt-1">{title}</div>
         </div>
         {(isError || state.stage === "done") && (
           <button onClick={onDismiss} aria-label="Dismiss" className="press text-ivory-3 -mr-1 -mt-1 p-1"><IconClose /></button>
         )}
       </div>
       {isError ? (
-        <p className="text-felt-hi text-sm mt-3">{state.error}</p>
+        <p className="text-felt-hi ios-footnote mt-3">{state.error}</p>
       ) : (
         <>
           <div className="mt-4 h-1.5 rounded-full tint-2 overflow-hidden">
@@ -35,10 +35,10 @@ export function IngestProgress({ state, title, onDismiss }: { state: IngestState
           <div className="mt-3 flex items-center justify-between">
             <div className="flex gap-3">
               {STEPS.map((s, i) => (
-                <span key={s.label} className={`text-[12px] font-medium tracking-wide ${i < idx ? "text-gold" : i === idx ? "text-ivory" : "text-ivory-3"}`}>{s.label}</span>
+                <span key={s.label} className={`ios-caption font-medium ${i < idx ? "text-gold" : i === idx ? "text-ivory" : "text-ivory-3"}`}>{s.label}</span>
               ))}
             </div>
-            <span className="text-ivory-3 text-[12px]">{state.detail}</span>
+            <span className="label-2 ios-caption">{state.detail}</span>
           </div>
         </>
       )}

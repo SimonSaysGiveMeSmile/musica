@@ -97,12 +97,12 @@ export function SongView({ id }: { id: string }) {
     <>
       <Stepper label="Transpose" value={transpose} fmt={(v) => (v > 0 ? `+${v}` : `${v}`)} onChange={(v) => update({ transpose: Math.max(-11, Math.min(11, v)) })} />
       {instrument !== "piano" && <Stepper label="Capo" value={capo} fmt={(v) => `${v}`} onChange={(v) => update({ capo: Math.max(0, Math.min(9, v)) })} />}
-      <div className="hairline rounded-full h-10 px-1 flex items-center shrink-0">
+      <div className="glass rounded-full h-11 p-[3px] flex items-center shrink-0">
         {(["guitar", "piano", "ukulele"] as Instrument[]).map((i) => (
-          <button key={i} onClick={() => { update({ instrument: i }); setPrefs({ instrument: i }); }} className={`press h-8 px-3 rounded-full text-[12px] font-medium capitalize ${instrument === i ? "gold-fill" : "text-ivory-2"}`}>{i}</button>
+          <button key={i} onClick={() => { update({ instrument: i }); setPrefs({ instrument: i }); }} className={`press h-full px-3.5 rounded-full ios-footnote capitalize ${instrument === i ? "lens text-ivory font-semibold" : "label-2 font-medium"}`}>{i}</button>
         ))}
       </div>
-      <div className="hairline rounded-full h-10 px-3 flex items-center shrink-0 text-[12px] text-ivory-3 lg:hidden">
+      <div className="hairline rounded-full h-11 px-3.5 flex items-center shrink-0 ios-footnote label-2 lg:hidden">
         relative {relativeKey(keyName, analysis.scale)} · {Math.round(analysis.keyStrength * 100)}% sure
       </div>
     </>
@@ -113,15 +113,15 @@ export function SongView({ id }: { id: string }) {
       {/* Header */}
       <header className="song-header safe-top px-4 pt-2 pb-3 sticky top-0 z-30 lg:static lg:px-0 lg:pt-0 lg:col-span-2">
         <div className="flex items-center gap-2 lg:gap-4">
-          <button onClick={() => router.push("/library")} aria-label="Back" className="press h-10 w-10 -ml-1 rounded-full flex items-center justify-center text-gold"><IconBack /></button>
+          <button onClick={() => router.push("/library")} aria-label="Back" className="press glass circle-btn text-ivory shrink-0"><IconBack /></button>
           <div className="min-w-0 flex-1">
-            <div className="display font-semibold text-[18px] lg:text-[32px] leading-tight truncate">{song.title}</div>
-            <div className="text-ivory-3 text-[13px] lg:text-[15px] truncate">{song.artist ?? (song.source === "file" ? "Local file" : "")}</div>
+            <div className="ios-headline lg:ios-title1 truncate">{song.title}</div>
+            <div className="ios-footnote lg:ios-subhead label-2 truncate">{song.artist ?? (song.source === "file" ? "Local file" : "")}</div>
           </div>
-          <div className="glass rounded-full px-3 h-9 lg:h-10 flex items-center gap-2 text-[13px]" title={`Relative ${relativeKey(keyName, analysis.scale)} · ${Math.round(analysis.keyStrength * 100)}% confidence`}>
-            <span className="chordname text-gold-hi text-[15px] lg:text-[17px]">{keyLabel}</span>
-            <span className="text-ivory-3">{Math.round(analysis.bpm)} bpm</span>
-            <span className="hidden lg:inline text-ivory-3">· rel. {relativeKey(keyName, analysis.scale)}</span>
+          <div className="glass rounded-full px-3.5 h-11 flex items-center gap-2 ios-footnote" title={`Relative ${relativeKey(keyName, analysis.scale)} · ${Math.round(analysis.keyStrength * 100)}% confidence`}>
+            <span className="chordname text-gold-hi ios-headline">{keyLabel}</span>
+            <span className="label-2">{Math.round(analysis.bpm)} bpm</span>
+            <span className="hidden lg:inline label-3">· rel. {relativeKey(keyName, analysis.scale)}</span>
           </div>
         </div>
         <div className="mt-3 lg:mt-5 lg:flex lg:items-center lg:gap-3">
@@ -145,9 +145,9 @@ export function SongView({ id }: { id: string }) {
           <>
             <ChordSheet lines={sheetLines} time={player.time} display={display} onSeek={player.seek} onChord={setOpenChord} known={new Set(prefs.known[instrument])} />
             <div className="mt-6 flex flex-wrap gap-2 text-[13px]">
-              {!song.lyrics && <button onClick={retryLyrics} disabled={lyricsBusy} className="press glass rounded-full h-9 px-4 text-ivory-2">{lyricsBusy ? "Searching…" : "Find lyrics again"}</button>}
-              <button onClick={() => { setLyricsDraft(song.lyrics?.lines.map((l) => l.text).join("\n") ?? ""); setEditingLyrics(true); }} className="press glass rounded-full h-9 px-4 text-ivory-2">{song.lyrics ? "Edit lyrics" : "Paste lyrics"}</button>
-              {song.lyrics && !song.lyrics.synced && <span className="self-center text-ivory-3">Lyrics are unsynced, chords are placed approximately.</span>}
+              {!song.lyrics && <button onClick={retryLyrics} disabled={lyricsBusy} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">{lyricsBusy ? "Searching…" : "Find lyrics again"}</button>}
+              <button onClick={() => { setLyricsDraft(song.lyrics?.lines.map((l) => l.text).join("\n") ?? ""); setEditingLyrics(true); }} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">{song.lyrics ? "Edit lyrics" : "Paste lyrics"}</button>
+              {song.lyrics && !song.lyrics.synced && <span className="self-center ios-footnote label-2">Lyrics are unsynced, chords are placed approximately.</span>}
             </div>
           </>
         )}
@@ -163,11 +163,11 @@ export function SongView({ id }: { id: string }) {
       <aside className="lg:sticky lg:top-7 lg:self-start lg:flex lg:flex-col lg:gap-4">
         <Player player={player} peaks={song.peaks} duration={analysis.duration} beats={analysis.beats} current={current ? display(current.chord) : null} next={nextChord(analysis, player.time, display)} />
         {current && current.chord !== "N" && (
-          <div className="hidden lg:flex lacquer rounded-[26px] p-5 items-center gap-5">
+          <div className="hidden lg:flex inset-group p-5 items-center gap-5">
             <ChordDiagram symbol={display(current.chord)} instrument={instrument} size={instrument === "piano" ? 130 : 104} />
             <div>
               <div className="eyebrow">Playing now</div>
-              <button onClick={() => setOpenChord(display(current.chord))} className="chordname press text-[30px] text-gold-hi leading-none mt-1">{display(current.chord)}</button>
+              <button onClick={() => setOpenChord(display(current.chord))} className="chordname press text-[32px] text-gold-hi leading-none mt-1">{display(current.chord)}</button>
               <div className="mt-1"><ChordNotes symbol={display(current.chord)} flats={flats} /></div>
             </div>
           </div>
@@ -178,7 +178,7 @@ export function SongView({ id }: { id: string }) {
       <Sheet open={!!openChord} onClose={() => setOpenChord(null)}>
         {openChord && (
           <div className="flex flex-col items-center pb-2">
-            <div className="chordname text-[44px] text-gold-hi leading-none">{openChord}</div>
+            <div className="chordname text-[44px] text-gold-hi leading-none mt-1">{openChord}</div>
             <div className="mt-1"><ChordNotes symbol={openChord} flats={flats} /></div>
             <div className="mt-4"><ChordDiagram symbol={openChord} instrument={instrument} size={140} /></div>
             <button
@@ -195,7 +195,7 @@ export function SongView({ id }: { id: string }) {
         <textarea value={lyricsDraft} onChange={(e) => setLyricsDraft(e.target.value)} rows={10} placeholder="Paste lyrics, one line per lyric line" className="w-full rounded-[18px] tint-1 border border-(--glass-line) p-3 text-[15px] outline-none focus:border-gold/50" />
         <div className="flex gap-2 mt-3">
           <button onClick={saveLyrics} className="press h-11 px-5 rounded-full font-medium gold-fill">Save</button>
-          <button onClick={() => setEditingLyrics(false)} className="press h-11 px-5 rounded-full glass text-ivory-2">Cancel</button>
+          <button onClick={() => setEditingLyrics(false)} className="press h-11 px-5 rounded-full glass text-ivory">Cancel</button>
         </div>
       </Sheet>
     </main>
@@ -211,11 +211,11 @@ function nextChord(analysis: NonNullable<Song["analysis"]>, t: number, display: 
 
 function Stepper({ label, value, fmt, onChange }: { label: string; value: number; fmt: (v: number) => string; onChange: (v: number) => void }) {
   return (
-    <div className="hairline rounded-full h-10 pl-3 pr-1 flex items-center gap-1 shrink-0">
-      <span className="text-[12px] text-ivory-3 font-medium">{label}</span>
-      <button aria-label={`${label} down`} onClick={() => onChange(value - 1)} className="press h-8 w-8 rounded-full flex items-center justify-center text-ivory-2"><IconMinus width={16} height={16} /></button>
-      <span className="chordname w-7 text-center text-[15px] text-gold-hi">{fmt(value)}</span>
-      <button aria-label={`${label} up`} onClick={() => onChange(value + 1)} className="press h-8 w-8 rounded-full flex items-center justify-center text-ivory-2"><IconPlus width={16} height={16} /></button>
+    <div className="glass rounded-full h-11 pl-3.5 pr-1 flex items-center gap-0.5 shrink-0">
+      <span className="ios-footnote label-2">{label}</span>
+      <button aria-label={`${label} down`} onClick={() => onChange(value - 1)} className="press h-9 w-9 rounded-full flex items-center justify-center text-ivory"><IconMinus width={16} height={16} /></button>
+      <span className="chordname w-7 text-center ios-headline text-gold-hi">{fmt(value)}</span>
+      <button aria-label={`${label} up`} onClick={() => onChange(value + 1)} className="press h-9 w-9 rounded-full flex items-center justify-center text-ivory"><IconPlus width={16} height={16} /></button>
     </div>
   );
 }

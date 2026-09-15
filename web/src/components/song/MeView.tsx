@@ -22,12 +22,12 @@ export function MeView() {
 
   return (
     <main className="page-pad-bottom">
-      <LargeTitle eyebrow="Chords you can play" title="Me" right={<span className="chordname text-gold-hi text-2xl pb-1">{known.size}</span>} />
+      <LargeTitle eyebrow="Chords you can play" title="Me" right={<span className="chordname text-gold-hi ios-title2 pb-1">{known.size}</span>} />
       <section className="px-5 lg:px-10 space-y-4 lg:max-w-[760px]">
         <Segmented id="inst" value={inst} onChange={(v) => setPrefs({ instrument: v as Instrument })} options={[
           { value: "guitar", label: "Guitar" }, { value: "piano", label: "Piano" }, { value: "ukulele", label: "Ukulele" },
         ]} />
-        <p className="text-ivory-3 text-sm">Tap a chord to mark it as known. Long-press to see the shape. Songs use this to suggest a capo or key that fits your hands.</p>
+        <p className="label-2 ios-footnote px-1">Tap a chord to mark it as known. Long-press to see the shape. Songs use this to suggest a capo or key that fits your hands.</p>
 
         <div className="keyboard hairline rounded-[26px] p-3 overflow-x-auto no-scrollbar">
           <div className="grid gap-1.5" style={{ gridTemplateColumns: `36px repeat(${QUALS.length}, minmax(52px, 1fr))` }}>
@@ -41,22 +41,22 @@ export function MeView() {
         </div>
 
         <div className="flex gap-2">
-          <button onClick={() => setPrefs({ known: { ...prefs.known, [inst]: [] } })} className="press hairline rounded-full h-10 px-4 text-sm text-ivory-2">Clear</button>
-          <button onClick={() => setPrefs({ known: { ...prefs.known, [inst]: ROOTS.flatMap((r) => QUALS.map((q) => r + QUALITY_SUFFIX[q])) } })} className="press hairline rounded-full h-10 px-4 text-sm text-ivory-2">I know them all</button>
+          <button onClick={() => setPrefs({ known: { ...prefs.known, [inst]: [] } })} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">Clear</button>
+          <button onClick={() => setPrefs({ known: { ...prefs.known, [inst]: ROOTS.flatMap((r) => QUALS.map((q) => r + QUALITY_SUFFIX[q])) } })} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">I know them all</button>
         </div>
 
         {/* Appearance */}
         <div id="appearance" className="pt-6">
-          <div className="eyebrow mb-3">Appearance</div>
-          <div className="lacquer rounded-[26px] p-4 space-y-4">
-            <div>
-              <div className="text-[13px] text-ivory-2 mb-2">Theme</div>
+          <div className="eyebrow mb-2 px-4">Appearance</div>
+          <div className="inset-group">
+            <div className="row flex-col !items-stretch gap-2 py-3">
+              <div className="ios-body">Theme</div>
               <Segmented id="theme" value={prefs.theme} onChange={(v) => setPrefs({ theme: v as Theme })} options={[
                 { value: "system", label: "System" }, { value: "light", label: "Light" }, { value: "dark", label: "Dark" },
               ]} />
             </div>
-            <div>
-              <div className="text-[13px] text-ivory-2 mb-2">Accent</div>
+            <div className="row flex-col !items-stretch gap-2 py-3">
+              <div className="ios-body">Accent</div>
               <div className="flex flex-wrap gap-2">
                 {ACCENTS.map((a) => {
                   const on = prefs.accent === a.id;
@@ -67,7 +67,7 @@ export function MeView() {
                       aria-pressed={on}
                       aria-label={`${a.label} accent`}
                       title={a.label}
-                      className={`press h-11 pl-1.5 pr-3 rounded-full flex items-center gap-2 text-[13px] border transition-colors ${on ? "border-gold-hi/60 tint-2 text-ivory" : "border-transparent hairline text-ivory-2"}`}
+                      className={`press h-11 pl-1.5 pr-3.5 rounded-full flex items-center gap-2 ios-footnote transition-colors ${on ? "lens text-ivory font-semibold" : "glass label-2"}`}
                     >
                       <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(160deg, ${a.swatch}, color-mix(in srgb, ${a.swatch} 60%, black))`, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4)" }}>
                         {on && <IconCheck width={16} height={16} style={{ color: "#1a1408" }} />}
