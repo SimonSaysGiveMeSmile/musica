@@ -55,7 +55,7 @@ export function Player({ player, peaks, duration, beats, current, next }: { play
   };
 
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 w-[min(560px,100%)] z-40 px-3 lg:static lg:translate-x-0 lg:w-full lg:px-0" style={{ bottom: "calc(var(--sab) + 10px)" }}>
+    <div className="fixed left-1/2 -translate-x-1/2 w-[min(560px,100%)] z-40 px-3 lg:static lg:translate-x-0 lg:w-full lg:px-0" style={{ bottom: "calc(var(--sab) + 10px - var(--ios-bottom-shim))" }}>
       <div className="glass-strong rounded-[34px] p-3 lg:p-4">
         {/* now / next */}
         <div className="flex items-end justify-between px-2 mb-2">

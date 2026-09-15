@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Any song, in your hands. Chords, key, tempo and lyrics from YouTube, Spotify or your own files, analyzed on your phone.",
   applicationName: "Musica",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "Musica" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Musica" },
   formatDetection: { telephone: false },
   icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
 };
@@ -30,7 +30,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Apply the saved theme before first paint so there is no flash. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var p=JSON.parse(localStorage.getItem("musica.prefs.v1")||"{}");var r=document.documentElement;if(p.theme==="light"||p.theme==="dark")r.setAttribute("data-theme",p.theme);if(p.accent&&p.accent!=="gold")r.setAttribute("data-accent",p.accent);}catch(e){}`,
+            __html: `try{var p=JSON.parse(localStorage.getItem("musica.prefs.v1")||"{}");var r=document.documentElement;if(p.theme==="light"||p.theme==="dark")r.setAttribute("data-theme",p.theme);if(p.accent&&p.accent!=="gold")r.setAttribute("data-accent",p.accent);}catch(e){}
+try{if(navigator.standalone||matchMedia("(display-mode: standalone)").matches){var g=Math.max(0,Math.min(160,screen.height-window.innerHeight));document.documentElement.style.setProperty("--ios-bottom-shim",g+"px");}}catch(e){}`,
           }}
         />
       </head>

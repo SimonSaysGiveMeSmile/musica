@@ -52,6 +52,9 @@
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --tabbar-h: 64px;
+  /* iOS 26 standalone: the layout viewport can be short by the height of a phantom Safari bar.
+     Measured at runtime (AppShell) and subtracted from every bottom-pinned element. */
+  --ios-bottom-shim: 0px;
   color-scheme: dark;
 }
 
@@ -338,7 +341,17 @@ body::before {
   input, textarea { -webkit-user-select: text; user-select: text; }
   .safe-top { padding-top: max(var(--sat), 20px); }
   body { overscroll-behavior: none; }
+  /* status bar sits over the page; give the white clock something dark enough to read on in light mode */
+  .statusbar-veil { display: block; }
 }
+.statusbar-veil {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0; height: var(--sat); z-index: 60; pointer-events: none;
+  -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
+  background: var(--statusbar-tint, transparent);
+}
+:root[data-theme="light"] { --statusbar-tint: rgba(20, 16, 12, 0.55); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --statusbar-tint: rgba(20, 16, 12, 0.55); } }
 @media (min-width: 1024px) {
   .song-header { background: none; }
   .page-pad-bottom { padding-bottom: 64px; }

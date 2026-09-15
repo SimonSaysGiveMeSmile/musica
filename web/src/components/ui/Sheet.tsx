@@ -21,8 +21,8 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
           />
           <motion.div
             role="dialog"
-            className="fixed z-50 left-1/2 -translate-x-1/2 w-[min(560px,calc(100%-12px))] bottom-1.5 lg:bottom-10 glass-strong rounded-[38px] px-5 pt-2"
-            style={{ paddingBottom: "calc(var(--sab) + 20px)" }}
+            className="fixed z-50 left-1/2 -translate-x-1/2 w-[min(560px,calc(100%-12px))] lg:bottom-10 glass-strong rounded-[38px] px-5 pt-2"
+            style={{ paddingBottom: "calc(var(--sab) + 20px)", bottom: "calc(6px - var(--ios-bottom-shim))" }}
             initial={{ y: "110%" }} animate={{ y: 0 }} exit={{ y: "110%" }}
             transition={{ type: "spring", stiffness: 420, damping: 38 }}
             drag="y" dragConstraints={{ top: 0 }} dragElastic={0.08}
