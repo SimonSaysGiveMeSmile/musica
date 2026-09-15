@@ -12,7 +12,7 @@ export interface IngestState { stage: IngestStage; pct: number; detail: Key | ""
 type Report = (s: IngestState) => void;
 
 const STAGE_LABEL: Record<string, Key> = {
-  waveform: "ingest.waveform", key: "ingest.key", tempo: "ingest.tempo", chords: "ingest.chords", done: "ingest.done",
+  waveform: "ingest.waveform", key: "ingest.key", tempo: "ingest.tempo", chords: "ingest.chords", vocals: "ingest.vocals", done: "ingest.done",
 };
 
 async function fetchWithProgress(url: string, onPct: (p: number) => void): Promise<Blob> {

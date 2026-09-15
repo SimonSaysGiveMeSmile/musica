@@ -56,7 +56,8 @@ There is **no generative AI, no LLM tokens, and no per-request compute cost**. A
 
 ### 4.3 Lyrics
 - **F3.1** Fetch synced lyrics from LRCLIB (free, no key) in any language. The video title's language is detected from its script (Han, Kana, Hangul, Cyrillic, Latin with diacritics), uploader noise for that language is stripped ("官方MV", "Официальное видео", "Video Oficial", …), and up to six readings of the title are tried in order: "Artist – Title", "Title – Artist", quoted CJK titles like Artist《Title》, and title-only. Results more than 25 s off the recording's duration are rejected; synced lyrics win over plain. The lyrics' own language is detected from the text and tagged on the sheet for correct typography.
-- **F3.4** Lyric sync: a per-song offset (nudged in 0.2 s steps) and long-press on any line to snap it to the current playhead. Playback time is interpolated between the browser's coarse time updates so highlighting stays on the beat on iOS.
+- **F3.3b** Vocal activity: a per-half-second "sung melody" curve (Essentia `PredominantPitchMelodia` at 22.05 kHz, 80–1000 Hz) is stored with the analysis. Gaps in the lyrics are labelled "Instrumental" only when that curve is quiet; where singing is detected but no lyric line exists, the row says so instead of claiming an instrumental. Older analyses without the curve show a neutral chord row.
+- **F3.4** Lyric sync: a per-song offset (nudged in 0.2 s steps) long-press on any line to snap it to the current playhead, and an Auto button that aligns the first sung line with the first detected singing. Playback time is interpolated between the browser's coarse time updates so highlighting stays on the beat on iOS.
 - **F3.2** Align chord segments to lyric lines by timestamp. A chord whose onset falls inside a line is placed above the word at the proportional position; chords between lines become standalone chord rows.
 - **F3.3** Users can edit or paste their own lyrics; alignment is recomputed.
 

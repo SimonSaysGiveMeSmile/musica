@@ -121,16 +121,16 @@ export function SearchHome() {
       {(searching || results) && (
         <section className="px-5 lg:px-0 mt-6">
           <div className="eyebrow mb-3">{t("home.results")}</div>
-          {searching && <div className="grid gap-2 lg:grid-cols-2">{[0, 1, 2, 3].map((i) => <div key={i} className="shimmer h-[72px] rounded-[20px]" />)}</div>}
+          {searching && <div className="grid gap-2 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">{[0, 1, 2, 3].map((i) => <div key={i} className="shimmer h-[72px] rounded-[20px]" />)}</div>}
           {results && results.length === 0 && <p className="label-2">{t("home.nothingFound")}</p>}
-          <ul className="grid gap-2 lg:grid-cols-2">
+          <ul className="grid gap-2 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             {results?.map((r, i) => (
-              <motion.li key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+              <motion.li key={r.id} className="min-w-0" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => startResolved({ id: r.id, title: r.title, duration: r.duration, thumbnail: r.thumbnail, source: "youtube", ...( { channel: r.channel } as object) })}
-                  className="press w-full inset-group p-2 flex items-center gap-3 text-left disabled:opacity-50"
+                  className="press w-full min-w-0 inset-group p-2 flex items-center gap-3 text-left disabled:opacity-50"
                 >
                   <Thumb src={r.thumbnail} alt="" />
                   <div className="min-w-0 flex-1">

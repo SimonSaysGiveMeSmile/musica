@@ -26,9 +26,9 @@ export function LibraryView() {
             <Link href="/" className="press inline-block mt-4 h-11 px-5 leading-[44px] rounded-full font-medium gold-fill">{t("library.findSong")}</Link>
           </div>
         )}
-        <ul className="inset-group lg:grid lg:grid-cols-2">
+        <ul className="inset-group lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           {songs?.map((s, i) => (
-            <motion.li key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} className="row">
+            <motion.li key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} className="row min-w-0">
               <Link href={`/song/${encodeURIComponent(s.id)}`} className="press flex items-center gap-3 flex-1 min-w-0">
                 <div className="wood w-14 h-14 rounded-[14px] overflow-hidden shrink-0 relative">
                   {s.thumbnail ? <img src={s.thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover" /> : <div className="absolute inset-0 flex items-center justify-center chordname text-2xl text-ivory/90">{s.analysis?.key}</div>}

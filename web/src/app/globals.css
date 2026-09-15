@@ -153,6 +153,7 @@
 /* ───────────────────────────── Base ───────────────────────────── */
 html {
   background: var(--lacquer);
+  overflow-x: clip; /* never let a long title widen the page on a phone */
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
 }

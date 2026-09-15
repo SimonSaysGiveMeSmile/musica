@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { getAudio, getSong, saveSong, type Song } from "@/lib/store/db";
 import { usePlayer } from "@/lib/audio/player";
 import { usePrefs, setPrefs } from "@/lib/store/prefs";
-import { chordAt, distinctChords } from "@/lib/analysis/postprocess";
+import { chordAt, distinctChords, firstVocalOnset, vocalActivityIn } from "@/lib/analysis/postprocess";
 import { keyPrefersFlats, transposeKey, transposeSymbol, relativeKey } from "@/lib/theory/chords";
 import type { Instrument } from "@/lib/theory/coverage";
 import { Segmented } from "@/components/ui/Segmented";
@@ -66,9 +66,19 @@ export function SongView({ id }: { id: string }) {
   const sheetLines = useMemo(() => {
     if (!analysis) return [];
     const lines = (song?.lyrics?.lines ?? []).map((l) => (l.time >= 0 ? { ...l, time: Math.max(0, l.time + lyricsOffset) } : l));
-    return alignSheet(lines, analysis.chords, analysis.duration);
+    return alignSheet(lines, analysis.chords, analysis.duration, (a, b) => vocalActivityIn(analysis, a, b));
   }, [analysis, song?.lyrics, lyricsOffset]);
   const nudge = useCallback((d: number) => update({ lyricsOffset: Math.round(((song?.lyricsOffset ?? 0) + d) * 10) / 10 }), [song?.lyricsOffset, update]);
+  /** Align the first sung line with the first detected singing. */
+  const autoSync = () => {
+    if (!analysis || !song?.lyrics) return;
+    const onset = firstVocalOnset(analysis);
+    const first = song.lyrics.lines.find((l) => l.time >= 0 && l.text.trim());
+    if (onset === null || !first) return;
+    const off = Math.round((onset - first.time) * 10) / 10;
+    if (Math.abs(off) <= 30) update({ lyricsOffset: off });
+  };
+  const canAutoSync = !!analysis?.vocals && firstVocalOnset(analysis) !== null;
   /** Long-press on a line: make that line start right now. */
   const syncLineToNow = useCallback((originalTime: number) => {
     update({ lyricsOffset: Math.round((player.time - originalTime) * 10) / 10 });
@@ -160,6 +170,7 @@ export function SongView({ id }: { id: string }) {
                   <button onClick={() => nudge(-0.2)} className="press glass rounded-full h-9 px-3 ios-footnote text-ivory">{t("sheet.earlier")}</button>
                   <span className="chordname ios-subhead tabular-nums w-14 text-center text-gold-hi">{t("sheet.offset", { n: `${lyricsOffset > 0 ? "+" : ""}${lyricsOffset.toFixed(1)}` })}</span>
                   <button onClick={() => nudge(0.2)} className="press glass rounded-full h-9 px-3 ios-footnote text-ivory">{t("sheet.later")}</button>
+                  {canAutoSync && <button onClick={autoSync} className="press gold-fill rounded-full h-9 px-3 ios-footnote">{t("sheet.auto")}</button>}
                   {lyricsOffset !== 0 && <button onClick={() => update({ lyricsOffset: 0 })} className="press ios-footnote text-gold ml-1">{t("common.reset")}</button>}
                 </div>
                 <div className="row !min-h-0 py-2"><span className="ios-caption label-3">{t("sheet.syncHint")}</span></div>

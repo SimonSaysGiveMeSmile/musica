@@ -8,10 +8,11 @@ export interface SheetLine {
   text: string;
   chords: PlacedChord[];
   instrumental: boolean; // no lyric text, chords only
+  vocal: "yes" | "no" | "unknown"; // whether singing was detected in this gap
 }
 
 /** Align chord segments to timed lyric lines. Chords in gaps become instrumental rows. */
-export function alignSheet(lines: LyricLine[], segments: ChordSegment[], duration: number): SheetLine[] {
+export function alignSheet(lines: LyricLine[], segments: ChordSegment[], duration: number, activity?: (from: number, to: number) => number | null): SheetLine[] {
   const synced = lines.length > 0 && lines.every((l) => l.time >= 0);
   if (!synced) {
     // Unsynced: distribute lines evenly over the song duration as a best effort.
@@ -26,7 +27,9 @@ export function alignSheet(lines: LyricLine[], segments: ChordSegment[], duratio
   const pushInstrumental = (from: number, to: number) => {
     const inGap = segments.filter((s) => s.start >= from && s.start < to && s.chord !== "N");
     if (!inGap.length) return;
-    out.push({ time: from, end: to, text: "", instrumental: true, chords: inGap.map((s, i) => ({ chord: s.chord, at: i, time: s.start })) });
+    const a = activity ? activity(from, to) : null;
+    const vocal = a === null ? "unknown" : a >= 0.2 ? "yes" : "no";
+    out.push({ time: from, end: to, text: "", instrumental: true, vocal, chords: inGap.map((s, i) => ({ chord: s.chord, at: i, time: s.start })) });
   };
 
   if (firstT > 1.5) pushInstrumental(0, firstT);
@@ -54,7 +57,7 @@ export function alignSheet(lines: LyricLine[], segments: ChordSegment[], duratio
       if (last && c.at <= last.at) c.at = nextWord(text, last.at);
       dedup.push(c);
     }
-    out.push({ time: l.time, end, text, chords: dedup, instrumental: false });
+    out.push({ time: l.time, end, text, chords: dedup, instrumental: false, vocal: "yes" });
   }
   return out;
 }

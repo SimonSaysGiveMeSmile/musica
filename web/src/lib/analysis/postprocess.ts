@@ -38,6 +38,7 @@ export function toAnalysis(raw: RawAnalysis): Analysis {
     chroma: raw.chroma,
     duration,
     downbeatPhase: raw.downbeatPhase ?? 0,
+    vocals: raw.vocals && raw.vocals.length ? raw.vocals : undefined,
   };
 }
 
@@ -55,6 +56,26 @@ export function distinctChords(a: Analysis): string[] {
     .filter(([, t]) => t.n > 1 || t.dur >= bar)
     .sort((x, y) => x[1].first - y[1].first)
     .map(([c]) => c);
+}
+
+/** Mean vocal activity over [from, to). Returns null when the analysis has no vocal data. */
+export function vocalActivityIn(a: Analysis, from: number, to: number): number | null {
+  if (!a.vocals || !a.vocals.length) return null;
+  const s = Math.max(0, Math.floor(from * 2)), e = Math.min(a.vocals.length, Math.ceil(to * 2));
+  if (e <= s) return null;
+  let sum = 0; for (let i = s; i < e; i++) sum += a.vocals[i];
+  return sum / (e - s);
+}
+
+/** First moment the voice comes in and stays for ~2 s. */
+export function firstVocalOnset(a: Analysis): number | null {
+  if (!a.vocals) return null;
+  const v = a.vocals;
+  for (let i = 0; i + 3 < v.length; i++) {
+    const w = (v[i] + v[i + 1] + v[i + 2] + v[i + 3]) / 4;
+    if (w >= 0.45) return i / 2;
+  }
+  return null;
 }
 
 export function chordAt(a: Analysis, t: number): ChordSegment | null {

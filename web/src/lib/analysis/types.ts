@@ -17,6 +17,7 @@ export interface Analysis {
   chroma: number[];
   duration: number;
   downbeatPhase: number; // beat index mod 4 that falls on a bar line
+  vocals?: number[];     // sung-melody activity per half second, 0..1 (absent on older analyses)
 }
 
 export interface RawAnalysis {
@@ -31,10 +32,11 @@ export interface RawAnalysis {
   chroma: number[];
   duration: number;
   downbeatPhase: number;
+  vocals?: number[];
   sampleRate: number;
 }
 
-export type AnalysisStage = "decode" | "waveform" | "key" | "tempo" | "chords" | "done";
+export type AnalysisStage = "decode" | "waveform" | "key" | "tempo" | "chords" | "vocals" | "done";
 
 export interface LiveFrame {
   chord: string;

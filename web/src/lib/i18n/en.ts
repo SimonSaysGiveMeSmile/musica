@@ -36,6 +36,7 @@ export const en = {
   "sheet.instrumental": "Instrumental", "sheet.noLyrics": "No lyrics for this song yet. Use the Beats view, or paste lyrics below.", "sheet.notKnown": "{chord} · not in your chords yet",
   "sheet.lyricsIn": "Lyrics: {lang}",
   "sheet.sync": "Sync", "sheet.earlier": "Earlier", "sheet.later": "Later", "sheet.offset": "{n} s", "sheet.syncHint": "Long-press a line while it is sung to sync the lyrics to the music.",
+  "sheet.vocalNoLyrics": "Sung · no lyrics found", "sheet.auto": "Auto", "ingest.vocals": "Listening for the voice",
   "timeline.hint": "Chords on the beat grid · tap to jump", "timeline.beats": "{n} beats", "timeline.confidence": "Bar under each block shows how confident the analysis is for that chord.",
   "gallery.count": "{n} chords in this song · {instrument}", "gallery.learn": "learn", "gallery.known": "known",
   // learn

@@ -31,6 +31,7 @@ export const ru: Record<Key, string> = {
   "sheet.instrumental": "Проигрыш", "sheet.noLyrics": "Для этой песни пока нет текста. Используйте вид «Доли» или вставьте текст ниже.", "sheet.notKnown": "{chord} · ещё не в ваших аккордах",
   "sheet.lyricsIn": "Текст: {lang}",
   "sheet.sync": "Синхронизация", "sheet.earlier": "Раньше", "sheet.later": "Позже", "sheet.offset": "{n} с", "sheet.syncHint": "Удерживайте строку, пока её поют, чтобы подогнать текст под музыку.",
+  "sheet.vocalNoLyrics": "Вокал · текст не найден", "sheet.auto": "Авто", "ingest.vocals": "Поиск голоса",
   "timeline.hint": "Аккорды на сетке долей · нажмите, чтобы перейти", "timeline.beats": "{n} долей", "timeline.confidence": "Полоска под блоком показывает уверенность анализа в этом аккорде.",
   "gallery.count": "{n} аккордов в песне · {instrument}", "gallery.learn": "учить", "gallery.known": "знаю",
   "learn.youCanPlay": "Вы уже умеете играть", "learn.ofChords": "{k} из {n} аккордов", "learn.makeEasier": "Сделать проще", "learn.best": "лучший",

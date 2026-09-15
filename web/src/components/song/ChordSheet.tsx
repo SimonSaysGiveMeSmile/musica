@@ -40,7 +40,7 @@ export function ChordSheet({ lines, time, display, onSeek, onChord, known, lang,
             {active && <span aria-hidden className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full" style={{ background: "linear-gradient(180deg, var(--gold-hi), var(--gold-lo))" }} />}
             {l.instrumental ? (
               <div className="flex flex-wrap gap-2 items-center py-0.5">
-                <span className="eyebrow mr-1">{t("sheet.instrumental")}</span>
+                <span className="eyebrow mr-1">{l.vocal === "no" ? t("sheet.instrumental") : l.vocal === "yes" ? t("sheet.vocalNoLyrics") : "♪"}</span>
                 {l.chords.map((c, k) => (
                   <ChordTag key={k} symbol={display(c.chord)} known={known} onChord={onChord} hot={active && time >= c.time && (l.chords[k + 1] ? time < l.chords[k + 1].time : true)} />
                 ))}

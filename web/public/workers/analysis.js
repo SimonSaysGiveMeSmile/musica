@@ -1,6 +1,6 @@
 /* Musica analysis worker — Essentia.js (WASM). Plain JS on purpose: no bundler involvement. */
 /* global importScripts, EssentiaWASM, Essentia */
-importScripts("/essentia/essentia-wasm.web.js?v=4", "/essentia/essentia.js-core.umd.min.js?v=4");
+importScripts("/essentia/essentia-wasm.web.js?v=5", "/essentia/essentia.js-core.umd.min.js?v=5");
 
 let essentia = null;
 let wasm = null;
@@ -86,6 +86,41 @@ function decodeChords(hpcpFrames, frameTimes, beats, duration, key, scale, opts 
   return { phase, chords: path.map((p, i) => ({ chord: TEMPLATES[p].name, strength: Math.min(1, Math.exp(E[i][p] - (diat.has(TEMPLATES[p].name) ? keyBonus : 0))) })) };
 }
 
+/* ------------------- vocal activity (predominant melody, voice range) -------------------
+   Melodia at 22.05 kHz with an 80–1000 Hz range mostly ignores strummed/arpeggiated accompaniment
+   and follows a sung line. Output: voiced fraction per half second, 0..1. Used to decide whether a
+   lyric gap is really instrumental, never to invent lyrics. */
+function vocalActivity(audio, sr, progress) {
+  const half = new Float32Array(Math.floor(audio.length / 2));
+  for (let i = 0; i < half.length; i++) half[i] = (audio[2 * i] + audio[2 * i + 1]) * 0.5;
+  const dsr = sr / 2;
+  const hop = 256;
+  const chunkSec = 60, overlap = 1;
+  const out = [];
+  const totalHalfSecs = Math.ceil(half.length / dsr * 2);
+  const acc = new Float32Array(totalHalfSecs), cnt = new Float32Array(totalHalfSecs);
+  let start = 0, k = 0;
+  while (start < half.length) {
+    const end = Math.min(half.length, start + (chunkSec + overlap) * dsr);
+    const vec = essentia.arrayToVector(half.subarray(start, end));
+    let m = null;
+    try { m = essentia.PredominantPitchMelodia(vec, 10, 3, 2048, false, 0.8, hop, 1, 40, 1000, 100, 80, 20, 0.9, 0.9, 27.5625, 55, dsr, 100, false, 0.2); } catch (e) { vec.delete(); break; }
+    const n = m.pitch.size();
+    for (let i = 0; i < n; i++) {
+      const t = start / dsr + (i * hop) / dsr;
+      const b = Math.floor(t * 2);
+      if (b >= totalHalfSecs) break;
+      if (start > 0 && t < start / dsr + overlap) continue; // skip the overlap re-analysed from the previous chunk
+      acc[b] += m.pitch.get(i) > 0 ? 1 : 0; cnt[b] += 1;
+    }
+    m.pitch.delete(); m.pitchConfidence.delete(); vec.delete();
+    start += chunkSec * dsr; k++;
+    progress(Math.min(1, start / half.length));
+  }
+  for (let b = 0; b < totalHalfSecs; b++) out.push(cnt[b] ? Math.round((acc[b] / cnt[b]) * 100) / 100 : 0);
+  return out;
+}
+
 function analyze(id, audio, sr) {
   const progress = (stage, pct) => postMessage({ type: "progress", id, stage, pct });
   progress("waveform", 0.02);
@@ -116,7 +151,7 @@ function analyze(id, audio, sr) {
     hpcpFrames[i] = a;
     frameTimes[i] = (i * HOP + FRAME / 2) / sr;
     if (i % 25 === 0) for (let k = 0; k < 12; k++) chromaSummary[k] += a[(k + 3) % 12]; // rotate A-based bins to C-based
-    if (i % 200 === 0) progress("chords", 0.5 + 0.45 * (i / n));
+    if (i % 200 === 0) progress("chords", 0.5 + 0.4 * (i / n));
   }
   frames.delete();
 
@@ -124,6 +159,10 @@ function analyze(id, audio, sr) {
   const duration = audio.length / sr;
   const { phase, chords: decoded } = decodeChords(hpcpFrames, frameTimes, beats, duration, key.key, key.scale);
   rhythm.ticks.delete();
+
+  progress("vocals", 0.95);
+  let vocals = [];
+  try { vocals = vocalActivity(audio, sr, (p) => progress("vocals", 0.95 + 0.05 * p)); } catch (e) { vocals = []; }
 
   progress("done", 1);
   postMessage(
@@ -140,6 +179,7 @@ function analyze(id, audio, sr) {
         beatChords: decoded.map((d) => d.chord),
         beatStrengths: decoded.map((d) => d.strength),
         downbeatPhase: phase,
+        vocals,
         chroma: Array.from(chromaSummary),
         duration,
         sampleRate: sr,

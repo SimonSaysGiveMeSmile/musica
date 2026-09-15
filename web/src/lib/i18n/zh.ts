@@ -31,6 +31,7 @@ export const zh: Record<Key, string> = {
   "sheet.instrumental": "间奏", "sheet.noLyrics": "这首歌还没有歌词。可以使用节拍视图，或在下方粘贴歌词。", "sheet.notKnown": "{chord} · 还未掌握",
   "sheet.lyricsIn": "歌词语言：{lang}",
   "sheet.sync": "同步", "sheet.earlier": "提前", "sheet.later": "延后", "sheet.offset": "{n} 秒", "sheet.syncHint": "唱到某一句时长按它，即可把歌词与音乐对齐。",
+  "sheet.vocalNoLyrics": "有人声 · 未找到歌词", "sheet.auto": "自动", "ingest.vocals": "识别人声",
   "timeline.hint": "节拍网格上的和弦 · 点按跳转", "timeline.beats": "{n} 拍", "timeline.confidence": "每个色块下方的横条表示该和弦的分析置信度。",
   "gallery.count": "这首歌有 {n} 个和弦 · {instrument}", "gallery.learn": "待学", "gallery.known": "已会",
   "learn.youCanPlay": "你已经会弹", "learn.ofChords": "已会 {k} / {n} 个和弦", "learn.makeEasier": "让它更简单", "learn.best": "最佳",
