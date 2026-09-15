@@ -40,6 +40,7 @@ export function SideRail() {
       </nav>
       <div className="mt-auto px-3 ios-caption label-3">
         {t("rail.privacy")}
+        <div className="mt-3">{t("credit.madeBy")}</div>
       </div>
     </aside>
   );

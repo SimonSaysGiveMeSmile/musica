@@ -178,6 +178,10 @@ export function SearchHome() {
           </div>
         </section>
       )}
+
+      <footer className="px-5 lg:px-0 mt-14 text-center lg:text-left">
+        <p className="ios-footnote label-3">{t("credit.madeBy")}</p>
+      </footer>
     </main>
   );
 }

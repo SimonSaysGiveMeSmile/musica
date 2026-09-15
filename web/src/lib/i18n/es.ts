@@ -1,6 +1,7 @@
 import type { Key } from "./en";
 export const es: Record<Key, string> = {
   "nav.search": "Buscar", "nav.library": "Biblioteca", "nav.live": "En vivo", "nav.me": "Yo",
+  "credit.madeBy": "Hecho con ❤️ por Simon",
   "rail.privacy": "El análisis se hace en este dispositivo. Nada de lo que tocas se sube.",
   "home.tagline1": "Canta cualquier canción", "home.tagline2": "en solo un minuto.",
   "home.intro": "Pega un enlace o busca. Tonalidad, tempo, acordes y letra, analizados en este mismo teléfono.",

@@ -1,6 +1,7 @@
 import type { Key } from "./en";
 export const az: Record<Key, string> = {
   "nav.search": "Axtarış", "nav.library": "Kitabxana", "nav.live": "Canlı", "nav.me": "Mən",
+  "credit.madeBy": "Simon tərəfindən ❤️ ilə hazırlanıb",
   "rail.privacy": "Analiz bu cihazda aparılır. Çaldığınız heç nə yüklənmir.",
   "home.tagline1": "İstənilən mahnını", "home.tagline2": "cəmi bir dəqiqəyə oxuyun.",
   "home.intro": "Keçid yapışdırın və ya axtarın. Tonallıq, temp, akkordlar və sözlər, elə bu telefonda analiz edilir.",

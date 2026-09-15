@@ -1,6 +1,7 @@
 import type { Key } from "./en";
 export const zh: Record<Key, string> = {
   "nav.search": "搜索", "nav.library": "曲库", "nav.live": "实时", "nav.me": "我",
+  "credit.madeBy": "Simon 用 ❤️ 制作",
   "rail.privacy": "分析在本设备上完成。你的演奏不会被上传。",
   "home.tagline1": "任何歌曲，", "home.tagline2": "一分钟就能唱。",
   "home.intro": "粘贴链接或搜索。调性、速度、和弦与歌词，全部在这台手机上分析。",
