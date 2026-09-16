@@ -25,6 +25,11 @@ export interface Prefs {
   accent: Accent;
   language: "auto" | "en" | "zh" | "de" | "fr" | "es" | "az" | "ru";
   a4: number;                                  // tuner reference pitch
+  autoPause: boolean;                          // tutorial pauses when you stop playing
+  pauseSensitivity: 1 | 2 | 3;                 // how quiet counts as stopped
+  rewindSec: number;                           // how far the rewind button goes back
+  tutorialSpeed: number;                       // how fast the notes fall, in seconds of lookahead
+  handsMode: "both" | "l" | "r";               // which hand the tutorial shows
   tuning: Partial<Record<Instrument, string>>; // chosen tuning id per instrument
 }
 
@@ -39,6 +44,11 @@ const DEFAULTS: Prefs = {
   language: "auto",
   a4: 440,
   tuning: {},
+  autoPause: true,
+  pauseSensitivity: 2,
+  rewindSec: 5,
+  tutorialSpeed: 3,
+  handsMode: "both",
 };
 
 /** Push theme + accent onto <html>. The inline script in layout.tsx does the same before first paint. */

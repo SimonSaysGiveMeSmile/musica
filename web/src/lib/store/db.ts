@@ -2,6 +2,7 @@ import { createStore, get, set, del, keys, getMany } from "idb-keyval";
 import type { Analysis } from "@/lib/analysis/types";
 import type { Lyrics } from "@/lib/lyrics/lrclib";
 import type { Instrument } from "@/lib/theory/coverage";
+import type { Tutorial } from "@/lib/tutorial/types";
 
 export type SongSource = "youtube" | "spotify" | "file";
 
@@ -20,6 +21,7 @@ export interface Song {
   lyricsOffset?: number; // seconds added to lyric timestamps to match this recording
   lyricsAutoSynced?: boolean; // the offset was estimated from the audio
   lyricAnchors?: Record<number, number>; // for unsynced lyrics: line index → time set by the user
+  tutorial?: Tutorial;
   transpose: number;
   capo: number;
   instrument?: Instrument;

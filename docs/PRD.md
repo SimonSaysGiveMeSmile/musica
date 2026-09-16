@@ -89,6 +89,36 @@ There is **no generative AI, no LLM tokens, and no per-request compute cost**. A
 ### 4.8 Languages
 - **F8.1** The whole interface is available in English, Chinese (Simplified), German, French, Spanish, Azerbaijani and Russian. The language follows the device by default and can be set in Me → Appearance → Language. Chord and note names stay in international notation.
 
+### 4.9 Tutorial (falling notes)
+A full-screen practice mode at `/song/[id]/tutorial`, reached from a button on the song screen.
+
+**Piano.** Notes fall onto a drawn keyboard and land on a hit line as they sound. The right hand is the accent
+colour, the left hand ivory, and every block carries the finger to use (1 = thumb). Three ways to get the notes:
+- **Melody and chords** (default): the sung line from `PredominantPitchMelodia` becomes the right hand, close
+  triads under the detected chords become the left. Works on any recording, including full-band ones.
+- **Straight from the recording**: iterative harmonic-comb pitch estimation over an 8192-point spectrum with
+  sub-octave rejection and per-note re-attack detection. Best on solo piano. ~19 s for a four-minute song.
+- **Open a score**: MIDI (formats 0/1, tempo map, running status) or MusicXML, including zipped `.mxl`.
+
+**Guitar and ukulele.** One lane per string; each block shows the fret to press, open strings are hollow,
+muted strings show a cross, and the chord's name rides above its shape. Built from the chord track, so it
+needs no extra analysis.
+
+**Playability.** Every generated tutorial goes through a pass that makes it playable by two human hands:
+hands never cross, a hand holds at most five notes at once, and a hand never spans more than an octave.
+Held notes are released early before any note is dropped; when a chord still does not fit, the weakest inner
+voices go and the count is reported. Fingers come from a dynamic program scored on stretch between finger
+pairs, repeated fingers, hand travel, thumbs landing on black keys, and thumb-under in stepwise passages.
+
+**Pause when I stop.** The microphone (with echo cancellation, so it does not hear the backing track) tracks
+a floor that follows the room; playing has to rise clearly above it. After ~1.6 s of silence the song pauses
+and shows "Waiting for you"; it carries on by itself when playing resumes. Sensitivity is adjustable, and the
+feature can be switched off.
+
+**Transport.** Rewind by a fixed 3/5/10 s (default 5), and a back-a-section control that jumps to the top of
+the current four-bar phrase, or the previous one if you just got there. Sections are snapped to nearby chord
+changes and drawn on the scrubber. Falling speed is adjustable, and either hand can be shown alone.
+
 ## 5. Non-functional requirements
 
 | Area | Requirement |
@@ -136,6 +166,7 @@ Song {
   thumbnail?: string; sourceUrl?: string;
   audioBlobKey?: string;      // IndexedDB key of cached audio
   analysis?: Analysis; lyrics?: Lyrics; userLyrics?: string;
+  tutorial?: Tutorial;   // notes with hand + finger, sections, source
   transpose: number; capo: number; instrument: Instrument;
   createdAt: number; updatedAt: number;
 }
@@ -202,3 +233,12 @@ Some words in the brief were ambiguous in transcription. Assumptions made:
 - All milestones M1–M6 implemented in `web/` and `service/`. See the root README for run and deploy steps.
 - Verified end to end in a browser against a real track: link → chords with synced lyrics in ~8 s on a laptop, key and BPM correct, four-chord progression recovered in clean 8-beat sections.
 - Essentia's `essentia-wasm.web.js` was patched to run inside a Web Worker (it hard-codes a window environment). The patch is two one-line environment checks; see `web/public/essentia/`.
+
+## 13. Build notes (2026-09-16)
+- Tutorial mode added (§4.9). Transcription, arrangement and the playability pass were checked against a
+  synthesised ground-truth piece (15 of 18 notes, 2 false positives) and on 400 random dense notes, where the
+  playability limits held exactly.
+- Verified end to end in a headless browser on a real four-minute recording: upload to analysis to
+  arrangement (6 s) to falling notes; transcription (2209 notes, 10% left out for reach); MIDI import; and
+  auto-pause, driven by a synthetic microphone that plays for four seconds and rests for four, which produced
+  three pauses and three resumes with the clock advancing only while playing.

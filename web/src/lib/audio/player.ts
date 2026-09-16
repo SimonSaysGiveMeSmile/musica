@@ -92,6 +92,16 @@ export function usePlayer(src: string | null, beats: number[] | undefined, downb
     return () => cancelAnimationFrame(rafRef.current);
   }, [click, downbeatPhase]);
 
+  /** The playhead right now, interpolated between the coarse updates iOS gives us. */
+  const now = useCallback(() => {
+    const a = audioRef.current;
+    if (!a) return 0;
+    const t = a.currentTime;
+    if (t !== ctRef.current.value) ctRef.current = { value: t, at: performance.now() };
+    if (a.paused) return t;
+    return Math.min(t + ((performance.now() - ctRef.current.at) / 1000) * a.playbackRate, t + 0.35);
+  }, []);
+
   const toggle = useCallback(() => {
     const a = audioRef.current; if (!a) return;
     if (a.paused) {
@@ -103,8 +113,8 @@ export function usePlayer(src: string | null, beats: number[] | undefined, downb
   const seek = useCallback((t: number) => { const a = audioRef.current; if (a) { a.currentTime = Math.max(0, Math.min(t, a.duration || t)); nextBeatRef.current = 0; setTime(a.currentTime); } }, []);
   const setRate = useCallback((r: number) => { setRateState(r); if (audioRef.current) audioRef.current.playbackRate = r; }, []);
 
-  return useMemo(() => ({ playing, time, duration, rate, loop, metronome, toggle, seek, setRate, setLoop, setMetronome }),
-    [playing, time, duration, rate, loop, metronome, toggle, seek, setRate]);
+  return useMemo(() => ({ playing, time, duration, rate, loop, metronome, toggle, seek, setRate, setLoop, setMetronome, now }),
+    [playing, time, duration, rate, loop, metronome, toggle, seek, setRate, now]);
 }
 
 export function fmtTime(t: number) {

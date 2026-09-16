@@ -18,11 +18,16 @@ let activeStream: MediaStream | null = null;
 export function isMicActive() { return activeStream !== null; }
 export function muteMic(muted: boolean) { activeStream?.getAudioTracks().forEach((t) => { t.enabled = !muted; }); }
 
-export async function startMic(): Promise<MicHandle> {
+export interface MicOptions {
+  /** Let the browser subtract what we are playing, so listening while a backing track runs hears only the room. */
+  echoCancellation?: boolean;
+}
+
+export async function startMic(opts: MicOptions = {}): Promise<MicHandle> {
   // Ask iOS for a recording session that keeps the loudspeaker, before the hardware route is decided.
   setAudioSession("play-and-record");
   const stream = await navigator.mediaDevices.getUserMedia({
-    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+    audio: { echoCancellation: !!opts.echoCancellation, noiseSuppression: false, autoGainControl: false },
   });
   activeStream = stream;
   const ctx = await resumeAudio();

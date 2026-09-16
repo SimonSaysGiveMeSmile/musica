@@ -72,3 +72,15 @@ export const IconHeart = (p: SVGProps<SVGSVGElement>) => (
 export const IconShare = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}><path d="M12 3v12M8 7l4-4 4 4" /><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" /></svg>
 );
+export const IconRewind = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><path d="M3.2 11a9 9 0 1 1 2.3 7.2" /><path d="M2.5 5.5v5.2h5.2" /></svg>
+);
+export const IconSectionBack = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><path d="M6 5.5v13" /><path d="M19.5 6.2v11.6L9.8 12z" fill="currentColor" stroke="none" /></svg>
+);
+export const IconSliders = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2.2" /><circle cx="10" cy="17" r="2.2" /></svg>
+);
+export const IconNotes = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><circle cx="7" cy="17.5" r="2.6" /><circle cx="17" cy="15.5" r="2.6" /><path d="M9.6 17.5V6l10-2v11.5" /></svg>
+);

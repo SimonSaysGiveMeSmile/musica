@@ -9,7 +9,7 @@ import { keyPrefersFlats, transposeKey, transposeSymbol, relativeKey } from "@/l
 import type { Instrument } from "@/lib/theory/coverage";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
-import { IconBack, IconMinus, IconPlus } from "@/components/ui/Icons";
+import { IconBack, IconMinus, IconNotes, IconPlus } from "@/components/ui/Icons";
 import { Player } from "./Player";
 import { ChordSheet } from "./ChordSheet";
 import { Timeline } from "./Timeline";
@@ -169,6 +169,9 @@ export function SongView({ id }: { id: string }) {
               { value: "sheet", label: t("song.sheet") }, { value: "timeline", label: t("song.beats") }, { value: "chords", label: t("song.chords") }, { value: "learn", label: t("song.learn") },
             ]} />
           </div>
+          <button onClick={() => router.push(`/song/${id}/tutorial`)} className="press gold-fill rounded-full h-11 px-4 mt-3 lg:mt-0 flex items-center gap-2 ios-subhead font-semibold shrink-0 w-full lg:w-auto justify-center">
+            <IconNotes width={18} height={18} /> {t("tut.open")}
+          </button>
           <div className="hidden lg:flex gap-2 flex-wrap">{settingsStrip}</div>
         </div>
       </header>
