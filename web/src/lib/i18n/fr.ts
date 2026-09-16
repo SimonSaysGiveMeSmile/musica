@@ -95,7 +95,6 @@ export const fr: Record<Key, string> = {
   // new in this release
   "player.seek": "Se déplacer",
   "player.collapse": "Replier le lecteur", "player.expand": "Déplier le lecteur",
-  "live.notesHeard": "Notes entendues", "live.nothingYet": "Jouez quelque chose",
   "tut.laneChords": "Accords", "tut.laneNotes": "Notes",
   "tut.loop": "Répéter cette phrase", "tut.loopHint": "Rejoue la section en cours en boucle jusqu'à ce que vous l'arrêtiez.",
   "tut.countIn": "Décompte", "tut.countInHint": "Une mesure de clics avant le départ, le temps de placer les mains.",

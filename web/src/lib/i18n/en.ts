@@ -106,7 +106,6 @@ export const en = {
   // new in this release
   "player.seek": "Seek",
   "player.collapse": "Hide the player", "player.expand": "Show the player",
-  "live.notesHeard": "Notes heard", "live.nothingYet": "Play something",
   "tut.laneChords": "Chords", "tut.laneNotes": "Notes",
   "tut.loop": "Repeat this phrase", "tut.loopHint": "Plays the section you are in over and over until you turn it off.",
   "tut.countIn": "Count me in", "tut.countInHint": "A bar of clicks before the music starts, so your hands are ready.",

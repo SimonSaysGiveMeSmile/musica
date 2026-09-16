@@ -77,7 +77,7 @@ There is **no generative AI, no LLM tokens, and no per-request compute cost**. A
 
 ### 4.6 Live mode (real-time)
 - **F6.1** Microphone input through Web Audio; frames sent to the analysis worker every ~90 ms.
-- **F6.2** Displays the current chord, the notes it can hear by name, the dominant pitch and cents offset, and a 12-bin chroma. All of it comes from the instrument recogniser in §4.10 rather than from generic chroma matching, so the vocabulary covers sevenths, sus, add9, sixths, diminished and power chords, not just major and minor.
+- **F6.2** Displays the current chord, the dominant pitch and cents offset, and a 12-bin chroma. All of it comes from the instrument recogniser in §4.10 rather than from generic chroma matching, so the vocabulary covers sevenths, sus, add9, sixths, diminished and power chords, not just major and minor.
 - **F6.4** Built-in tuner (Live → Tuner, the default Live mode, laid out to fit one phone screen): a VU-style arc dial (±50 cents), and instrument guides that double as controls: a headstock whose tuning pegs play and lock each string (3+3 for guitar, 2+2 for ukulele) and a two-octave keyboard whose keys play their reference tone, with the detected string or key lit. Details: string targets for guitar (standard, drop D, half-step down, DADGAD) and ukulele (re-entrant, low G, baritone), chromatic mode for piano, cents needle with in-tune hold, median-smoothed pitch, adjustable A4 reference (415–466 Hz), and reference tones per string.
 - **F6.3** *(v1.1)* "Follow the song" mode: compare the detected chord to the expected chord at the current playback time. Deferred because playing the track through the speaker while listening on the mic needs echo handling.
 

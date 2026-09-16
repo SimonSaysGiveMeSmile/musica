@@ -95,7 +95,6 @@ export const de: Record<Key, string> = {
   // new in this release
   "player.seek": "Spulen",
   "player.collapse": "Player einklappen", "player.expand": "Player ausklappen",
-  "live.notesHeard": "Gehörte Töne", "live.nothingYet": "Spiel etwas",
   "tut.laneChords": "Akkorde", "tut.laneNotes": "Töne",
   "tut.loop": "Diese Phrase wiederholen", "tut.loopHint": "Spielt den aktuellen Abschnitt immer wieder, bis du es ausschaltest.",
   "tut.countIn": "Einzähler", "tut.countInHint": "Ein Takt Klicks vor dem Start, damit die Hände bereit sind.",

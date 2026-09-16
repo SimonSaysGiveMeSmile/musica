@@ -95,7 +95,6 @@ export const zh: Record<Key, string> = {
   // new in this release
   "player.seek": "拖动进度",
   "player.collapse": "收起播放器", "player.expand": "展开播放器",
-  "live.notesHeard": "听到的音", "live.nothingYet": "弹一个音试试",
   "tut.laneChords": "和弦", "tut.laneNotes": "单音",
   "tut.loop": "循环这一段", "tut.loopHint": "反复播放当前段落，直到你关掉它。",
   "tut.countIn": "预备拍", "tut.countInHint": "开始前先打一小节拍子，让双手做好准备。",

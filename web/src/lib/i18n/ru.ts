@@ -95,7 +95,6 @@ export const ru: Record<Key, string> = {
   // new in this release
   "player.seek": "Перемотка",
   "player.collapse": "Свернуть плеер", "player.expand": "Развернуть плеер",
-  "live.notesHeard": "Слышу ноты", "live.nothingYet": "Сыграйте что-нибудь",
   "tut.laneChords": "Аккорды", "tut.laneNotes": "Ноты",
   "tut.loop": "Повторять эту фразу", "tut.loopHint": "Играет текущий раздел по кругу, пока вы не выключите.",
   "tut.countIn": "Отсчёт", "tut.countInHint": "Такт щелчков перед стартом, чтобы руки были готовы.",

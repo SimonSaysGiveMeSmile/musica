@@ -95,7 +95,6 @@ export const es: Record<Key, string> = {
   // new in this release
   "player.seek": "Avanzar",
   "player.collapse": "Ocultar el reproductor", "player.expand": "Mostrar el reproductor",
-  "live.notesHeard": "Notas oídas", "live.nothingYet": "Toca algo",
   "tut.laneChords": "Acordes", "tut.laneNotes": "Notas",
   "tut.loop": "Repetir esta frase", "tut.loopHint": "Repite la sección en la que estás hasta que lo desactives.",
   "tut.countIn": "Cuenta de entrada", "tut.countInHint": "Un compás de clics antes de empezar, para tener las manos listas.",

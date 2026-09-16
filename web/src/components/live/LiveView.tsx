@@ -13,7 +13,6 @@ import { Tuner } from "./Tuner";
 import { useT } from "@/lib/i18n";
 
 const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-const midiLabel = (m: number) => `${NAMES[((m % 12) + 12) % 12]}${Math.floor(m / 12) - 1}`;
 type Mode = "tuner" | "chords";
 
 /** Live: one screen, no page scroll. Tuner by default; Chords mode for strumming along. */
@@ -25,7 +24,6 @@ export function LiveView() {
   const [err, setErr] = useState<string | null>(null);
   const [frame, setFrame] = useState<LiveFrame | null>(null);
   const [stable, setStable] = useState<string | null>(null);
-  const [heard, setHeard] = useState<number[]>([]);
   const micRef = useRef<MicHandle | null>(null);
   const histRef = useRef<string[]>([]);
   const aliveRef = useRef(true);
@@ -37,7 +35,6 @@ export function LiveView() {
     histRef.current = [];
     return onLive((f) => {
     setFrame(f);
-    setHeard(f.notes ?? []);
     // the worker already decides over a long window, so two agreeing frames are enough here
     const h = histRef.current;
     h.push(f.chord); if (h.length > 4) h.shift();
@@ -54,14 +51,14 @@ export function LiveView() {
   useEffect(() => { if (on) setLiveInstrument(prefs.instrument); }, [on, prefs.instrument]);
   // going to the background releases the microphone (privacy, battery); the user taps Start again on return
   useEffect(() => {
-    const onVis = () => { if (document.hidden && micRef.current) { micRef.current.stop(); micRef.current = null; setOn(false); setFrame(null); setStable(null); setHeard([]); } };
+    const onVis = () => { if (document.hidden && micRef.current) { micRef.current.stop(); micRef.current = null; setOn(false); setFrame(null); setStable(null); } };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
   const toggle = async () => {
     if (startingRef.current) return; // a second tap while the permission prompt is up must not open a second pipeline
-    if (on) { micRef.current?.stop(); micRef.current = null; setOn(false); setFrame(null); setStable(null); setHeard([]); histRef.current = []; return; }
+    if (on) { micRef.current?.stop(); micRef.current = null; setOn(false); setFrame(null); setStable(null); histRef.current = []; return; }
     setErr(null);
     startingRef.current = true; setStarting(true);
     try {
@@ -69,7 +66,7 @@ export function LiveView() {
       if (!aliveRef.current) { handle.stop(); return; } // navigated away while the prompt was open
       handle.onLost = () => { // lock screen, app switch, phone call: iOS takes the mic; say so instead of showing a frozen needle
         if (micRef.current !== handle) return;
-        handle.stop(); micRef.current = null; setOn(false); setFrame(null); setStable(null); setHeard([]);
+        handle.stop(); micRef.current = null; setOn(false); setFrame(null); setStable(null);
         if (aliveRef.current) setErr(t("live.micLost"));
       };
       micRef.current = handle; setOn(true);
@@ -130,13 +127,7 @@ export function LiveView() {
                 <button onClick={() => setMode("tuner")} className="press ios-footnote text-gold mt-2">{t("live.openTuner")}</button>
               </div>
               <div className="inset-group p-4">
-                <div className="eyebrow">{t("live.notesHeard")}</div>
-                <div className="flex flex-wrap gap-1 mt-1.5 min-h-[26px]">
-                  {heard.length ? heard.slice().sort((a, b) => a - b).map((m) => (
-                    <span key={m} className="chordname ios-caption rounded-full px-2 h-[22px] flex items-center tint-2 text-gold-hi tabular-nums">{midiLabel(m)}</span>
-                  )) : <span className="ios-caption label-3 self-center">{t("live.nothingYet")}</span>}
-                </div>
-                <div className="eyebrow mt-3">{t("live.chroma")}</div>
+                <div className="eyebrow">{t("live.chroma")}</div>
                 <div className="grid grid-cols-12 gap-[3px] items-end h-14 mt-2">
                   {NAMES.map((n, i) => {
                     const v = frame?.hpcp?.[i] ?? 0;

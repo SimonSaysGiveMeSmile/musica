@@ -95,7 +95,6 @@ export const az: Record<Key, string> = {
   // new in this release
   "player.seek": "Axtar",
   "player.collapse": "Pleyeri gizlət", "player.expand": "Pleyeri göstər",
-  "live.notesHeard": "Eşidilən notlar", "live.nothingYet": "Nəsə çalın",
   "tut.laneChords": "Akkordlar", "tut.laneNotes": "Notlar",
   "tut.loop": "Bu hissəni təkrarla", "tut.loopHint": "Söndürənə qədər olduğunuz hissəni təkrar-təkrar çalır.",
   "tut.countIn": "Hazırlıq sayı", "tut.countInHint": "Başlamazdan əvvəl bir takt klik: əlləriniz hazır olsun.",
