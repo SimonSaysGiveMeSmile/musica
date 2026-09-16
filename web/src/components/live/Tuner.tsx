@@ -114,7 +114,7 @@ export function Tuner({ listening, instrument }: { listening: boolean; instrumen
       <div className="relative mt-2 h-[3px] rounded-full tint-2 overflow-hidden"><div className="h-full" style={{ width: `${(listening ? level : 0) * 100}%`, background: "var(--gold)", transition: "width 80ms" }} /></div>
       <div className="relative h-[22px] mt-1 text-center ios-footnote" aria-live="polite">
         <span className={`transition-opacity ${listening && held >= 8 ? "opacity-100 text-gold" : noAudio ? "opacity-100 text-felt-hi" : "opacity-0"}`}>
-          {noAudio ? t("tuner.noAudio") : t("tuner.held")}
+          {noAudio ? t("tuner.noAudio") : t(chromatic ? "tuner.heldChromatic" : "tuner.held")}
         </span>
       </div>
 

@@ -56,7 +56,7 @@ export const fr: Record<Key, string> = {
   "live.micDenied": "Accès au micro refusé. Autorisez-le dans les Réglages pour utiliser Live.", "live.cents": "{n} cents",
   "tuner.inTune": "Accordé", "tuner.tuneUp": "Tendre", "tuner.tuneDown": "Détendre", "tuner.playNote": "Jouez une note",
   "tuner.strings": "Cordes", "tuner.tuning": "Accordage", "tuner.autoDetect": "Touchez une corde pour l'entendre et vous accorder dessus. Touchez à nouveau pour revenir à la détection automatique.",
-  "tuner.held": "Stable, cette corde est prête.", "tuner.chromatic": "Chromatique",
+  "tuner.held": "Stable, cette corde est prête.", "tuner.heldChromatic": "Stable, cette note est juste.", "tuner.chromatic": "Chromatique",
   "tuner.chromaticHint": "Chaque touche est une cible. Jouez une note à la fois ; l'écran montre la note la plus proche et l'écart. Utilisez le son de référence ci-dessous pour vérifier une touche à l'oreille.",
   "tuner.reference": "Référence A4", "tuner.lower": "Baisser la référence", "tuner.raise": "Monter la référence", "tuner.playRef": "Jouer {note}",
   "tuner.standard": "Standard", "tuner.dropD": "Drop D", "tuner.halfDown": "Demi-ton en dessous", "tuner.reentrant": "Standard (réentrant)", "tuner.lowG": "Sol grave", "tuner.baritone": "Baryton (DGBE)", "tuner.chromaticName": "Chromatique (référence A4)",

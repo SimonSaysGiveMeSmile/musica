@@ -56,7 +56,7 @@ export const de: Record<Key, string> = {
   "live.micDenied": "Mikrofonzugriff wurde verweigert. Erlaube ihn in den Einstellungen, um Live zu nutzen.", "live.cents": "{n} Cent",
   "tuner.inTune": "Gestimmt", "tuner.tuneUp": "Höher stimmen", "tuner.tuneDown": "Tiefer stimmen", "tuner.playNote": "Spiel einen Ton",
   "tuner.strings": "Saiten", "tuner.tuning": "Stimmung", "tuner.autoDetect": "Tippe eine Saite an, um sie zu hören und darauf zu stimmen. Nochmal tippen: zurück zur Automatik.",
-  "tuner.held": "Stabil gehalten, diese Saite ist fertig.", "tuner.chromatic": "Chromatisch",
+  "tuner.held": "Stabil gehalten, diese Saite ist fertig.", "tuner.heldChromatic": "Stabil gehalten, dieser Ton stimmt.", "tuner.chromatic": "Chromatisch",
   "tuner.chromaticHint": "Jede Taste ist ein Ziel. Spiel einen Ton nach dem anderen; die Anzeige zeigt den nächsten Ton und die Abweichung. Prüf eine Taste mit dem Referenzton nach Gehör.",
   "tuner.reference": "Referenz A4", "tuner.lower": "Referenz senken", "tuner.raise": "Referenz erhöhen", "tuner.playRef": "{note} abspielen",
   "tuner.standard": "Standard", "tuner.dropD": "Drop D", "tuner.halfDown": "Halbton tiefer", "tuner.reentrant": "Standard (re-entrant)", "tuner.lowG": "Tiefes G", "tuner.baritone": "Bariton (DGBE)", "tuner.chromaticName": "Chromatisch (A4-Referenz)",

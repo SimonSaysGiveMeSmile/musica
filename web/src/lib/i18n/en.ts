@@ -65,7 +65,7 @@ export const en = {
   // tuner
   "tuner.inTune": "In tune", "tuner.tuneUp": "Tune up", "tuner.tuneDown": "Tune down", "tuner.playNote": "Play a note",
   "tuner.strings": "Strings", "tuner.tuning": "Tuning", "tuner.autoDetect": "Tap a string to hear it and tune to it. Tap again to go back to auto-detect.",
-  "tuner.held": "Held steady, this string is done.", "tuner.chromatic": "Chromatic",
+  "tuner.held": "Held steady, this string is done.", "tuner.heldChromatic": "Held steady, that note is in tune.", "tuner.chromatic": "Chromatic",
   "tuner.chromaticHint": "Every key is a target. Play one note at a time; the display shows the nearest note and how far it sits. Use the reference tone below to check a key by ear.",
   "tuner.reference": "Reference A4", "tuner.lower": "Lower reference", "tuner.raise": "Raise reference", "tuner.playRef": "Play {note}",
   "tuner.standard": "Standard", "tuner.dropD": "Drop D", "tuner.halfDown": "Half step down", "tuner.reentrant": "Standard (re-entrant)", "tuner.lowG": "Low G", "tuner.baritone": "Baritone (DGBE)", "tuner.chromaticName": "Chromatic (A4 reference)",

@@ -56,7 +56,7 @@ export const ru: Record<Key, string> = {
   "live.micDenied": "Доступ к микрофону запрещён. Разрешите его в Настройках, чтобы использовать Live.", "live.cents": "{n} центов",
   "tuner.inTune": "В строе", "tuner.tuneUp": "Подтяните", "tuner.tuneDown": "Ослабьте", "tuner.playNote": "Сыграйте ноту",
   "tuner.strings": "Струны", "tuner.tuning": "Строй", "tuner.autoDetect": "Нажмите на струну, чтобы услышать её и настроить по ней. Нажмите ещё раз, чтобы вернуться к автоопределению.",
-  "tuner.held": "Стабильно — эта струна настроена.", "tuner.chromatic": "Хроматический",
+  "tuner.held": "Стабильно — эта струна настроена.", "tuner.heldChromatic": "Стабильно — эта нота настроена.", "tuner.chromatic": "Хроматический",
   "tuner.chromaticHint": "Каждая клавиша — цель. Играйте по одной ноте; на экране ближайшая нота и отклонение. Проверьте клавишу на слух с помощью эталонного тона ниже.",
   "tuner.reference": "Эталон A4", "tuner.lower": "Понизить эталон", "tuner.raise": "Повысить эталон", "tuner.playRef": "Сыграть {note}",
   "tuner.standard": "Стандартный", "tuner.dropD": "Drop D", "tuner.halfDown": "На полтона ниже", "tuner.reentrant": "Стандартный (реэнтрантный)", "tuner.lowG": "Низкая соль", "tuner.baritone": "Баритон (DGBE)", "tuner.chromaticName": "Хроматический (эталон A4)",
