@@ -1,19 +1,28 @@
-/** Shared shapes for the piano tutorial: what a note is, and what a generated tutorial holds. */
+/** Shared shapes for tutorials: what a note is, and what a generated tutorial holds. */
 
 export type Hand = "l" | "r";
-export type Finger = 1 | 2 | 3 | 4 | 5;
+/** A finger of the hand. 0 means no finger is needed — an open string. */
+export type Finger = 0 | 1 | 2 | 3 | 4 | 5;
 
 /** A note before hands and fingers are worked out. */
 export interface RawNote { midi: number; start: number; end: number }
 
-/** A note as the tutorial plays it: one hand, one finger. */
-export interface TutorialNote extends RawNote { hand: Hand; finger: Finger }
+/** A note as the tutorial plays it: one hand and one finger, plus where it sits on a
+ *  fretboard when the tutorial is for a guitar or ukulele. */
+export interface TutorialNote extends RawNote {
+  hand: Hand;
+  finger: Finger;
+  string?: number;   // 0 = lowest string
+  fret?: number;     // 0 = open
+}
 
 export type TutorialSource = "arrange" | "transcribe" | "score";
 
 export interface Tutorial {
   version: 1;
   source: TutorialSource;
+  /** The instrument these notes were laid out for. Older tutorials were piano-only. */
+  instrument?: "guitar" | "piano" | "ukulele";
   notes: TutorialNote[];
   /** Section start times in seconds, ascending, always starting at 0. */
   sections: number[];

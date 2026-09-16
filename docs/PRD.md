@@ -77,7 +77,7 @@ There is **no generative AI, no LLM tokens, and no per-request compute cost**. A
 
 ### 4.6 Live mode (real-time)
 - **F6.1** Microphone input through Web Audio; frames sent to the analysis worker every ~90 ms.
-- **F6.2** Displays the current chord (HPCP → `ChordsDetection` on a rolling 1-second window), the dominant pitch and cents offset (tuner via `PitchYinFFT`), and a 12-bin chroma wheel.
+- **F6.2** Displays the current chord, the notes it can hear by name, the dominant pitch and cents offset, and a 12-bin chroma. All of it comes from the instrument recogniser in §4.10 rather than from generic chroma matching, so the vocabulary covers sevenths, sus, add9, sixths, diminished and power chords, not just major and minor.
 - **F6.4** Built-in tuner (Live → Tuner, the default Live mode, laid out to fit one phone screen): a VU-style arc dial (±50 cents), and instrument guides that double as controls: a headstock whose tuning pegs play and lock each string (3+3 for guitar, 2+2 for ukulele) and a two-octave keyboard whose keys play their reference tone, with the detected string or key lit. Details: string targets for guitar (standard, drop D, half-step down, DADGAD) and ukulele (re-entrant, low G, baritone), chromatic mode for piano, cents needle with in-tune hold, median-smoothed pitch, adjustable A4 reference (415–466 Hz), and reference tones per string.
 - **F6.3** *(v1.1)* "Follow the song" mode: compare the detected chord to the expected chord at the current playback time. Deferred because playing the track through the speaker while listening on the mic needs echo handling.
 
@@ -100,15 +100,20 @@ colour, the left hand ivory, and every block carries the finger to use (1 = thum
   sub-octave rejection and per-note re-attack detection. Best on solo piano. ~19 s for a four-minute song.
 - **Open a score**: MIDI (formats 0/1, tempo map, running status) or MusicXML, including zipped `.mxl`.
 
-**Guitar and ukulele.** One lane per string; each block shows the fret to press, open strings are hollow,
-muted strings show a cross, and the chord's name rides above its shape. Built from the chord track, so it
-needs no extra analysis.
+**Guitar and ukulele.** One lane per string, in two modes the player switches between:
+- **Chords**: one shape per lane from the chord track, open strings hollow, muted strings crossed, the
+  chord's name on its own pill. Needs no extra analysis.
+- **Notes**: real tablature. Every note carries the fret to press as the big number and the finger to use in
+  a circle above it. Built by a fretboard layout pass (§4.11) from the melody, the recording, or a score.
 
-**Playability.** Every generated tutorial goes through a pass that makes it playable by two human hands:
-hands never cross, a hand holds at most five notes at once, and a hand never spans more than an octave.
-Held notes are released early before any note is dropped; when a chord still does not fit, the weakest inner
-voices go and the count is reported. Fingers come from a dynamic program scored on stretch between finger
-pairs, repeated fingers, hand travel, thumbs landing on black keys, and thumb-under in stepwise passages.
+**Playability.** Every generated piano tutorial goes through a pass that makes it playable by two human hands:
+hands never cross — not even on a note held over from an earlier chord — a hand holds at most five notes at
+once, and a hand never spans more than an octave. Held notes are released early before any note is dropped;
+when a chord still does not fit, the weakest inner voices go and the count is reported. Fingers come from a
+dynamic program scored on stretch between finger pairs, repeated fingers, hand travel, thumbs landing on
+black keys, and thumb-under in stepwise passages, followed by a repair pass: because the program only sees
+the chord before this one, it can ask a finger to take a new key while it is still holding an old one, so the
+repair walks the result, re-fingers what it can and releases a held note only when nothing else will do.
 
 **Pause when I stop.** The microphone (with echo cancellation, so it does not hear the backing track) tracks
 a floor that follows the room; playing has to rise clearly above it. After ~1.6 s of silence the song pauses
@@ -117,7 +122,39 @@ feature can be switched off.
 
 **Transport.** Rewind by a fixed 3/5/10 s (default 5), and a back-a-section control that jumps to the top of
 the current four-bar phrase, or the previous one if you just got there. Sections are snapped to nearby chord
-changes and drawn on the scrubber. Falling speed is adjustable, and either hand can be shown alone.
+changes and drawn on the scrubber. **Repeat this phrase** loops the section you are in until you turn it off.
+**Count me in** gives a bar of clicks at the song's tempo before the music starts, so your hands are ready;
+an automatic resume after a pause skips it, because you are already playing. Falling speed is adjustable, and
+either hand can be shown alone. The transport pulls down out of the way with its grab handle (tap, drag, or
+keyboard), leaving a slim bar with play, progress and the clock.
+
+### 4.10 Instrument recognition (piano, guitar, ukulele)
+Everything the app hears through the microphone goes through one recogniser, separate from the song analysis
+in §4.2, which is unchanged.
+
+- **One comb per playable note.** A note is believed only when its own fundamental is present, never from a
+  stack of partials belonging to something an octave down. Real strings are stiff, so each instrument carries
+  its own stiffness and the comb looks for partials where they actually sit rather than at exact multiples.
+- **Instrument-aware.** Note range, how many notes can sound at once, the pitch search range and the string
+  stiffness all come from which instrument the player picked.
+- **Octave correction.** A plucked or struck string reads an octave high often enough that the raw pitch
+  cannot be trusted, so the answer is checked an octave either side and the octave with a real fundamental
+  wins. Measured on synthesised guitar, piano and ukulele notes across their whole ranges: every note
+  identified, every simulated octave error corrected, and every correct reading left alone.
+- **Chords by the notes that are sounding**, matched against the chord vocabulary the app can draw. Verified
+  through the app with a simulated microphone playing ten open-position guitar chords: 10 of 10 named
+  correctly, including A7, Cadd9, Em7 and Dsus4, which the old major/minor matching could not name at all.
+- **Spectral subtraction that knows its limits.** Removing a detected note takes only as much of each
+  harmonic as that note can account for. Flattening the band instead erased a note an octave up that was also
+  being held, which is why octave-doubled chords used to come back as bare fifths.
+
+### 4.11 Fretboard layout
+Turning notes into tablature the way a teacher would: keep the hand in one position, take the open string
+when it is there, never ask for two notes on one string at once, and lift a finger off a ringing note rather
+than demand a stretch nobody has. The reach allowed grows up the neck, because the frets crowd together
+there. A note below the lowest string or above the top fret is played an octave over instead of being lost.
+The index finger sits at the bottom of the shape and the others follow it, and the hand only shifts when the
+music leaves the position it is already in.
 
 ## 5. Non-functional requirements
 
@@ -242,3 +279,19 @@ Some words in the brief were ambiguous in transcription. Assumptions made:
   arrangement (6 s) to falling notes; transcription (2209 notes, 10% left out for reach); MIDI import; and
   auto-pause, driven by a synthetic microphone that plays for four seconds and rests for four, which produced
   three pauses and three resumes with the clock advancing only while playing.
+
+## 14. Build notes (2026-09-16, later)
+- Instrument recognition rewritten (§4.10). Song, key, tempo, chord and vocal analysis were deliberately left
+  untouched. Measured: guitar 30/30, ukulele 9/9 and piano 10/10 synthesised chords named correctly against
+  10/30 for the major/minor matching it replaces; every note across each instrument's range identified with
+  no phantom octaves; through the app with a simulated microphone, 10/10 chords and 12/12 tuner readings, the
+  six open strings within a tenth of a hertz.
+- Fretted tutorials (§4.11): guitar and ukulele now get note-by-note tablature beside the chord lane. On 879
+  notes of deliberately dense random material and on the real recording, nothing unreachable, no two notes on
+  one string at once, and no stretch beyond what the hand covers at that position.
+- Piano playability gained a repair pass and a cross-hand check. On a 2722-note transcription of a real
+  four-minute song: at most five notes per hand, at most an octave, zero hand crossings, zero finger-order
+  breaks and zero cases of one finger being asked for two keys (427 and 18 respectively before the pass).
+- Auto-pause now needs pitched sound, not just level, so a noisy room no longer counts as playing.
+- The player and the tutorial transport retract to a slim bar. The page reserves exactly the height the card
+  measures, which also fixed the expanded player covering the last lines of the chord sheet.

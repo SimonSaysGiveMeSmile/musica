@@ -92,4 +92,16 @@ export const fr: Record<Key, string> = {
   "me.appearance": "Apparence", "me.theme": "Thème", "me.system": "Système", "me.light": "Clair", "me.dark": "Sombre", "me.accent": "Accent", "me.language": "Langue",
   "me.accentLabel": "Accent {name}",
   "accent.gold": "Or", "accent.copper": "Cuivre", "accent.rose": "Rose", "accent.sage": "Sauge", "accent.sky": "Ciel", "accent.silver": "Argent", "accent.orchid": "Orchidée", "accent.gliver": "Gliver", "accent.sunrise": "Aurore",
+  // new in this release
+  "player.seek": "Se déplacer",
+  "player.collapse": "Replier le lecteur", "player.expand": "Déplier le lecteur",
+  "live.notesHeard": "Notes entendues", "live.nothingYet": "Jouez quelque chose",
+  "tut.laneChords": "Accords", "tut.laneNotes": "Notes",
+  "tut.loop": "Répéter cette phrase", "tut.loopHint": "Rejoue la section en cours en boucle jusqu'à ce que vous l'arrêtiez.",
+  "tut.countIn": "Décompte", "tut.countInHint": "Une mesure de clics avant le départ, le temps de placer les mains.",
+  "tut.ready": "Prêt",
+  "tut.madeFor": "Ce tutoriel a été fait pour {instrument}.", "tut.rebuild": "En créer un pour cet instrument",
+  "tut.frettedIntro": "Musica trouve les notes, puis la corde, la case et le doigt pour chacune.",
+  "tut.melodyLine": "La mélodie", "tut.melodyLineHint": "La ligne chantée en notes simples, placées sur le manche. Fonctionne avec n'importe quel enregistrement.",
+  "tut.transcribeFretHint": "Extrait les notes de l'audio. Idéal quand un seul instrument joue.",
 };

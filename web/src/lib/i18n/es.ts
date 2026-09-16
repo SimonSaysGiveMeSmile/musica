@@ -92,4 +92,16 @@ export const es: Record<Key, string> = {
   "me.appearance": "Apariencia", "me.theme": "Tema", "me.system": "Sistema", "me.light": "Claro", "me.dark": "Oscuro", "me.accent": "Acento", "me.language": "Idioma",
   "me.accentLabel": "Acento {name}",
   "accent.gold": "Oro", "accent.copper": "Cobre", "accent.rose": "Rosa", "accent.sage": "Salvia", "accent.sky": "Cielo", "accent.silver": "Plata", "accent.orchid": "Orquídea", "accent.gliver": "Gliver", "accent.sunrise": "Amanecer",
+  // new in this release
+  "player.seek": "Avanzar",
+  "player.collapse": "Ocultar el reproductor", "player.expand": "Mostrar el reproductor",
+  "live.notesHeard": "Notas oídas", "live.nothingYet": "Toca algo",
+  "tut.laneChords": "Acordes", "tut.laneNotes": "Notas",
+  "tut.loop": "Repetir esta frase", "tut.loopHint": "Repite la sección en la que estás hasta que lo desactives.",
+  "tut.countIn": "Cuenta de entrada", "tut.countInHint": "Un compás de clics antes de empezar, para tener las manos listas.",
+  "tut.ready": "Listo",
+  "tut.madeFor": "Este tutorial se hizo para {instrument}.", "tut.rebuild": "Crear uno para este instrumento",
+  "tut.frettedIntro": "Musica averigua las notas y luego la cuerda, el traste y el dedo de cada una.",
+  "tut.melodyLine": "La melodía", "tut.melodyLineHint": "La línea cantada como notas sueltas, repartidas por el mástil. Sirve con cualquier grabación.",
+  "tut.transcribeFretHint": "Saca las notas del audio. Mejor cuando toca un solo instrumento.",
 };

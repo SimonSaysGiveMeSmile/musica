@@ -28,6 +28,8 @@ export interface PlayDetect {
 export interface PlayDetectOptions {
   enabled: boolean;
   sensitivity: Sensitivity;
+  /** Which instrument to expect, so the pitch check uses that range. */
+  instrument?: string;
   /** How long the silence has to last before it counts as stopping. */
   holdMs?: number;
   onIdle?: () => void;
@@ -35,7 +37,7 @@ export interface PlayDetectOptions {
   onError?: (message: string) => void;
 }
 
-export function usePlayDetect({ enabled, sensitivity, holdMs = 1600, onIdle, onActive, onError }: PlayDetectOptions): PlayDetect {
+export function usePlayDetect({ enabled, sensitivity, instrument, holdMs = 1600, onIdle, onActive, onError }: PlayDetectOptions): PlayDetect {
   const [listening, setListening] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [level, setLevel] = useState(0);
@@ -62,7 +64,7 @@ export function usePlayDetect({ enabled, sensitivity, holdMs = 1600, onIdle, onA
         setError(null);
         setLiveMode("level");
         // echo cancellation keeps the backing track out of the microphone
-        const h = await startMic({ echoCancellation: true });
+        const h = await startMic({ echoCancellation: true, instrument });
         if (cancelled || !aliveRef.current) { h.stop(); return; }
         h.onLost = () => {
           if (micRef.current !== h) return;
@@ -90,7 +92,7 @@ export function usePlayDetect({ enabled, sensitivity, holdMs = 1600, onIdle, onA
       setListening(false); setPlaying(false); setLevel(0);
       setLiveMode("full");
     };
-  }, [enabled]);
+  }, [enabled, instrument]);
 
   // every frame: track the room, then ask whether this is louder than the room
   useEffect(() => {
@@ -101,7 +103,9 @@ export function usePlayDetect({ enabled, sensitivity, holdMs = 1600, onIdle, onA
       floorRef.current = rms < floor ? floor + (rms - floor) * 0.3 : floor + (rms - floor) * 0.02;
       const { ratio, floor: absFloor } = TUNING[sensRef.current];
       const threshold = Math.max(absFloor, floorRef.current * ratio);
-      if (rms > threshold) lastHotRef.current = performance.now();
+      // loud enough, and either a note the recogniser can hold on to or a strike too sharp to be the room
+      const pitched = f.pitchConfidence > 0.35 || rms > threshold * 2.5;
+      if (rms > threshold && pitched) lastHotRef.current = performance.now();
       setLevel(Math.min(1, rms / Math.max(threshold, 1e-4) / 3));
     });
   }, [listening]);

@@ -92,4 +92,16 @@ export const de: Record<Key, string> = {
   "me.appearance": "Darstellung", "me.theme": "Design", "me.system": "System", "me.light": "Hell", "me.dark": "Dunkel", "me.accent": "Akzent", "me.language": "Sprache",
   "me.accentLabel": "Akzent {name}",
   "accent.gold": "Gold", "accent.copper": "Kupfer", "accent.rose": "Rosé", "accent.sage": "Salbei", "accent.sky": "Himmel", "accent.silver": "Silber", "accent.orchid": "Orchidee", "accent.gliver": "Gliver", "accent.sunrise": "Sonnenaufgang",
+  // new in this release
+  "player.seek": "Spulen",
+  "player.collapse": "Player einklappen", "player.expand": "Player ausklappen",
+  "live.notesHeard": "Gehörte Töne", "live.nothingYet": "Spiel etwas",
+  "tut.laneChords": "Akkorde", "tut.laneNotes": "Töne",
+  "tut.loop": "Diese Phrase wiederholen", "tut.loopHint": "Spielt den aktuellen Abschnitt immer wieder, bis du es ausschaltest.",
+  "tut.countIn": "Einzähler", "tut.countInHint": "Ein Takt Klicks vor dem Start, damit die Hände bereit sind.",
+  "tut.ready": "Achtung",
+  "tut.madeFor": "Dieses Tutorial wurde für {instrument} erstellt.", "tut.rebuild": "Für dieses Instrument neu erstellen",
+  "tut.frettedIntro": "Musica hört die Töne heraus und findet für jeden Saite, Bund und Finger.",
+  "tut.melodyLine": "Die Melodie", "tut.melodyLineHint": "Die gesungene Linie als einzelne Töne, auf dem Griffbrett verteilt. Funktioniert mit jeder Aufnahme.",
+  "tut.transcribeFretHint": "Holt die Töne direkt aus der Aufnahme. Am besten, wenn nur ein Instrument spielt.",
 };

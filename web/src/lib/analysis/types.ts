@@ -45,4 +45,6 @@ export interface LiveFrame {
   pitchConfidence: number;
   rms: number;
   hpcp: number[];
+  /** MIDI numbers the recogniser believes are sounding right now (full mode only). */
+  notes?: number[];
 }

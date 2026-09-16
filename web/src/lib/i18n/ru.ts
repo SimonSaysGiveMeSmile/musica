@@ -92,4 +92,16 @@ export const ru: Record<Key, string> = {
   "me.appearance": "Оформление", "me.theme": "Тема", "me.system": "Системная", "me.light": "Светлая", "me.dark": "Тёмная", "me.accent": "Акцент", "me.language": "Язык",
   "me.accentLabel": "Акцент {name}",
   "accent.gold": "Золото", "accent.copper": "Медь", "accent.rose": "Роза", "accent.sage": "Шалфей", "accent.sky": "Небо", "accent.silver": "Серебро", "accent.orchid": "Орхидея", "accent.gliver": "Гливер", "accent.sunrise": "Рассвет",
+  // new in this release
+  "player.seek": "Перемотка",
+  "player.collapse": "Свернуть плеер", "player.expand": "Развернуть плеер",
+  "live.notesHeard": "Слышу ноты", "live.nothingYet": "Сыграйте что-нибудь",
+  "tut.laneChords": "Аккорды", "tut.laneNotes": "Ноты",
+  "tut.loop": "Повторять эту фразу", "tut.loopHint": "Играет текущий раздел по кругу, пока вы не выключите.",
+  "tut.countIn": "Отсчёт", "tut.countInHint": "Такт щелчков перед стартом, чтобы руки были готовы.",
+  "tut.ready": "Внимание",
+  "tut.madeFor": "Этот разбор сделан для инструмента: {instrument}.", "tut.rebuild": "Сделать для текущего инструмента",
+  "tut.frettedIntro": "Musica находит ноты, а затем струну, лад и палец для каждой.",
+  "tut.melodyLine": "Мелодия", "tut.melodyLineHint": "Спетая линия как отдельные ноты, разложенная по грифу. Работает с любой записью.",
+  "tut.transcribeFretHint": "Достаёт ноты прямо из звука. Лучше всего, когда играет один инструмент.",
 };

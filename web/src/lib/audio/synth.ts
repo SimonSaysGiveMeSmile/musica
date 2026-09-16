@@ -149,3 +149,38 @@ export function useSynthPlayer(notes: TutorialNote[], duration: number, volume =
 
   return useMemo(() => ({ playing, time, duration, rate, toggle, seek, setRate, now: posNow }), [playing, time, duration, rate, toggle, seek, setRate, posNow]);
 }
+
+/* ---------------------------- count-in ----------------------------
+   Clicks before the music starts, so there is time to put the hands where the first
+   notes are going to land. Starting again cancels whatever was already counting. */
+let counting: { cancelled: boolean } | null = null;
+
+export function cancelCountIn() { if (counting) { counting.cancelled = true; counting = null; } }
+
+function click(ctx: AudioContext, at: number, accent: boolean) {
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = "square";
+  o.frequency.setValueAtTime(accent ? 1760 : 1175, at);
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.exponentialRampToValueAtTime(accent ? 0.16 : 0.1, at + 0.004);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + 0.07);
+  o.connect(g).connect(ctx.destination);
+  o.start(at);
+  o.stop(at + 0.1);
+}
+
+/** Count a bar in at the song's tempo. Resolves false if it was cancelled part-way. */
+export async function countIn(bpm: number, beats = 4): Promise<boolean> {
+  cancelCountIn();
+  const token = { cancelled: false };
+  counting = token;
+  const ctx = await resumeAudio();
+  if (token.cancelled) return false;
+  const step = 60 / Math.max(40, Math.min(220, bpm || 100));
+  const t0 = ctx.currentTime + 0.06;
+  for (let i = 0; i < beats; i++) click(ctx, t0 + i * step, i === 0);
+  await new Promise((r) => setTimeout(r, (beats * step + 0.06) * 1000));
+  if (counting === token) counting = null;
+  return !token.cancelled;
+}

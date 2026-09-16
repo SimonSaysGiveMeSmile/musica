@@ -3,7 +3,7 @@ import type { RawNote } from "@/lib/tutorial/types";
 import { toAnalysis } from "./postprocess";
 
 /** Bump when public/workers or public/essentia change so the service worker cache is bypassed. */
-export const ANALYSIS_VERSION = "8";
+export const ANALYSIS_VERSION = "9";
 
 type Listener = (f: LiveFrame) => void;
 
@@ -67,6 +67,9 @@ export function sendLiveFrame(frame: Float32Array, sampleRate: number) {
 export function resetLive() { getWorker().postMessage({ type: "liveReset" }); }
 /** "level" skips chroma and chord detection: all the tutorial needs is how loud the room is. */
 export function setLiveMode(mode: "full" | "level") { getWorker().postMessage({ type: "liveMode", mode }); }
+/** Tell the recogniser which instrument it is listening to: it fixes the note range, how many
+ *  notes can sound at once, and how sharp the upper partials of these strings sit. */
+export function setLiveInstrument(instrument: string) { getWorker().postMessage({ type: "liveInstrument", instrument }); }
 export function onLive(l: Listener) { liveListeners.add(l); return () => { liveListeners.delete(l); }; }
 
 /** Ask the worker for the raw notes of a tutorial. Hands and fingers are decided on this side. */
@@ -74,7 +77,7 @@ export async function buildTutorialNotes(
   audio: Float32Array,
   sampleRate: number,
   mode: "arrange" | "transcribe",
-  ctx: { chords?: { chord: string; start: number; end: number }[]; beats?: number[]; phase?: number },
+  ctx: { chords?: { chord: string; start: number; end: number }[]; beats?: number[]; phase?: number; instrument?: string },
   onProgress?: (pct: number) => void,
 ): Promise<RawNote[]> {
   const w = getWorker();
@@ -82,6 +85,6 @@ export async function buildTutorialNotes(
   const id = Math.random().toString(36).slice(2);
   return new Promise((resolve, reject) => {
     tutorials.set(id, { resolve, reject, onProgress });
-    w.postMessage({ type: "tutorial", id, audio, sampleRate, mode, chords: ctx.chords, beats: ctx.beats, phase: ctx.phase }, [audio.buffer]);
+    w.postMessage({ type: "tutorial", id, audio, sampleRate, mode, chords: ctx.chords, beats: ctx.beats, phase: ctx.phase, instrument: ctx.instrument }, [audio.buffer]);
   });
 }

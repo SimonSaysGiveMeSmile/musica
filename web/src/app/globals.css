@@ -330,6 +330,9 @@ body::before {
 .no-scrollbar { scrollbar-width: none; }
 .safe-top { padding-top: max(var(--sat), 12px); }
 .page-pad-bottom { padding-bottom: calc(var(--tabbar-h) + var(--sab) + 96px); }
+/* The floating player measures itself into --player-h, so the sheet reserves exactly the room it
+   takes — expanded, collapsed, or with the speed slider open. On desktop it is docked, not floating. */
+.player-pad-bottom { padding-bottom: calc(var(--sab) + var(--player-h, 232px) + 14px); }
 .song-header { background: linear-gradient(180deg, var(--ground-veil) 70%, transparent); }
 /* Installed on the Home Screen: no browser chrome. The whole UI sits 30px lower so nothing lands in the
    status-bar zone, where iOS 26 blurs content when the bar is translucent. */
@@ -342,6 +345,7 @@ body::before {
 @media (min-width: 1024px) {
   .song-header { background: none; }
   .page-pad-bottom { padding-bottom: 64px; }
+  .player-pad-bottom { padding-bottom: 0; }
   .safe-top { padding-top: 28px; }
 }
 .press { transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms, background-color 180ms; }

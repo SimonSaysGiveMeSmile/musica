@@ -103,5 +103,17 @@ export const en = {
   "me.appearance": "Appearance", "me.theme": "Theme", "me.system": "System", "me.light": "Light", "me.dark": "Dark", "me.accent": "Accent", "me.language": "Language",
   "me.accentLabel": "{name} accent",
   "accent.gold": "Gold", "accent.copper": "Copper", "accent.rose": "Rose", "accent.sage": "Sage", "accent.sky": "Sky", "accent.silver": "Silver", "accent.orchid": "Orchid", "accent.gliver": "Gliver", "accent.sunrise": "Sunrise",
+  // new in this release
+  "player.seek": "Seek",
+  "player.collapse": "Hide the player", "player.expand": "Show the player",
+  "live.notesHeard": "Notes heard", "live.nothingYet": "Play something",
+  "tut.laneChords": "Chords", "tut.laneNotes": "Notes",
+  "tut.loop": "Repeat this phrase", "tut.loopHint": "Plays the section you are in over and over until you turn it off.",
+  "tut.countIn": "Count me in", "tut.countInHint": "A bar of clicks before the music starts, so your hands are ready.",
+  "tut.ready": "Ready",
+  "tut.madeFor": "This tutorial was made for {instrument}.", "tut.rebuild": "Make one for this instrument",
+  "tut.frettedIntro": "Musica works out the notes, then finds the string, fret and finger for each one.",
+  "tut.melodyLine": "The melody", "tut.melodyLineHint": "The sung line as single notes, laid out on the fretboard. Works with any recording.",
+  "tut.transcribeFretHint": "Picks the notes out of the audio. Best when one instrument is playing.",
 } as const;
 export type Key = keyof typeof en;

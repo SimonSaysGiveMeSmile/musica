@@ -30,6 +30,10 @@ export interface Prefs {
   rewindSec: number;                           // how far the rewind button goes back
   tutorialSpeed: number;                       // how fast the notes fall, in seconds of lookahead
   handsMode: "both" | "l" | "r";               // which hand the tutorial shows
+  playerCollapsed: boolean;                    // transport pulled down out of the way
+  tutorialLane: "auto" | "chords" | "notes";   // what a fretted tutorial shows
+  loopSection: boolean;                        // repeat the phrase you are working on
+  countIn: boolean;                            // beats before the music starts again
   tuning: Partial<Record<Instrument, string>>; // chosen tuning id per instrument
 }
 
@@ -49,6 +53,10 @@ const DEFAULTS: Prefs = {
   rewindSec: 5,
   tutorialSpeed: 3,
   handsMode: "both",
+  playerCollapsed: false,
+  tutorialLane: "auto",
+  loopSection: false,
+  countIn: false,
 };
 
 /** Push theme + accent onto <html>. The inline script in layout.tsx does the same before first paint. */

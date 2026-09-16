@@ -92,4 +92,16 @@ export const az: Record<Key, string> = {
   "me.appearance": "Görünüş", "me.theme": "Tema", "me.system": "Sistem", "me.light": "Açıq", "me.dark": "Tünd", "me.accent": "Vurğu rəngi", "me.language": "Dil",
   "me.accentLabel": "{name} vurğusu",
   "accent.gold": "Qızıl", "accent.copper": "Mis", "accent.rose": "Çəhrayı", "accent.sage": "Adaçayı", "accent.sky": "Səma", "accent.silver": "Gümüş", "accent.orchid": "Orxideya", "accent.gliver": "Gliver", "accent.sunrise": "Gündoğumu",
+  // new in this release
+  "player.seek": "Axtar",
+  "player.collapse": "Pleyeri gizlət", "player.expand": "Pleyeri göstər",
+  "live.notesHeard": "Eşidilən notlar", "live.nothingYet": "Nəsə çalın",
+  "tut.laneChords": "Akkordlar", "tut.laneNotes": "Notlar",
+  "tut.loop": "Bu hissəni təkrarla", "tut.loopHint": "Söndürənə qədər olduğunuz hissəni təkrar-təkrar çalır.",
+  "tut.countIn": "Hazırlıq sayı", "tut.countInHint": "Başlamazdan əvvəl bir takt klik: əlləriniz hazır olsun.",
+  "tut.ready": "Hazır",
+  "tut.madeFor": "Bu dərs {instrument} üçün hazırlanıb.", "tut.rebuild": "Bu alət üçün yenisini hazırla",
+  "tut.frettedIntro": "Musica notları tapır, sonra hər biri üçün sim, pərdə və barmağı seçir.",
+  "tut.melodyLine": "Melodiya", "tut.melodyLineHint": "Oxunan xətt tək notlar kimi, qrifdə yerləşdirilir. İstənilən yazı ilə işləyir.",
+  "tut.transcribeFretHint": "Notları birbaşa səsdən çıxarır. Tək alət çalanda ən yaxşısıdır.",
 };

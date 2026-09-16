@@ -1,5 +1,5 @@
 "use client";
-import { resetLive, sendLiveFrame } from "@/lib/analysis/client";
+import { resetLive, sendLiveFrame, setLiveInstrument } from "@/lib/analysis/client";
 import { resumeAudio, setAudioSession } from "./context";
 
 const FRAME = 4096;
@@ -21,6 +21,8 @@ export function muteMic(muted: boolean) { activeStream?.getAudioTracks().forEach
 export interface MicOptions {
   /** Let the browser subtract what we are playing, so listening while a backing track runs hears only the room. */
   echoCancellation?: boolean;
+  /** What the listener expects to hear, so the recogniser can use that instrument's range and partials. */
+  instrument?: string;
 }
 
 export async function startMic(opts: MicOptions = {}): Promise<MicHandle> {
@@ -33,6 +35,7 @@ export async function startMic(opts: MicOptions = {}): Promise<MicHandle> {
   const ctx = await resumeAudio();
   const source = ctx.createMediaStreamSource(stream);
   resetLive();
+  if (opts.instrument) setLiveInstrument(opts.instrument);
 
   const handle: MicHandle = { stop: () => {}, sampleRate: ctx.sampleRate, method: "worklet" };
   const track = stream.getAudioTracks()[0];

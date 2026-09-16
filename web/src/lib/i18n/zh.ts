@@ -92,4 +92,16 @@ export const zh: Record<Key, string> = {
   "me.appearance": "外观", "me.theme": "主题", "me.system": "跟随系统", "me.light": "浅色", "me.dark": "深色", "me.accent": "强调色", "me.language": "语言",
   "me.accentLabel": "{name} 强调色",
   "accent.gold": "金", "accent.copper": "铜", "accent.rose": "玫瑰", "accent.sage": "鼠尾草", "accent.sky": "天蓝", "accent.silver": "银", "accent.orchid": "兰紫", "accent.gliver": "金银", "accent.sunrise": "日出",
+  // new in this release
+  "player.seek": "拖动进度",
+  "player.collapse": "收起播放器", "player.expand": "展开播放器",
+  "live.notesHeard": "听到的音", "live.nothingYet": "弹一个音试试",
+  "tut.laneChords": "和弦", "tut.laneNotes": "单音",
+  "tut.loop": "循环这一段", "tut.loopHint": "反复播放当前段落，直到你关掉它。",
+  "tut.countIn": "预备拍", "tut.countInHint": "开始前先打一小节拍子，让双手做好准备。",
+  "tut.ready": "预备",
+  "tut.madeFor": "这份教程是为{instrument}制作的。", "tut.rebuild": "为当前乐器重新生成",
+  "tut.frettedIntro": "Musica 会听出音符，再为每个音找到弦、品和手指。",
+  "tut.melodyLine": "主旋律", "tut.melodyLineHint": "把演唱旋律变成单音，排在指板上。任何录音都适用。",
+  "tut.transcribeFretHint": "直接从音频里提取音符。独奏录音效果最好。",
 };

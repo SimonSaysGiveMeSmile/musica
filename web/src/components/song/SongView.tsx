@@ -182,7 +182,8 @@ export function SongView({ id }: { id: string }) {
       </section>
 
       {/* Content */}
-      <section className="flex-1 px-4 pt-3 pb-[calc(var(--sab)+190px)] lg:px-0 lg:pb-0 lg:min-w-0">
+      {/* the floating player sits over this, so the page reserves exactly as much room as it takes */}
+      <section className="flex-1 px-4 pt-3 player-pad-bottom lg:px-0 lg:min-w-0">
         {view === "sheet" && (
           <>
             <ChordSheet lines={sheetLines} time={player.time} display={display} onSeek={player.seek} onChord={setOpenChord} known={new Set(prefs.known[instrument])} lang={song.lyrics?.lang} playing={player.playing} onSync={song.lyrics?.synced ? (t) => syncLineToNow(t - lyricsOffset) : undefined} onAnchor={song.lyrics && !song.lyrics.synced ? anchorLine : undefined} />

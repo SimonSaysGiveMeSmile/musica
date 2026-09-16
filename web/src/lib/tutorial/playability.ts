@@ -6,6 +6,9 @@
  *                held notes are released early before anything is thrown away
  *   3. fingers — a small dynamic program over finger combinations, scored on stretch,
  *                repeated fingers, hand travel and thumbs landing on black keys
+ *   4. repair  — the dynamic program only sees the chord before this one, so a finger can end up
+ *                asked to play a new note while it is still holding an old one. This pass walks
+ *                the result and settles those, releasing a held note only when nothing else works.
  */
 import { MAX_PER_HAND, MAX_SPAN, isBlackKey, type Finger, type Hand, type RawNote, type TutorialNote } from "./types";
 
@@ -127,12 +130,17 @@ export function makePlayable(raw: RawNote[], opts: PlayableOptions = {}): Playab
     }
   }
   const survivors = kept.filter((n) => n.end > n.start).sort((a, b) => a.start - b.start || a.midi - b.midi);
+  uncross(survivors);
 
-  // 3. fingers, one hand at a time
+  // 3. fingers, one hand at a time, then 4. settle them against whatever is still held
   const out: TutorialNote[] = [];
-  for (const h of ["l", "r"] as Hand[]) out.push(...fingerHand(survivors.filter((n) => n.hand === h), h));
+  for (const h of ["l", "r"] as Hand[]) {
+    const fingered = fingerHand(survivors.filter((n) => n.hand === h), h);
+    settleHeld(fingered, h);
+    out.push(...fingered);
+  }
   out.sort((a, b) => a.start - b.start || a.midi - b.midi);
-  return { notes: out, dropped };
+  return { notes: out.filter((n) => n.end - n.start > 0.02), dropped };
 }
 
 /* ----------------------------- fingering ----------------------------- */
@@ -252,4 +260,79 @@ function fingerHand(notes: Work[], hand: Hand): TutorialNote[] {
     }
   }
   return out;
+}
+
+/* ----------------------------- holding on ----------------------------- */
+
+/** The hands never reach across each other. Splitting each chord keeps that true at the moment
+ *  it is struck; a note held on afterwards can still end up on the wrong side, so it is let go. */
+function uncross(notes: Work[]): void {
+  const held: Work[] = [];
+  for (const n of notes) {
+    for (let i = held.length - 1; i >= 0; i--) if (held[i].end <= n.start + 1e-6) held.splice(i, 1);
+    for (let i = held.length - 1; i >= 0; i--) {
+      const h = held[i];
+      if (h.hand === n.hand || h.start >= n.start - 1e-6) continue;
+      if (h.hand === "l" ? h.midi > n.midi : h.midi < n.midi) { h.end = n.start; held.splice(i, 1); }
+    }
+    held.push(n);
+  }
+}
+
+/** One number that makes both hands read the same way: fingers run left to right across the keys. */
+const order = (f: Finger, hand: Hand) => (hand === "r" ? f : 6 - f);
+
+/** Fingers for a chord that sit correctly beside every note still held, as close as possible to
+ *  what the fingering pass chose. Null when no such choice exists. */
+function beside(chord: TutorialNote[], held: TutorialNote[], hand: Hand): { note: TutorialNote; finger: Finger }[] | null {
+  const taken = new Set(held.map((h) => h.finger));
+  const free = ([1, 2, 3, 4, 5] as Finger[]).filter((f) => !taken.has(f));
+  if (chord.length > free.length) return null;
+  const sorted = [...chord].sort((a, b) => a.midi - b.midi);
+  let best: { cost: number; fingers: Finger[] } | null = null;
+
+  const walk = (i: number, used: Finger[], cost: number) => {
+    if (best && cost >= best.cost) return;
+    if (i === sorted.length) { best = { cost, fingers: used }; return; }
+    for (const f of free) {
+      if (used.includes(f)) continue;
+      if (used.length && order(f, hand) <= order(used[used.length - 1], hand)) continue;  // the hand cannot fold over itself
+      let ok = true;
+      for (const h of held) {
+        if (h.midi === sorted[i].midi) continue;
+        // a finger holding a lower key has to stay to the left of one taking a higher key
+        const oh = order(h.finger, hand), of = order(f, hand);
+        if (h.midi < sorted[i].midi ? oh >= of : oh <= of) { ok = false; break; }
+      }
+      if (ok) walk(i + 1, [...used, f], cost + (f === sorted[i].finger ? 0 : 1));
+    }
+  };
+  walk(0, [], 0);
+  return best ? sorted.map((n, k) => ({ note: n, finger: best!.fingers[k] })) : null;
+}
+
+/** Walk one hand's part and make every moment physically possible. */
+function settleHeld(notes: TutorialNote[], hand: Hand): void {
+  const chords: TutorialNote[][] = [];
+  for (const n of [...notes].sort((a, b) => a.start - b.start)) {
+    const g = chords[chords.length - 1];
+    if (g && n.start - g[0].start <= GROUP) g.push(n); else chords.push([n]);
+  }
+  const held: TutorialNote[] = [];
+  for (const chord of chords) {
+    const t = chord[0].start;
+    for (let i = held.length - 1; i >= 0; i--) if (held[i].end <= t + 1e-6) held.splice(i, 1);
+    for (;;) {
+      const fix = beside(chord, held, hand);
+      if (fix) { for (const { note, finger } of fix) note.finger = finger; break; }
+      if (!held.length) break;                      // nothing left to give up; leave it as the program chose
+      // let go of whatever is furthest from what is being played now
+      const centre = chord.reduce((sum, n) => sum + n.midi, 0) / chord.length;
+      let worst = 0;
+      for (let i = 1; i < held.length; i++) if (Math.abs(held[i].midi - centre) > Math.abs(held[worst].midi - centre)) worst = i;
+      held[worst].end = Math.min(held[worst].end, t);
+      held.splice(worst, 1);
+    }
+    held.push(...chord);
+  }
 }
