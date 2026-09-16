@@ -40,7 +40,7 @@ export const en = {
   "sheet.anchors": "{n} pinned lines", "sheet.anchorHint": "These lyrics have no timing. While the song plays, long-press a line as it is sung to pin it; the lines after it spread out to the next pin.",
   "install.title": "Add Musica to your Home Screen", "install.subtitle": "Opens full screen, works offline, no browser bars.", "install.show": "Show me how", "install.later": "Not now", "install.meRow": "Add to Home Screen", "install.installed": "Installed as an app", "install.ios1": "Tap the Share button in Safari's toolbar.", "install.ios2": "Scroll down and tap “Add to Home Screen”.", "install.ios3": "Tap “Add” in the top right corner.", "install.android1": "Tap the ⋮ menu in Chrome.", "install.android2": "Tap “Add to Home screen”, then “Install”.", "install.wechat": "WeChat can't install apps. Tap ··· in the top right and choose “Open in Safari” first, then follow these steps.", "install.desktop": "On an iPhone, open musicaa.site in Safari and follow these steps.",
   "sheet.autoSynced": "Auto-synced to the audio ({n} s)",
-  "tuner.noAudio": "No sound is reaching the microphone. Check the mute switch, and that Musica is allowed to use the mic in Settings.",
+  "tuner.noAudio": "No sound at the mic. Check the mute switch.",
   "tuner.lockedTo": "Locked to {note}", "tuner.farOff": "Hearing {heard}, locked to {target}", "tuner.stringTile": "{note}: play and lock this string", "tuner.playing": "Playing {note}",
   "live.micLost": "The microphone was interrupted. Tap Start to listen again.",
   "timeline.hint": "Chords on the beat grid · tap to jump", "timeline.beats": "{n} beats", "timeline.confidence": "Bar under each block shows how confident the analysis is for that chord.",

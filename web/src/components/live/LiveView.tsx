@@ -97,12 +97,9 @@ export function LiveView() {
 
       <section className="flex-1 min-h-0 px-5 lg:px-10 pt-3 overflow-y-auto no-scrollbar lg:max-w-[1000px]" style={{ overscrollBehavior: "contain" }}>
         {mode === "tuner" ? (
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-5 lg:items-start space-y-3 lg:space-y-0">
-            <Tuner key={prefs.instrument} listening={on} instrument={prefs.instrument} />
-            <div className="space-y-2">
-              {micButton}
-              {err && <p className="text-felt-hi ios-footnote">{err}</p>}
-            </div>
+          <div className="lg:max-w-[880px]">
+            <Tuner key={prefs.instrument} listening={on} instrument={prefs.instrument}
+              action={<div className="space-y-2">{micButton}{err && <p className="text-felt-hi ios-footnote text-center">{err}</p>}</div>} />
           </div>
         ) : (
           <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5 lg:items-start space-y-3 lg:space-y-0">
