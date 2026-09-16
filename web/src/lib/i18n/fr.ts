@@ -78,6 +78,7 @@ export const fr: Record<Key, string> = {
   "tut.sensitivity": "Sensibilité", "tut.sens1": "Faible", "tut.sens2": "Moyenne", "tut.sens3": "Élevée",
   "tut.fall": "Vitesse de chute", "tut.slow": "Lente", "tut.medium": "Moyenne", "tut.fast": "Rapide",
   "tut.fingers": "Les chiffres sont les doigts : 1 est le pouce.",
+  "tut.droppedFret": "{n} notes omises — plus que les cordes ne pouvaient porter",
   "tut.dropped": "{n} notes écartées pour rester à portée des deux mains",
   "tut.fretHint": "Chaque couloir est une corde. Le chiffre est la case à presser.",
   "tut.micDenied": "Musica a besoin du micro pour savoir quand vous arrêtez de jouer.",
@@ -95,6 +96,7 @@ export const fr: Record<Key, string> = {
   // new in this release
   "player.seek": "Se déplacer",
   "player.collapse": "Replier le lecteur", "player.expand": "Déplier le lecteur",
+  "tut.lane": "Ce que montre le manche",
   "tut.laneChords": "Accords", "tut.laneNotes": "Notes",
   "tut.loop": "Répéter cette phrase", "tut.loopHint": "Rejoue la section en cours en boucle jusqu'à ce que vous l'arrêtiez.",
   "tut.countIn": "Décompte", "tut.countInHint": "Une mesure de clics avant le départ, le temps de placer les mains.",

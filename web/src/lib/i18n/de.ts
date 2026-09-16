@@ -78,6 +78,7 @@ export const de: Record<Key, string> = {
   "tut.sensitivity": "Empfindlichkeit", "tut.sens1": "Niedrig", "tut.sens2": "Mittel", "tut.sens3": "Hoch",
   "tut.fall": "Falltempo", "tut.slow": "Langsam", "tut.medium": "Mittel", "tut.fast": "Schnell",
   "tut.fingers": "Die Zahlen sind Finger: 1 ist der Daumen.",
+  "tut.droppedFret": "{n} Töne ausgelassen — mehr, als die Saiten tragen konnten",
   "tut.dropped": "{n} Töne weggelassen, damit beide Hände hinkommen",
   "tut.fretHint": "Jede Spur ist eine Saite. Die Zahl ist der Bund, den du greifst.",
   "tut.micDenied": "Musica braucht das Mikrofon, um zu merken, wann du aufhörst zu spielen.",
@@ -95,6 +96,7 @@ export const de: Record<Key, string> = {
   // new in this release
   "player.seek": "Spulen",
   "player.collapse": "Player einklappen", "player.expand": "Player ausklappen",
+  "tut.lane": "Was das Griffbrett zeigt",
   "tut.laneChords": "Akkorde", "tut.laneNotes": "Töne",
   "tut.loop": "Diese Phrase wiederholen", "tut.loopHint": "Spielt den aktuellen Abschnitt immer wieder, bis du es ausschaltest.",
   "tut.countIn": "Einzähler", "tut.countInHint": "Ein Takt Klicks vor dem Start, damit die Hände bereit sind.",

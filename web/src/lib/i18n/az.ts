@@ -78,6 +78,7 @@ export const az: Record<Key, string> = {
   "tut.sensitivity": "Həssaslıq", "tut.sens1": "Aşağı", "tut.sens2": "Orta", "tut.sens3": "Yüksək",
   "tut.fall": "Düşmə sürəti", "tut.slow": "Yavaş", "tut.medium": "Orta", "tut.fast": "Sürətli",
   "tut.fingers": "Rəqəmlər barmaqları göstərir: 1 baş barmaqdır.",
+  "tut.droppedFret": "{n} not buraxıldı — simlərin götürə biləcəyindən çox idi",
   "tut.dropped": "Hər iki əl çata bilsin deyə {n} not buraxılıb",
   "tut.fretHint": "Hər zolaq bir simdir. Rəqəm basılacaq pərdədir.",
   "tut.micDenied": "Çalmağı nə vaxt dayandırdığınızı bilmək üçün Musica-ya mikrofon lazımdır.",
@@ -95,6 +96,7 @@ export const az: Record<Key, string> = {
   // new in this release
   "player.seek": "Axtar",
   "player.collapse": "Pleyeri gizlət", "player.expand": "Pleyeri göstər",
+  "tut.lane": "Qrifdə nə görünsün",
   "tut.laneChords": "Akkordlar", "tut.laneNotes": "Notlar",
   "tut.loop": "Bu hissəni təkrarla", "tut.loopHint": "Söndürənə qədər olduğunuz hissəni təkrar-təkrar çalır.",
   "tut.countIn": "Hazırlıq sayı", "tut.countInHint": "Başlamazdan əvvəl bir takt klik: əlləriniz hazır olsun.",

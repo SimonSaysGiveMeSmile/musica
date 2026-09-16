@@ -88,6 +88,7 @@ export const en = {
   "tut.sensitivity": "Sensitivity", "tut.sens1": "Low", "tut.sens2": "Medium", "tut.sens3": "High",
   "tut.fall": "Falling speed", "tut.slow": "Slow", "tut.medium": "Medium", "tut.fast": "Fast",
   "tut.fingers": "The numbers are fingers: 1 is the thumb.",
+  "tut.droppedFret": "{n} notes left out — more than the strings could take",
   "tut.dropped": "{n} notes left out so both hands can reach",
   "tut.fretHint": "Each lane is a string. The number is the fret to press.",
   "tut.micDenied": "Musica needs the microphone to tell when you stop playing.",
@@ -106,6 +107,7 @@ export const en = {
   // new in this release
   "player.seek": "Seek",
   "player.collapse": "Hide the player", "player.expand": "Show the player",
+  "tut.lane": "What the fretboard shows",
   "tut.laneChords": "Chords", "tut.laneNotes": "Notes",
   "tut.loop": "Repeat this phrase", "tut.loopHint": "Plays the section you are in over and over until you turn it off.",
   "tut.countIn": "Count me in", "tut.countInHint": "A bar of clicks before the music starts, so your hands are ready.",

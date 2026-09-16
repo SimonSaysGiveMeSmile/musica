@@ -100,11 +100,14 @@ colour, the left hand ivory, and every block carries the finger to use (1 = thum
   sub-octave rejection and per-note re-attack detection. Best on solo piano. ~19 s for a four-minute song.
 - **Open a score**: MIDI (formats 0/1, tempo map, running status) or MusicXML, including zipped `.mxl`.
 
-**Guitar and ukulele.** One lane per string, in two modes the player switches between:
-- **Chords**: one shape per lane from the chord track, open strings hollow, muted strings crossed, the
-  chord's name on its own pill. Needs no extra analysis.
+**Guitar and ukulele.** One lane per string, in two modes:
+- **Chords**, the default: one shape per lane from the chord track, open strings hollow, muted strings
+  crossed, the chord's name on its own pill. Needs no extra analysis. This is also the fallback — asking for
+  tablature never takes the chords away from a song that has none to show, and nothing about the chord lane
+  depends on a stored tutorial.
 - **Notes**: real tablature. Every note carries the fret to press as the big number and the finger to use in
   a circle above it. Built by a fretboard layout pass (§4.11) from the melody, the recording, or a score.
+  Chosen under "What the fretboard shows" in the tutorial settings, so the chord lane stays uncluttered.
 
 **Playability.** Every generated piano tutorial goes through a pass that makes it playable by two human hands:
 hands never cross — not even on a note held over from an earlier chord — a hand holds at most five notes at
@@ -295,3 +298,6 @@ Some words in the brief were ambiguous in transcription. Assumptions made:
 - Auto-pause now needs pitched sound, not just level, so a noisy room no longer counts as playing.
 - The player and the tutorial transport retract to a slim bar. The page reserves exactly the height the card
   measures, which also fixed the expanded player covering the last lines of the chord sheet.
+- Reverted on request: the Live → Chords card is back to Pitch beside Chroma with nothing above it, and the
+  fretted tutorial opens on the chord lane with the lane switch moved into the settings sheet. Both were
+  checked against a build of the previous release rather than against memory.

@@ -81,7 +81,9 @@ export function TutorialView({ id }: { id: string }) {
 
   /* ---------------- which lane a fretted tutorial shows ---------------- */
   const tabNotes = useMemo(() => (matches && fretted ? notes.filter((n) => n.string !== undefined) : []), [matches, fretted, notes]);
-  const lane: "chords" | "notes" = prefs.tutorialLane === "auto" ? (tabNotes.length ? "notes" : "chords") : prefs.tutorialLane;
+  // the chord lane is what a fretted tutorial opens on, and what it falls back to: asking for
+  // tablature must never take the chords away from a song that has no tablature to show
+  const lane: "chords" | "notes" = prefs.tutorialLane === "notes" && tabNotes.length > 0 ? "notes" : "chords";
 
   /* ---------------- stop when the player stops ---------------- */
   const pausedByUs = useRef(false);
@@ -231,7 +233,7 @@ export function TutorialView({ id }: { id: string }) {
   }
 
   // "melody + chords" is the piano shape; a fretted arrangement is the melody alone
-  const sourceLabel = tutorial && matches
+  const sourceLabel = tutorial && matches && (!fretted || lane === "notes")
     ? ` · ${fretted && tutorial.source === "arrange" ? t("tut.melodyLine") : t(`tut.src.${tutorial.source}` as const)}`
     : "";
 
@@ -244,7 +246,7 @@ export function TutorialView({ id }: { id: string }) {
           <div className="ios-headline truncate">{song.title}</div>
           <div className="ios-caption label-2 truncate">{t("tut.title")}{sourceLabel}</div>
         </div>
-        {song.hasAudio && notes.length > 0 && matches && (
+        {song.hasAudio && notes.length > 0 && matches && (!fretted || lane === "notes") && (
           <button onClick={() => setNotesOverride(!useNotes)} aria-pressed={useNotes} title={t("tut.playNotes")}
             className={`press circle-btn shrink-0 ${useNotes ? "gold-fill" : "glass text-ivory"}`}><IconNotes width={18} height={18} /></button>
         )}
@@ -262,18 +264,6 @@ export function TutorialView({ id }: { id: string }) {
             <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "var(--gold)" }} />{t("tut.right")}
             <span className="inline-block w-2.5 h-2.5 rounded-full ml-1.5" style={{ background: "color-mix(in srgb, var(--ivory) 62%, transparent)" }} />{t("tut.left")}
           </div>
-        </div>
-      )}
-      {/* always offered, so the note-by-note lane is discoverable before one has been made */}
-      {fretted && (
-        <div className="px-4 lg:px-8 pb-2 flex items-center gap-2 shrink-0">
-          <div className="flex-1 max-w-[280px]">
-            <Segmented id="tut-lane" value={lane} onChange={(v) => setPrefs({ tutorialLane: v })}
-              options={[{ value: "chords", label: t("tut.laneChords") }, { value: "notes", label: t("tut.laneNotes") }]} />
-          </div>
-          {current && current.chord !== "N" && (
-            <span className="ml-auto chordname ios-headline text-gold-hi">{transposeSymbol(current.chord, shift, flats)}</span>
-          )}
         </div>
       )}
 
@@ -313,8 +303,9 @@ export function TutorialView({ id }: { id: string }) {
             </div>
           )}
 
-          {/* made for another instrument, or counting in */}
-          {tutorial && !matches && !busy && (
+          {/* made for another instrument, or counting in. The chord lane does not use the stored
+              tutorial at all, so it is only worth saying when those notes are what you asked for. */}
+          {tutorial && !matches && !busy && (!fretted || prefs.tutorialLane === "notes") && (
             <div className="absolute inset-x-0 top-3 flex justify-center px-4 pointer-events-none">
               <div className="glass-strong rounded-[20px] px-4 py-2.5 text-center pointer-events-auto max-w-[340px]">
                 <p className="ios-caption label-2">{t("tut.madeFor", { instrument: t(`song.${madeFor}` as const) })}</p>
@@ -432,6 +423,13 @@ export function TutorialView({ id }: { id: string }) {
         </div>
 
         <div className="inset-group mt-4">
+          {fretted && (
+            <div className="row">
+              <span className="ios-body flex-1">{t("tut.lane")}</span>
+              <Pills value={lane} options={[{ v: "chords" as const, l: t("tut.laneChords") }, { v: "notes" as const, l: t("tut.laneNotes") }]}
+                onChange={(v) => setPrefs({ tutorialLane: v })} />
+            </div>
+          )}
           {canBuild && (
             <>
               <button onClick={() => build("arrange")} disabled={!!busy} className="row press w-full text-left">
@@ -445,14 +443,18 @@ export function TutorialView({ id }: { id: string }) {
           <button onClick={() => fileRef.current?.click()} disabled={!!busy} className="row press w-full text-left">
             <span className="ios-body flex-1">{t("tut.import")}</span><span className="ios-footnote text-gold">{t("tut.choose")}</span>
           </button>
-          {tutorial && (
+          {tutorial && (!fretted || tutorial.dropped > 0) && (
             <div className="row !min-h-0 py-2">
               <span className="ios-caption label-3">
-                {fretted ? t("tut.fretHint") : t("tut.fingers")}{tutorial.dropped > 0 ? ` · ${t("tut.dropped", { n: tutorial.dropped })}` : ""}
+                {[
+                  fretted ? "" : t("tut.fingers"),
+                  tutorial.dropped > 0 ? t(fretted ? "tut.droppedFret" : "tut.dropped", { n: tutorial.dropped }) : "",
+                ].filter(Boolean).join(" · ")}
               </span>
             </div>
           )}
         </div>
+        {current && current.chord !== "N" && <p className="ios-caption label-3 mt-4 text-center">{t("tut.fretHint")}</p>}
       </Sheet>
     </main>
   );
@@ -476,7 +478,7 @@ function Switch({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
   );
 }
 
-function Pills<T extends number>({ value, options, onChange }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void }) {
+function Pills<T extends string | number>({ value, options, onChange }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void }) {
   return (
     <div className="glass rounded-full h-9 p-[3px] flex items-center shrink-0">
       {options.map((o) => (

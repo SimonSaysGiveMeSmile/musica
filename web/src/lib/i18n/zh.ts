@@ -78,6 +78,7 @@ export const zh: Record<Key, string> = {
   "tut.sensitivity": "灵敏度", "tut.sens1": "低", "tut.sens2": "中", "tut.sens3": "高",
   "tut.fall": "下落速度", "tut.slow": "慢", "tut.medium": "中", "tut.fast": "快",
   "tut.fingers": "数字代表手指：1 是拇指。",
+  "tut.droppedFret": "略去 {n} 个音——超出了琴弦能同时发出的范围",
   "tut.dropped": "省略了 {n} 个音符，让双手够得着",
   "tut.fretHint": "每一条轨道是一根弦，数字是要按的品。",
   "tut.micDenied": "Musica 需要麦克风来判断你什么时候停下。",
@@ -95,6 +96,7 @@ export const zh: Record<Key, string> = {
   // new in this release
   "player.seek": "拖动进度",
   "player.collapse": "收起播放器", "player.expand": "展开播放器",
+  "tut.lane": "指板显示",
   "tut.laneChords": "和弦", "tut.laneNotes": "单音",
   "tut.loop": "循环这一段", "tut.loopHint": "反复播放当前段落，直到你关掉它。",
   "tut.countIn": "预备拍", "tut.countInHint": "开始前先打一小节拍子，让双手做好准备。",

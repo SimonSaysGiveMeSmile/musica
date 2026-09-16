@@ -78,6 +78,7 @@ export const ru: Record<Key, string> = {
   "tut.sensitivity": "Чувствительность", "tut.sens1": "Низкая", "tut.sens2": "Средняя", "tut.sens3": "Высокая",
   "tut.fall": "Скорость падения", "tut.slow": "Медленно", "tut.medium": "Средне", "tut.fast": "Быстро",
   "tut.fingers": "Цифры — это пальцы: 1 — большой.",
+  "tut.droppedFret": "{n} нот пропущено — больше, чем могут взять струны",
   "tut.dropped": "{n} нот убрано, чтобы обе руки дотягивались",
   "tut.fretHint": "Каждая дорожка — струна. Цифра — лад, который нужно зажать.",
   "tut.micDenied": "Musica нужен микрофон, чтобы понимать, когда вы перестали играть.",
@@ -95,6 +96,7 @@ export const ru: Record<Key, string> = {
   // new in this release
   "player.seek": "Перемотка",
   "player.collapse": "Свернуть плеер", "player.expand": "Развернуть плеер",
+  "tut.lane": "Что показывает гриф",
   "tut.laneChords": "Аккорды", "tut.laneNotes": "Ноты",
   "tut.loop": "Повторять эту фразу", "tut.loopHint": "Играет текущий раздел по кругу, пока вы не выключите.",
   "tut.countIn": "Отсчёт", "tut.countInHint": "Такт щелчков перед стартом, чтобы руки были готовы.",
