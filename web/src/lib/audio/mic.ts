@@ -2,8 +2,9 @@
 import { resetLive, sendLiveFrame, setLiveInstrument } from "@/lib/analysis/client";
 import { resumeAudio, setAudioSession } from "./context";
 
-const FRAME = 4096;
-const WORKLET_VERSION = "2";
+const FRAME = 4096;   // analysis window: long enough to measure a low E
+const HOP = 1024;     // a fresh window every 21 ms at 48 kHz — what makes the needle feel live
+const WORKLET_VERSION = "3";
 
 export interface MicHandle {
   stop: () => void;
@@ -47,8 +48,8 @@ export async function startMic(opts: MicOptions = {}): Promise<MicHandle> {
   if (ctx.audioWorklet) {
     try {
       await ctx.audioWorklet.addModule(`/workers/mic-processor.js?v=${WORKLET_VERSION}`);
-      const node = new AudioWorkletNode(ctx, "mic-processor", { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 });
-      node.port.onmessage = (e: MessageEvent<Float32Array>) => sendLiveFrame(e.data, ctx.sampleRate);
+      const node = new AudioWorkletNode(ctx, "mic-processor", { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1, processorOptions: { size: FRAME, hop: HOP } });
+      node.port.onmessage = (e: MessageEvent<Float32Array>) => sendLiveFrame(e.data, ctx.sampleRate, HOP);
       const sink = ctx.createGain(); sink.gain.value = 0;
       source.connect(node); node.connect(sink); sink.connect(ctx.destination);
       handle.stop = () => { node.port.postMessage("stop"); node.port.onmessage = null; node.disconnect(); source.disconnect(); sink.disconnect(); finish(); };
@@ -56,8 +57,17 @@ export async function startMic(opts: MicOptions = {}): Promise<MicHandle> {
     } catch (e) { console.warn("AudioWorklet unavailable, using ScriptProcessor", e); }
   }
 
-  const proc = ctx.createScriptProcessor(FRAME, 1, 1);
-  proc.onaudioprocess = (e) => sendLiveFrame(new Float32Array(e.inputBuffer.getChannelData(0)), ctx.sampleRate);
+  // the same rolling window, one hop at a time
+  const proc = ctx.createScriptProcessor(HOP, 1, 1);
+  const ring = new Float32Array(FRAME);
+  let filled = 0;
+  proc.onaudioprocess = (e) => {
+    const chunk = e.inputBuffer.getChannelData(0);
+    ring.copyWithin(0, chunk.length);
+    ring.set(chunk, FRAME - chunk.length);
+    filled = Math.min(FRAME, filled + chunk.length);
+    if (filled === FRAME) sendLiveFrame(ring.slice(), ctx.sampleRate, HOP);
+  };
   const sink = ctx.createGain(); sink.gain.value = 0;
   source.connect(proc); proc.connect(sink); sink.connect(ctx.destination);
   handle.method = "scriptprocessor";

@@ -46,6 +46,7 @@ export function usePlayDetect({ enabled, sensitivity, instrument, holdMs = 1600,
   const micRef = useRef<MicHandle | null>(null);
   const aliveRef = useRef(true);
   const floorRef = useRef(0.004);
+  const lastTsRef = useRef(0);
   const lastHotRef = useRef(0);
   const playingRef = useRef(false);
   const sensRef = useRef(sensitivity);
@@ -77,6 +78,7 @@ export function usePlayDetect({ enabled, sensitivity, instrument, holdMs = 1600,
         handle = h;
         micRef.current = h;
         floorRef.current = 0.004;
+        lastTsRef.current = 0;
         lastHotRef.current = 0;
         setListening(true);
       } catch (e) {
@@ -100,7 +102,12 @@ export function usePlayDetect({ enabled, sensitivity, instrument, holdMs = 1600,
     return onLive((f) => {
       const rms = f.rms;
       const floor = floorRef.current;
-      floorRef.current = rms < floor ? floor + (rms - floor) * 0.3 : floor + (rms - floor) * 0.02;
+      // the floor drops quickly and rises slowly, at rates set in seconds so the frame rate cannot change them
+      const now = performance.now();
+      const dt = lastTsRef.current ? Math.min(0.5, (now - lastTsRef.current) / 1000) : 0.085;
+      lastTsRef.current = now;
+      const down = 1 - Math.exp(-dt / 0.24), up = 1 - Math.exp(-dt / 4.2);
+      floorRef.current = rms < floor ? floor + (rms - floor) * down : floor + (rms - floor) * up;
       const { ratio, floor: absFloor } = TUNING[sensRef.current];
       const threshold = Math.max(absFloor, floorRef.current * ratio);
       // loud enough, and either a note the recogniser can hold on to or a strike too sharp to be the room

@@ -47,4 +47,11 @@ export interface LiveFrame {
   hpcp: number[];
   /** MIDI numbers the recogniser believes are sounding right now (full mode only). */
   notes?: number[];
+  /** True when this frame carries a new chord decision rather than repeating the last one. */
+  fresh?: boolean;
+  /** How long the frame waited before the worker got to it, how long the worker spent, and how many
+   *  frames it has skipped for being stale — the numbers that say whether the tuner is keeping up. */
+  age?: number;
+  took?: number;
+  dropped?: number;
 }

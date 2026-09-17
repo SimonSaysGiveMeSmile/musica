@@ -423,6 +423,46 @@ function capPolyphony(notes, maxAtOnce) {
   }
   return out.filter((n) => n.end - n.start > 0.04);
 }
+/* ---------------------------- pitch, every frame ----------------------------
+   YIN with the one thing the library version lacks: it stops at the first lag that dips under the
+   threshold instead of scoring every lag up to the lowest note. A high note is found a few hundred
+   lags in, and even a low E only needs the lags up to its own period. The integration window is
+   half the frame, so every lag is judged on the same number of samples. */
+function yinPitch(x, sr, fmin, fmax, threshold) {
+  const N = x.length, W = N >> 1;
+  const tauMin = Math.max(2, Math.floor(sr / fmax)), tauMax = Math.min(N - W - 1, Math.ceil(sr / fmin));
+  const raw = new Float32Array(tauMax + 2);   // the difference function itself
+  const d = new Float32Array(tauMax + 2);     // and its cumulative-mean normalised form, used to pick the dip
+  let run = 0;
+  let best = -1, bestVal = Infinity;
+  for (let tau = 1; tau <= tauMax; tau++) {
+    let acc = 0;
+    for (let i = 0; i < W; i++) { const v = x[i] - x[i + tau]; acc += v * v; }
+    run += acc;
+    raw[tau] = acc;
+    const cm = tau < tauMin ? 1 : (acc * tau) / (run || 1e-12);
+    d[tau] = cm;
+    if (tau < tauMin) continue;
+    if (best < 0) {
+      if (cm < threshold) { best = tau; bestVal = cm; }          // the first dip below the line
+      else if (cm < bestVal) { bestVal = cm; }                    // remember the deepest so far, for confidence
+    } else if (cm < d[tau - 1]) { best = tau; bestVal = cm; }     // still descending into the dip
+    else break;                                                   // climbed out: done
+  }
+  if (best < 0) return { pitch: 0, confidence: 0 };
+  // sub-sample precision: a parabola through the raw difference function around the dip. The
+  // normalised curve would do for finding the dip, but its tau weighting tilts the vertex sharp.
+  let tau = best;
+  if (best > 1 && best < tauMax) {
+    if (best + 1 > tauMax || raw[best + 1] === 0) {          // one more lag, if the loop stopped exactly here
+      let acc = 0; for (let i = 0; i < W; i++) { const v = x[i] - x[i + best + 1]; acc += v * v; } raw[best + 1] = acc;
+    }
+    const a = raw[best - 1], b = raw[best], c = raw[best + 1];
+    const den = a - 2 * b + c;
+    if (den > 0) tau = best + (a - c) / (2 * den);
+  }
+  return { pitch: sr / tau, confidence: Math.max(0, 1 - bestVal) };
+}
 /* @pure-end */
 
 /* ---------------------------- transcription and arrangement ---------------------------- */
@@ -584,7 +624,13 @@ function tutorial(id, audio, sr, mode, chords, beats, phase, instrument) {
    (fast, and precise enough for cents), and a comb over the last 8192 for which notes and
    which chord are sounding (long enough to tell neighbouring low strings apart). */
 const LIVE_N = FRAME * 4;   // 16384 samples: long enough to tell two low strings a semitone apart
-const live = { sr: 48000, mode: "full", instrument: "any", buf: null, chroma: [], max: 4, table: null, tableKey: "" };
+const CHORD_EVERY_MS = 85;  // the chord and note work runs at this pace whatever the frame rate; pitch runs every frame
+const live = {
+  sr: 48000, mode: "full", instrument: "any", buf: null, chroma: [], max: 4, table: null, tableKey: "",
+  fed: 0,                  // samples of new audio since the chord path last ran
+  S: null,                 // the last spectrum, so the octave check can run on every frame
+  last: { chord: "N", strength: 0, chroma: new Array(12).fill(0), notes: [] },
+};
 
 function liveTable(sr, cfg) {
   const key = `${sr}|${live.instrument}`;
@@ -592,41 +638,47 @@ function liveTable(sr, cfg) {
   return live.table;
 }
 
-function liveFrame(frame, sr) {
+const LATE_MS = 60;   // a frame older than this is folded into the buffer but not analysed: the needle must never lag
+
+function liveFrame(frame, sr, hop, sentAt) {
   if (!frame || frame.length !== FRAME) return; // the worklet always sends 4096; anything else is not ours
+  const t0 = performance.now();
+  const age = sentAt ? Date.now() - sentAt : 0;
+  const fresh = Math.max(1, Math.min(FRAME, hop || FRAME));   // how much of this frame is new audio
   const cfg = instrumentCfg(live.instrument);
   const owned = [];
   const own = (v) => { owned.push(v); return v; };
   try {
+    // a rolling 16384: at 4096 two low strings a semitone apart share a bin, at 16384 they do not.
+    // Only the new samples go in, since consecutive frames overlap.
+    const N2 = LIVE_N;
+    if (!live.buf || live.buf.length !== N2) live.buf = new Float32Array(N2);
+    live.buf.copyWithin(0, fresh);
+    live.buf.set(frame.subarray(FRAME - fresh), N2 - fresh);
+    live.fed += fresh;
+    if (age > LATE_MS) { live.dropped = (live.dropped || 0) + 1; return; }   // stale: the next frame is already on its way
+
     let rms = 0; for (let i = 0; i < frame.length; i++) rms += frame[i] * frame[i];
     rms = Math.sqrt(rms / frame.length);
-    const vec = own(essentia.arrayToVector(frame));
-    // time-domain YIN with interpolation: sub-sample accuracy, reliable down to the low E of a guitar
-    const yin = essentia.PitchYin(vec, FRAME, true, cfg.f0hi, cfg.f0lo, sr, 0.15);
+    // YIN in plain JS, half a millisecond a frame: what lets pitch run on every hop
+    const yin = rms > 0.0005 ? yinPitch(frame, sr, cfg.f0lo, cfg.f0hi, 0.15) : { pitch: 0, confidence: 0 };
 
     if (live.mode === "level") {
       // the tutorial only asks "is someone playing?" — skip the spectrum, notes and chord work
-      postMessage({ type: "live", chord: "N", strength: 0, pitch: yin.pitch, pitchConfidence: yin.pitchConfidence, rms, hpcp: new Array(12).fill(0), notes: [] });
+      postMessage({ type: "live", chord: "N", strength: 0, pitch: yin.pitch, pitchConfidence: yin.confidence, rms, hpcp: new Array(12).fill(0), notes: [], fresh: false, age, took: performance.now() - t0, dropped: live.dropped || 0 });
       return;
     }
 
-    // the last four frames: at 4096 two low strings a semitone apart share a bin, at 16384 they do not
-    const N2 = LIVE_N;
-    if (!live.buf || live.buf.length !== N2) live.buf = new Float32Array(N2);
-    live.buf.copyWithin(0, FRAME);
-    live.buf.set(frame, N2 - FRAME);
-
     const QUIET = 0.004;
-    let notes = [];
-    let chord = "N", strength = 0;
-    const chroma = new Float32Array(12);
-    if (rms > QUIET) {
+    const due = live.fed >= (CHORD_EVERY_MS / 1000) * sr;
+    if (rms > QUIET && due) {
+      live.fed = 0;
       const lv = own(essentia.arrayToVector(live.buf));
       const w = essentia.Windowing(lv, true, N2, "hann"); own(w.frame);
       const sp = essentia.Spectrum(w.frame, N2); own(sp.spectrum);
       const S = essentia.vectorToArray(sp.spectrum);
-      notes = framePitches(S, liveTable(sr, cfg), cfg.poly);
-      yin.pitch = refineOctave(S, yin.pitch, sr, N2, cfg);
+      live.S = S;
+      const notes = framePitches(S, liveTable(sr, cfg), cfg.poly);
 
       const { w: fw, bass } = notesToChroma(notes);
       live.chroma.push({ w: fw, bass });
@@ -640,20 +692,27 @@ function liveFrame(frame, sr) {
       let bassPc = -1, votes = 0;
       for (const [pc, n] of bassVotes) if (n > votes) { votes = n; bassPc = pc; }
       const hit = chordFromChroma(acc, bassPc);
-      chord = hit.name; strength = Math.max(0, Math.min(1, hit.score));
+      const chroma = new Array(12).fill(0);
       let mx = 0; for (let k = 0; k < 12; k++) if (acc[k] > mx) mx = acc[k];
       if (mx > 0) for (let k = 0; k < 12; k++) chroma[k] = acc[k] / mx;
-    } else {
+      live.last = { chord: hit.name, strength: Math.max(0, Math.min(1, hit.score)), chroma, notes: notes.map((n) => n.p) };
+    } else if (rms <= QUIET) {
       live.chroma.length = 0;
+      live.S = null;
+      live.last = { chord: "N", strength: 0, chroma: new Array(12).fill(0), notes: [] };
     }
+    // the octave check uses the newest spectrum, at most one chord step old
+    if (live.S && rms > QUIET) yin.pitch = refineOctave(live.S, yin.pitch, sr, N2, cfg);
 
     postMessage({
       type: "live",
-      chord, strength,
-      pitch: yin.pitch, pitchConfidence: yin.pitchConfidence,
+      chord: live.last.chord, strength: live.last.strength,
+      pitch: yin.pitch, pitchConfidence: yin.confidence,
       rms,
-      hpcp: Array.from(chroma),
-      notes: notes.map((n) => n.p),
+      hpcp: live.last.chroma,
+      notes: live.last.notes,
+      fresh: due && rms > QUIET,
+      age, took: performance.now() - t0, dropped: live.dropped || 0,
     });
   } finally {
     for (const v of owned) { try { v.delete(); } catch (e) { /* already freed */ } }
@@ -666,9 +725,9 @@ onmessage = async (e) => {
   try {
     if (msg.type === "analyze") analyze(msg.id, msg.audio, msg.sampleRate);
     else if (msg.type === "tutorial") tutorial(msg.id, msg.audio, msg.sampleRate, msg.mode, msg.chords, msg.beats, msg.phase, msg.instrument);
-    else if (msg.type === "live") liveFrame(msg.frame, msg.sampleRate);
-    else if (msg.type === "liveReset") { live.chroma.length = 0; live.buf = null; }
-    else if (msg.type === "liveMode") { live.mode = msg.mode === "level" ? "level" : "full"; live.chroma.length = 0; live.buf = null; }
+    else if (msg.type === "live") liveFrame(msg.frame, msg.sampleRate, msg.hop, msg.sentAt);
+    else if (msg.type === "liveReset") { live.chroma.length = 0; live.buf = null; live.S = null; live.fed = 0; }
+    else if (msg.type === "liveMode") { live.mode = msg.mode === "level" ? "level" : "full"; live.chroma.length = 0; live.buf = null; live.S = null; live.fed = 0; }
     else if (msg.type === "liveInstrument") { live.instrument = INSTRUMENT[msg.instrument] ? msg.instrument : "any"; live.chroma.length = 0; live.tableKey = ""; }
   } catch (err) {
     postMessage({ type: "error", id: msg.id, message: String(err && err.message ? err.message : err) });

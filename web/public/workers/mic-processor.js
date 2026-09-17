@@ -1,11 +1,15 @@
-/* AudioWorklet: batches microphone samples into 4096-sample frames for the analysis worker.
+/* AudioWorklet: hands the analysis worker a `size`-sample window every `hop` samples. The window
+   stays long enough for a low E to be measured; the hop is what sets how often the tuner moves.
    Returns false after a "stop" message so the processor is released instead of rendering forever. */
 class MicProcessor extends AudioWorkletProcessor {
-  constructor() {
+  constructor(options) {
     super();
-    this.size = 4096;
-    this.buf = new Float32Array(this.size);
-    this.fill = 0;
+    const o = (options && options.processorOptions) || {};
+    this.size = o.size || 4096;
+    this.hop = Math.max(128, Math.min(this.size, o.hop || this.size));
+    this.ring = new Float32Array(this.size);   // the last `size` samples, oldest first
+    this.filled = 0;                           // how many real samples the ring holds so far
+    this.sinceEmit = 0;
     this.stopped = false;
     this.port.onmessage = (e) => { if (e.data === "stop") this.stopped = true; };
   }
@@ -13,17 +17,15 @@ class MicProcessor extends AudioWorkletProcessor {
     if (this.stopped) return false;
     const ch = inputs[0] && inputs[0][0];
     if (!ch) return true;
-    let i = 0;
-    while (i < ch.length) {
-      const n = Math.min(ch.length - i, this.size - this.fill);
-      this.buf.set(ch.subarray(i, i + n), this.fill);
-      this.fill += n; i += n;
-      if (this.fill === this.size) {
-        const out = this.buf;
-        this.port.postMessage(out, [out.buffer]);
-        this.buf = new Float32Array(this.size);
-        this.fill = 0;
-      }
+    const n = ch.length;                       // 128 per render quantum
+    this.ring.copyWithin(0, n);
+    this.ring.set(ch, this.size - n);
+    this.filled = Math.min(this.size, this.filled + n);
+    this.sinceEmit += n;
+    if (this.filled === this.size && this.sinceEmit >= this.hop) {
+      this.sinceEmit = 0;
+      const out = this.ring.slice();
+      this.port.postMessage(out, [out.buffer]);
     }
     return true;
   }

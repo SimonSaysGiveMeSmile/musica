@@ -76,9 +76,9 @@ There is **no generative AI, no LLM tokens, and no per-request compute cost**. A
 - **F5.4** Practice tools: A–B loop, speed 50–100% with pitch preserved, count-in and metronome click synced to the detected BPM, tap-to-seek on any chord or lyric line.
 
 ### 4.6 Live mode (real-time)
-- **F6.1** Microphone input through Web Audio; frames sent to the analysis worker every ~90 ms.
+- **F6.1** Microphone input through an AudioWorklet: a 4096-sample window (long enough to measure a low E) handed to the analysis worker every 1024 samples — about 21 ms at 48 kHz, so the needle moves at ~40 updates a second. Pitch runs on every window with a plain-JS YIN that stops at the first valid dip (≈0.5 ms a frame); the chord and note work keeps its own 85 ms pace. A frame older than 60 ms when the worker reaches it is folded into the buffer but not analysed, so the display can lag a frame under load but never fall behind. The tuner coalesces frames to one render per screen refresh, keeps the needle live, and refreshes the numbers eight times a second so they can be read. Measured end to end with an independent onset detector on the same microphone: ~190 ms median from string onset to the right note on screen (fastest ~100 ms), from 312 ms before.
 - **F6.2** Displays the current chord, the dominant pitch and cents offset, and a 12-bin chroma. All of it comes from the instrument recogniser in §4.10 rather than from generic chroma matching, so the vocabulary covers sevenths, sus, add9, sixths, diminished and power chords, not just major and minor.
-- **F6.4** Built-in tuner (Live → Tuner, the default Live mode, laid out to fit one phone screen): a VU-style arc dial (±50 cents), and instrument guides that double as controls: a headstock whose tuning pegs play and lock each string (3+3 for guitar, 2+2 for ukulele) and a two-octave keyboard whose keys play their reference tone, with the detected string or key lit. Details: string targets for guitar (standard, drop D, half-step down, DADGAD) and ukulele (re-entrant, low G, baritone), chromatic mode for piano, cents needle with in-tune hold, median-smoothed pitch, adjustable A4 reference (415–466 Hz), and reference tones per string.
+- **F6.4** Built-in tuner (Live → Tuner, the default Live mode, laid out to fit one phone screen): a VU-style arc dial (±50 cents) whose in-tune segment fills over the 650 ms a note has to be held before it counts as done, and instrument guides that double as controls: a headstock whose tuning pegs play and lock each string (3+3 for guitar, 2+2 for ukulele) and a two-octave keyboard whose keys play their reference tone, with the detected string or key lit. Details: string targets for guitar (standard, drop D, half-step down, DADGAD) and ukulele (re-entrant, low G, baritone), chromatic mode for piano, cents needle with in-tune hold, median-smoothed pitch, adjustable A4 reference (415–466 Hz), and reference tones per string.
 - **F6.3** *(v1.1)* "Follow the song" mode: compare the detected chord to the expected chord at the current playback time. Deferred because playing the track through the speaker while listening on the mic needs echo handling.
 
 ### 4.7 Library and offline
@@ -301,3 +301,12 @@ Some words in the brief were ambiguous in transcription. Assumptions made:
 - Reverted on request: the Live → Chords card is back to Pitch beside Chroma with nothing above it, and the
   fretted tutorial opens on the chord lane with the lane switch moved into the settings sheet. Both were
   checked against a build of the previous release rather than against memory.
+
+## 15. Build notes (2026-09-17)
+- Tuner responsiveness (§6.1 F6.1). Simply raising the capture rate 4× made things worse: essentia's
+  `PitchYin` cost 23 ms a frame, frames queued and the tuner lagged a whole note behind. The fix was a
+  YIN of our own that stops searching at the first valid dip (0.5 ms a frame, and exact to 0.01 cents on a
+  pure sine where essentia sits 0.75 cents flat), a drop-when-late rule in the worker, one render per
+  screen refresh in the tuner, and a three-frame median instead of five. Every downstream time constant
+  (hold, silence, the auto-pause floor) now counts in milliseconds rather than frames. Chord naming
+  (10/10), tuner accuracy (12/12) and auto-pause (7 pauses, 6 resumes over 42 s) were re-run after.

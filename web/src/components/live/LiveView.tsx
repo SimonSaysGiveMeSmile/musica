@@ -35,6 +35,7 @@ export function LiveView() {
     histRef.current = [];
     return onLive((f) => {
     setFrame(f);
+    if (f.fresh === false) return;   // a repeat of the last decision, sent for the tuner's sake
     // the worker already decides over a long window, so two agreeing frames are enough here
     const h = histRef.current;
     h.push(f.chord); if (h.length > 4) h.shift();

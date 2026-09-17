@@ -3,7 +3,7 @@ import type { RawNote } from "@/lib/tutorial/types";
 import { toAnalysis } from "./postprocess";
 
 /** Bump when public/workers or public/essentia change so the service worker cache is bypassed. */
-export const ANALYSIS_VERSION = "9";
+export const ANALYSIS_VERSION = "10";
 
 type Listener = (f: LiveFrame) => void;
 
@@ -60,9 +60,10 @@ export async function analyzeAudio(
   });
 }
 
-export function sendLiveFrame(frame: Float32Array, sampleRate: number) {
+/** `hop` is how many of the frame's samples are new since the last one; the rest overlap. */
+export function sendLiveFrame(frame: Float32Array, sampleRate: number, hop: number = frame.length) {
   const w = getWorker();
-  w.postMessage({ type: "live", frame, sampleRate }, [frame.buffer]);
+  w.postMessage({ type: "live", frame, sampleRate, hop, sentAt: Date.now() }, [frame.buffer]);
 }
 export function resetLive() { getWorker().postMessage({ type: "liveReset" }); }
 /** "level" skips chroma and chord detection: all the tutorial needs is how loud the room is. */
