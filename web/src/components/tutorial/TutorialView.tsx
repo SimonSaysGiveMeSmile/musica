@@ -17,6 +17,7 @@ import { generateTutorial, tutorialFromScore } from "@/lib/tutorial/generate";
 import { isScoreFile, parseScoreFile, SCORE_ACCEPT } from "@/lib/tutorial/score";
 import type { Hand } from "@/lib/tutorial/types";
 import { Sheet } from "@/components/ui/Sheet";
+import { Pills, Switch } from "@/components/ui/Controls";
 import { Segmented } from "@/components/ui/Segmented";
 import { GrabHandle, useRetracted } from "@/components/ui/Retract";
 import { IconBack, IconLive, IconLoop, IconNotes, IconPause, IconPlay, IconRewind, IconSectionBack, IconSliders } from "@/components/ui/Icons";
@@ -466,26 +467,6 @@ function Choice({ title, hint, onClick, primary }: { title: string; hint: string
       <div className="ios-subhead font-semibold">{title}</div>
       <div className={`ios-caption mt-0.5 ${primary ? "opacity-70" : "label-2"}`}>{hint}</div>
     </button>
-  );
-}
-
-function Switch({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <button role="switch" aria-checked={on} onClick={() => onChange(!on)}
-      className={`press relative w-[51px] h-[31px] rounded-full transition-colors ${on ? "gold-fill" : "tint-2"}`}>
-      <span className="absolute top-[3px] w-[25px] h-[25px] rounded-full bg-white shadow transition-all" style={{ left: on ? 23 : 3 }} />
-    </button>
-  );
-}
-
-function Pills<T extends string | number>({ value, options, onChange }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void }) {
-  return (
-    <div className="glass rounded-full h-9 p-[3px] flex items-center shrink-0">
-      {options.map((o) => (
-        <button key={o.v} onClick={() => onChange(o.v)}
-          className={`press h-full px-3 rounded-full ios-caption ${value === o.v ? "lens text-ivory font-semibold" : "label-2"}`}>{o.l}</button>
-      ))}
-    </div>
   );
 }
 

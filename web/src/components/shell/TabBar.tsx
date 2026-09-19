@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { IconLibrary, IconLive, IconMe, IconSearch } from "@/components/ui/Icons";
 import { useT, type Key } from "@/lib/i18n";
+import { usePrefs } from "@/lib/store/prefs";
+import { useAutoHide } from "@/lib/ui/autoHide";
 
 const TABS: { href: string; label: Key; Icon: typeof IconLibrary }[] = [
   { href: "/library", label: "nav.library", Icon: IconLibrary },
@@ -15,13 +17,14 @@ const TABS: { href: string; label: Key; Icon: typeof IconLibrary }[] = [
 export function TabBar() {
   const path = usePathname();
   const { t } = useT();
+  const hidden = useAutoHide(usePrefs().hideOnScroll && !path.startsWith("/song/"));
   if (path.startsWith("/song/")) return null;
   const searchActive = path === "/";
   return (
     <nav
       aria-label="Primary"
-      className="fixed left-1/2 -translate-x-1/2 z-40 w-[min(430px,calc(100%-24px))] flex items-center gap-2 lg:hidden"
-      style={{ bottom: "calc(var(--sab) + 4px)" }}
+      className={`fixed left-1/2 -translate-x-1/2 z-40 w-[min(430px,calc(100%-24px))] flex items-center gap-2 lg:hidden dock ${hidden ? "dock-hide" : ""}`}
+      style={{ bottom: "calc(var(--sab) + 4px)" }} inert={hidden || undefined} data-hidden={hidden || undefined}
     >
       <div className="glass-strong rounded-full p-1 flex items-center flex-1 relative">
         {TABS.map(({ href, label, Icon }) => {

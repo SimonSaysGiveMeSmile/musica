@@ -3,7 +3,7 @@ import type { RawNote } from "@/lib/tutorial/types";
 import { toAnalysis } from "./postprocess";
 
 /** Bump when public/workers or public/essentia change so the service worker cache is bypassed. */
-export const ANALYSIS_VERSION = "10";
+export const ANALYSIS_VERSION = "11";
 
 type Listener = (f: LiveFrame) => void;
 

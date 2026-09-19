@@ -348,6 +348,13 @@ body::before {
   .player-pad-bottom { padding-bottom: 0; }
   .safe-top { padding-top: 28px; }
 }
+/* Controls that get out of the way while you read: the player and tab bar drop below the screen, the
+   song header lifts above it. Only on phones; on desktop everything is docked and nothing overlaps. */
+.dock { transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+@media (max-width: 1023px) {
+  .dock-hide { transform: translateY(calc(100% + 40px)); }
+  .dock-hide-up { transform: translateY(-110%); }
+}
 .press { transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms, background-color 180ms; }
 .press:active { transform: scale(0.96); }
 

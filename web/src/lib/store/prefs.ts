@@ -35,7 +35,15 @@ export interface Prefs {
   loopSection: boolean;                        // repeat the phrase you are working on
   countIn: boolean;                            // beats before the music starts again
   tuning: Partial<Record<Instrument, string>>; // chosen tuning id per instrument
+  chordGrid: ChordGrid;                        // simplify: at most one chord per this many beats, or per lyric line
+  chordPick: "longest" | "first";              // which chord names a simplified stretch
+  chordsInKey: boolean;                        // fold chords outside the key into their neighbour
+  audioTranspose: boolean;                     // shift the recording along with the transpose setting
+  hideOnScroll: boolean;                       // controls slide away while reading, back on a tap
 }
+/** 0 = every change the analysis found; a number = at most one chord per that many beats; "line" = one per lyric line. */
+export type ChordGrid = 0 | 2 | 4 | 6 | 8 | "line";
+export const CHORD_GRIDS: ChordGrid[] = [0, 2, 4, 6, 8, "line"];
 
 const KEY = "musica.prefs.v1";
 const DEFAULTS: Prefs = {
@@ -57,6 +65,11 @@ const DEFAULTS: Prefs = {
   tutorialLane: "chords",
   loopSection: false,
   countIn: false,
+  chordGrid: 0,
+  chordPick: "longest",
+  chordsInKey: false,
+  audioTranspose: true,
+  hideOnScroll: true,
 };
 
 /** Push theme + accent onto <html>. The inline script in layout.tsx does the same before first paint. */

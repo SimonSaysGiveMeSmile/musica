@@ -4,19 +4,22 @@ import { useRouter } from "next/navigation";
 import { getAudio, getSong, saveSong, type Song } from "@/lib/store/db";
 import { usePlayer } from "@/lib/audio/player";
 import { usePrefs, setPrefs } from "@/lib/store/prefs";
-import { chordAt, distinctChords, firstVocalOnset, vocalActivityIn } from "@/lib/analysis/postprocess";
+import { chordAt, distinctChords, firstVocalOnset, simplifyChords, vocalActivityIn } from "@/lib/analysis/postprocess";
+import { CHORD_GRIDS, type ChordGrid } from "@/lib/store/prefs";
+import { useAutoHide } from "@/lib/ui/autoHide";
+import { Pills, Switch } from "@/components/ui/Controls";
 import { keyPrefersFlats, transposeKey, transposeSymbol, relativeKey } from "@/lib/theory/chords";
 import type { Instrument } from "@/lib/theory/coverage";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
-import { IconBack, IconMinus, IconNotes, IconPlus } from "@/components/ui/Icons";
+import { IconBack, IconMinus, IconNotes, IconPlus, IconSliders } from "@/components/ui/Icons";
 import { Player } from "./Player";
 import { ChordSheet } from "./ChordSheet";
 import { Timeline } from "./Timeline";
 import { ChordGallery } from "./ChordGallery";
 import { Learn } from "./Learn";
 import { ChordDiagram, ChordNotes } from "@/components/chords/ChordDiagram";
-import { alignSheet } from "@/lib/lyrics/align";
+import { alignSheet, placeUnsyncedLines } from "@/lib/lyrics/align";
 import { fetchLyrics, userLyrics } from "@/lib/lyrics/lrclib";
 import { LANG_NAMES } from "@/lib/lyrics/lang";
 import { leadInSeconds } from "@/lib/lyrics/align";
@@ -36,6 +39,8 @@ export function SongView({ id }: { id: string }) {
   const [editingLyrics, setEditingLyrics] = useState(false);
   const [lyricsDraft, setLyricsDraft] = useState("");
   const [lyricsBusy, setLyricsBusy] = useState(false);
+  const [settings, setSettings] = useState(false);
+  const hidden = useAutoHide(prefs.hideOnScroll);
 
   useEffect(() => {
     let url: string | null = null;
@@ -51,10 +56,12 @@ export function SongView({ id }: { id: string }) {
   }, [id]);
 
   const analysis = song?.analysis;
-  const player = usePlayer(src, analysis?.beats, analysis?.downbeatPhase ?? 0);
   const instrument: Instrument = song?.instrument ?? prefs.instrument;
   const transpose = song?.transpose ?? 0;
   const capo = song?.capo ?? 0;
+  // the recording follows the transpose setting; the capo only changes the fingering
+  const pitch = useMemo(() => ({ semitones: transpose, enabled: prefs.audioTranspose }), [transpose, prefs.audioTranspose]);
+  const player = usePlayer(src, analysis?.beats, analysis?.downbeatPhase ?? 0, pitch);
   const shift = transpose - capo; // what the player fingers
   const flats = analysis ? keyPrefersFlats(transposeKey(analysis.key, analysis.scale, shift), analysis.scale) : false;
 
@@ -67,12 +74,21 @@ export function SongView({ id }: { id: string }) {
   // an accidental sync can leave a wild offset behind; anything beyond ±30 s is treated as none
   const rawOffset = song?.lyricsOffset ?? 0;
   const lyricsOffset = Math.abs(rawOffset) <= 30 ? rawOffset : 0;
+  const offsetLines = useMemo(() => (song?.lyrics?.lines ?? []).map((l) => (l.time >= 0 ? { ...l, time: Math.max(0, l.time + lyricsOffset) } : l)), [song?.lyrics, lyricsOffset]);
+  const leadIn = analysis ? leadInSeconds(song?.peaks, analysis.duration) : 0;
+  /** Where each lyric line starts, for "one chord per line": synced lines as they are, unsynced ones where the sheet places them. */
+  const lineTimes = useMemo(() => {
+    if (!analysis || !offsetLines.length) return [];
+    const synced = offsetLines.every((l) => l.time >= 0);
+    const placed = synced ? offsetLines : placeUnsyncedLines(offsetLines, analysis.duration, song?.lyricAnchors, leadIn);
+    return placed.filter((l) => l.text.trim()).map((l) => l.time);
+  }, [analysis, offsetLines, song?.lyricAnchors, leadIn]);
+  /** The chords the page shows: the analysis, simplified as far as the settings ask. */
+  const shown = useMemo(() => (analysis ? { ...analysis, chords: simplifyChords(analysis, { grid: prefs.chordGrid, pick: prefs.chordPick, inKey: prefs.chordsInKey }, lineTimes) } : undefined), [analysis, prefs.chordGrid, prefs.chordPick, prefs.chordsInKey, lineTimes]);
   const sheetLines = useMemo(() => {
-    if (!analysis) return [];
-    const lines = (song?.lyrics?.lines ?? []).map((l) => (l.time >= 0 ? { ...l, time: Math.max(0, l.time + lyricsOffset) } : l));
-    const leadIn = leadInSeconds(song?.peaks, analysis.duration);
-    return alignSheet(lines, analysis.chords, analysis.duration, (a, b) => vocalActivityIn(analysis, a, b), song?.lyricAnchors, leadIn);
-  }, [analysis, song?.lyrics, song?.peaks, song?.lyricAnchors, lyricsOffset]);
+    if (!analysis || !shown) return [];
+    return alignSheet(offsetLines, shown.chords, analysis.duration, (a, b) => vocalActivityIn(analysis, a, b), song?.lyricAnchors, leadIn);
+  }, [analysis, shown, offsetLines, song?.lyricAnchors, leadIn]);
   const nudge = useCallback((d: number) => update({ lyricsOffset: Math.round(((song?.lyricsOffset ?? 0) + d) * 10) / 10, lyricsAutoSynced: false }), [song?.lyricsOffset, update]);
   /** Align the first sung line with the first detected singing. */
   const autoSync = () => {
@@ -101,8 +117,8 @@ export function SongView({ id }: { id: string }) {
     if (Math.abs(off) <= 30) update({ lyricsOffset: off, lyricsAutoSynced: false });
   }, [player.time, update]);
 
-  const current = analysis ? chordAt(analysis, player.time) : null;
-  const chords = useMemo(() => (analysis ? distinctChords(analysis) : []), [analysis]);
+  const current = shown ? chordAt(shown, player.time) : null;
+  const chords = useMemo(() => (shown ? distinctChords(shown) : []), [shown]);
 
   const saveLyrics = useCallback(() => {
     update({ lyrics: userLyrics(lyricsDraft) });
@@ -120,7 +136,7 @@ export function SongView({ id }: { id: string }) {
   }, [song, update]);
 
   if (song === undefined) return <div className="safe-top p-5 text-ivory-3">{t("song.opening")}</div>;
-  if (song === null || !analysis) {
+  if (song === null || !analysis || !shown) {
     return (
       <main className="safe-top p-5">
         <button onClick={() => router.back()} className="press text-gold flex items-center gap-1"><IconBack /> {t("common.back")}</button>
@@ -131,9 +147,18 @@ export function SongView({ id }: { id: string }) {
 
   const keyName = transposeKey(analysis.key, analysis.scale, transpose);
   const keyLabel = `${keyName}${analysis.scale === "minor" ? "m" : ""}`;
+  const gridIndex = Math.max(0, CHORD_GRIDS.indexOf(prefs.chordGrid));
+  const gridLabel = (g: ChordGrid) => t(`song.grid${g}` as "song.grid0");
+  const changes = shown.chords.filter((c) => c.chord !== "N").length;
 
+  const simplified = prefs.chordGrid !== 0 || prefs.chordsInKey;
   const settingsStrip = (
     <>
+      {/* first in the strip: an icon while the chords are as detected, the level's name once they are simplified */}
+      <button onClick={() => setSettings(true)} aria-label={t("song.settings")} data-simplified={simplified || undefined}
+        className={`press h-11 flex items-center justify-center gap-2 shrink-0 ios-footnote ${simplified ? "gold-fill font-semibold rounded-full px-3.5" : "glass text-ivory circle-btn"}`}>
+        <IconSliders width={17} height={17} />{simplified && (prefs.chordGrid === 0 ? t("song.inKey") : gridLabel(prefs.chordGrid))}
+      </button>
       <Stepper label={t("song.transpose")} value={transpose} fmt={(v) => (v > 0 ? `+${v}` : `${v}`)} onChange={(v) => update({ transpose: Math.max(-11, Math.min(11, v)) })} />
       {instrument !== "piano" && <Stepper label={t("song.capo")} value={capo} fmt={(v) => `${v}`} onChange={(v) => update({ capo: Math.max(0, Math.min(9, v)) })} />}
       <div className="glass rounded-full h-11 p-[3px] flex items-center shrink-0">
@@ -150,7 +175,7 @@ export function SongView({ id }: { id: string }) {
   return (
     <main className="flex flex-col min-h-dvh lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8 lg:px-10 lg:pt-7 lg:pb-16 lg:items-start">
       {/* Header */}
-      <header className="song-header safe-top px-4 pt-2 pb-3 sticky top-0 z-30 lg:static lg:px-0 lg:pt-0 lg:col-span-2">
+      <header className={`song-header safe-top px-4 pt-2 pb-3 sticky top-0 z-30 lg:static lg:px-0 lg:pt-0 lg:col-span-2 dock ${hidden ? "dock-hide-up" : ""}`} data-hidden={hidden || undefined}>
         <div className="flex items-center gap-2 lg:gap-4">
           <button onClick={() => router.push("/library")} aria-label={t("common.back")} className="press glass circle-btn text-ivory shrink-0"><IconBack /></button>
           <div className="min-w-0 flex-1">
@@ -218,7 +243,7 @@ export function SongView({ id }: { id: string }) {
             </div>
           </>
         )}
-        {view === "timeline" && <Timeline analysis={analysis} time={player.time} display={display} onSeek={player.seek} />}
+        {view === "timeline" && <Timeline analysis={shown} time={player.time} display={display} onSeek={player.seek} />}
         {view === "chords" && <ChordGallery chords={chords} display={display} instrument={instrument} flats={flats} known={new Set(prefs.known[instrument])} current={current ? display(current.chord) : null} onChord={setOpenChord} />}
         {view === "learn" && (
           <Learn chords={chords} instrument={instrument} known={prefs.known[instrument]} transpose={transpose} capo={capo}
@@ -228,7 +253,7 @@ export function SongView({ id }: { id: string }) {
 
       {/* Player: floating on mobile, docked on desktop */}
       <aside className="lg:sticky lg:top-7 lg:self-start lg:flex lg:flex-col lg:gap-4">
-        <Player player={player} peaks={song.peaks} duration={analysis.duration} beats={analysis.beats} current={current ? display(current.chord) : null} next={nextChord(analysis, player.time, display)} />
+        <Player player={player} peaks={song.peaks} duration={analysis.duration} beats={analysis.beats} current={current ? display(current.chord) : null} next={nextChord(shown, player.time, display)} hidden={hidden} shift={prefs.audioTranspose ? transpose : 0} />
         {current && current.chord !== "N" && (
           <div className="hidden lg:flex inset-group p-5 items-center gap-5">
             <ChordDiagram symbol={display(current.chord)} instrument={instrument} size={instrument === "piano" ? 130 : 104} />
@@ -256,6 +281,59 @@ export function SongView({ id }: { id: string }) {
             </button>
           </div>
         )}
+      </Sheet>
+
+      <Sheet open={settings} onClose={() => setSettings(false)} title={t("song.settings")}>
+        <div className="inset-group">
+          <div className="row">
+            <span className="ios-body flex-1">{t("song.simplify")}</span>
+            <span className="chordname ios-subhead text-gold-hi">{gridLabel(prefs.chordGrid)}</span>
+          </div>
+          <div className="row !min-h-0 pt-0 pb-2 flex-col items-stretch gap-0">
+            <input type="range" min={0} max={CHORD_GRIDS.length - 1} step={1} value={gridIndex}
+              onChange={(e) => setPrefs({ chordGrid: CHORD_GRIDS[Number(e.target.value)] })}
+              style={{ ["--fill" as string]: `${(gridIndex / (CHORD_GRIDS.length - 1)) * 100}%` }} aria-label={t("song.simplify")} aria-valuetext={gridLabel(prefs.chordGrid)} />
+            {/* one tick under each stop, where the thumb actually lands (its 22px travel less than the track) */}
+            <div className="relative h-2" aria-hidden>
+              {CHORD_GRIDS.map((g, i) => (
+                <span key={String(g)} className="absolute top-0 w-1 h-1 rounded-full -translate-x-1/2" style={{ left: `calc(11px + (100% - 22px) * ${i / (CHORD_GRIDS.length - 1)})`, background: i <= gridIndex ? "var(--gold)" : "var(--label-3)", opacity: i <= gridIndex ? 1 : 0.5 }} />
+              ))}
+            </div>
+            <div className="flex justify-between ios-caption2 label-3 px-0.5"><span>{t("song.grid0")}</span><span>{t("song.gridline")}</span></div>
+          </div>
+          <div className="row !min-h-0 py-2">
+            <span className="ios-caption label-3 flex-1">{prefs.chordGrid === "line" && !lineTimes.length ? t("song.gridLineNeedsLyrics") : t("song.simplifyHint")}</span>
+            <span className="ios-caption tabular-nums text-gold shrink-0">{t("song.changes", { n: changes })}</span>
+          </div>
+          {prefs.chordGrid !== 0 && (
+            <>
+              <div className="row">
+                <span className="ios-body flex-1">{t("song.pick")}</span>
+                <Pills value={prefs.chordPick} options={[{ v: "longest" as const, l: t("song.pickLongest") }, { v: "first" as const, l: t("song.pickFirst") }]} onChange={(v) => setPrefs({ chordPick: v })} />
+              </div>
+              <div className="row !min-h-0 py-2"><span className="ios-caption label-3">{t("song.pickHint")}</span></div>
+            </>
+          )}
+          <label className="row">
+            <span className="ios-body flex-1">{t("song.inKey")}</span>
+            <Switch on={prefs.chordsInKey} onChange={(v) => setPrefs({ chordsInKey: v })} label={t("song.inKey")} />
+          </label>
+          <div className="row !min-h-0 py-2"><span className="ios-caption label-3">{t("song.inKeyHint", { key: keyLabel })}</span></div>
+        </div>
+        <div className="inset-group mt-4">
+          <label className="row">
+            <span className="ios-body flex-1">{t("song.audioTranspose")}</span>
+            <Switch on={prefs.audioTranspose} onChange={(v) => setPrefs({ audioTranspose: v })} label={t("song.audioTranspose")} />
+          </label>
+          <div className="row !min-h-0 py-2"><span className="ios-caption label-3">{t("song.audioTransposeHint")}</span></div>
+        </div>
+        <div className="inset-group mt-4">
+          <label className="row">
+            <span className="ios-body flex-1">{t("song.hideOnScroll")}</span>
+            <Switch on={prefs.hideOnScroll} onChange={(v) => setPrefs({ hideOnScroll: v })} label={t("song.hideOnScroll")} />
+          </label>
+          <div className="row !min-h-0 py-2"><span className="ios-caption label-3">{t("song.hideOnScrollHint")}</span></div>
+        </div>
       </Sheet>
 
       <Sheet open={editingLyrics} onClose={() => setEditingLyrics(false)} title={t("song.lyricsTitle")}>

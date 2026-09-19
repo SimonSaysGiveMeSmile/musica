@@ -6,11 +6,11 @@ import { GrabHandle, useRetracted } from "@/components/ui/Retract";
 import { useT } from "@/lib/i18n";
 
 type P = {
-  playing: boolean; time: number; duration: number; rate: number; loop: Loop | null; metronome: boolean;
+  playing: boolean; time: number; duration: number; rate: number; loop: Loop | null; metronome: boolean; shifting?: boolean;
   toggle: () => void; seek: (t: number) => void; setRate: (r: number) => void; setLoop: (l: Loop | null) => void; setMetronome: (b: boolean) => void;
 };
 
-export function Player({ player, peaks, duration, beats, current, next }: { player: P; peaks?: number[]; duration: number; beats: number[]; current: string | null; next: string | null }) {
+export function Player({ player, peaks, duration, beats, current, next, hidden = false, shift = 0 }: { player: P; peaks?: number[]; duration: number; beats: number[]; current: string | null; next: string | null; hidden?: boolean; shift?: number }) {
   const { t } = useT();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -71,7 +71,7 @@ export function Player({ player, peaks, duration, beats, current, next }: { play
   };
 
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 w-[min(560px,100%)] z-40 px-3 lg:static lg:translate-x-0 lg:w-full lg:px-0" style={{ bottom: "calc(var(--sab) + 10px)" }}>
+    <div className={`fixed left-1/2 -translate-x-1/2 w-[min(560px,100%)] z-40 px-3 lg:static lg:translate-x-0 lg:w-full lg:px-0 dock ${hidden ? "dock-hide" : ""}`} style={{ bottom: "calc(var(--sab) + 10px)" }} inert={hidden || undefined} data-hidden={hidden || undefined}>
       <div ref={cardRef} className={`glass-strong rounded-[34px] px-3 lg:px-4 relative overflow-hidden ${collapsed ? "pt-3 pb-2" : "pt-1.5 pb-3 lg:pb-4"}`}>
         {/* collapsed, the progress runs along the card's own top edge instead of taking a row,
             with a finger-sized strip over it so you can still scrub without opening the player */}
@@ -107,7 +107,13 @@ export function Player({ player, peaks, duration, beats, current, next }: { play
             {/* now / next */}
             <div className="flex items-end justify-between px-2 mb-2">
               <div>
-                <div className="eyebrow">{t("player.now")}</div>
+                <div className="eyebrow flex items-center gap-2">
+                  {t("player.now")}
+                  {/* the sound itself is transposed: say so next to what is playing */}
+                  {player.shifting && shift !== 0 && (
+                    <span data-shifting className="chordname ios-caption2 tabular-nums rounded-full px-1.5 h-[18px] inline-flex items-center gold-fill normal-case tracking-normal" title={t("song.audioTranspose")}>{shift > 0 ? `+${shift}` : shift} ♪</span>
+                  )}
+                </div>
                 <div className="chordname text-[36px] lg:text-[44px] leading-none text-gold-hi min-h-[36px]">{current ?? "—"}</div>
               </div>
               <div className="text-right">

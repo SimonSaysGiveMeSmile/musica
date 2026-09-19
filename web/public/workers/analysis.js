@@ -19,7 +19,9 @@ function hpcpFrame(frameVec, sr) {
   const w = essentia.Windowing(frameVec, true, FRAME, "blackmanharris62");
   const sp = essentia.Spectrum(w.frame, FRAME);
   const pk = essentia.SpectralPeaks(sp.spectrum, 0, 3500, 100, 60, "frequency", sr);
-  const h = essentia.HPCP(pk.frequencies, pk.magnitudes, true, 500, 0, 3500, false, 60, true, "unitMax", 440, sr, 12, "squaredCosine", 1);
+  // bandPreset off: with it on, everything under 500 Hz is normalised on its own and added with the
+  // same weight as the rest, so a bass note on the fifth or a walk-up drags the whole chord with it
+  const h = essentia.HPCP(pk.frequencies, pk.magnitudes, false, 500, 0, 3500, false, 60, true, "unitMax", 440, sr, 12, "squaredCosine", 1);
   w.frame.delete(); sp.spectrum.delete(); pk.frequencies.delete(); pk.magnitudes.delete();
   return { hpcp: h.hpcp, spectrum: null };
 }
@@ -59,7 +61,7 @@ const ENHARMONIC = { Ab: "G#", Bb: "A#", Db: "C#", Eb: "D#", Gb: "F#" };
 function diatonicSet(key, scale) { const kr = NAMES.indexOf(ENHARMONIC[key] || key); const set = new Set(); if (kr < 0) return set; const steps = scale === "major" ? [0, 2, 4, 5, 7, 9, 11] : [0, 2, 3, 5, 7, 8, 10]; const quals = scale === "major" ? ["", "m", "m", "", "", "m", "dim"] : ["m", "dim", "", "m", "m", "", ""]; steps.forEach((s, i) => { if (quals[i] !== "dim") set.add(NAMES[(kr + s) % 12] + quals[i]); }); return set; }
 
 function decodeChords(hpcpFrames, frameTimes, beats, duration, key, scale, opts = {}) {
-  const { downPenalty = 0.5, midPenalty = 1.4, offPenalty = 2.2, keyBonus = 0.03, wThird = 1.15 } = opts;
+  const { downPenalty = 0.5, midPenalty = 1.4, offPenalty = 2.2, keyBonus = 0.03, wThird = 1.0, temp = 4, quiet = 0.03 } = opts;
   const TEMPLATES = makeTemplates(1, wThird, 0.95);
   const K = TEMPLATES.length; const diat = diatonicSet(key, scale); const nB = beats.length; if (!nB) return [];
   const B = []; let f = 0;
@@ -75,7 +77,13 @@ function decodeChords(hpcpFrames, frameTimes, beats, duration, key, scale, opts 
   for (let i = 1; i < nB; i++) { let d = 0; for (let k = 0; k < 12; k++) d += B[i][k] * B[i - 1][k]; phaseScore[i % 4] += 1 - d; }
   let phase = 0; for (let p = 1; p < 4; p++) if (phaseScore[p] > phaseScore[phase]) phase = p;
   const tn = TEMPLATES.map((t) => { let n = 0; for (let k = 0; k < 12; k++) n += t.v[k] * t.v[k]; return Math.sqrt(n); });
-  const E = B.map((b) => TEMPLATES.map((t, j) => { let s = 0; for (let k = 0; k < 12; k++) s += b[k] * t.v[k]; s /= tn[j]; return Math.log(Math.max(s, 1e-3)) + (diat.has(t.name) ? keyBonus : 0); }));
+  const sims = B.map((b) => TEMPLATES.map((t, j) => { let s = 0; for (let k = 0; k < 12; k++) s += b[k] * t.v[k]; return s / tn[j]; }));
+  // the emission is a posterior over chords at this beat (softmax of the similarities), so a beat's
+  // evidence weighs the same against the change penalties whether the beat was loud or muddy
+  const E = sims.map((row) => {
+    const m = Math.max(...row); const ex = row.map((s) => Math.exp(temp * (s - m))); let z = 0; for (const x of ex) z += x;
+    return row.map((s, j) => Math.log(ex[j] / z) + (diat.has(TEMPLATES[j].name) ? keyBonus : 0));
+  });
   const dp = new Array(nB), bp = new Array(nB); dp[0] = E[0].slice(); bp[0] = new Int16Array(K);
   for (let i = 1; i < nB; i++) {
     const pen = i % 4 === phase ? downPenalty : (i % 2 === phase % 2 ? midPenalty : offPenalty);
@@ -85,7 +93,21 @@ function decodeChords(hpcpFrames, frameTimes, beats, duration, key, scale, opts 
   }
   let j = 0; for (let k = 1; k < K; k++) if (dp[nB - 1][k] > dp[nB - 1][j]) j = k;
   const path = new Array(nB); for (let i = nB - 1; i >= 0; i--) { path[i] = j; j = bp[i][j]; }
-  return { phase, chords: path.map((p, i) => ({ chord: TEMPLATES[p].name, strength: Math.min(1, Math.exp(E[i][p] - (diat.has(TEMPLATES[p].name) ? keyBonus : 0))) })) };
+  // beats with next to no signal (a silent intro, the fade-out) get no chord instead of a guess
+  const { frameRms } = opts;
+  let quietBeat = () => false;
+  if (frameRms && frameRms.length === hpcpFrames.length) {
+    const sorted = Array.from(frameRms).sort((a, b) => a - b); const median = sorted[sorted.length >> 1] || 0;
+    const beatRms = []; let q = 0;
+    for (let i = 0; i < nB; i++) {
+      const t0 = beats[i], t1 = i + 1 < nB ? beats[i + 1] : duration; let sum = 0, c = 0;
+      while (q < frameRms.length && frameTimes[q] < t0) q++; let g = q;
+      while (g < frameRms.length && frameTimes[g] < t1) { sum += frameRms[g]; c++; g++; }
+      beatRms.push(c ? sum / c : median);
+    }
+    quietBeat = (i) => beatRms[i] < median * quiet;
+  }
+  return { phase, chords: path.map((p, i) => (quietBeat(i) ? { chord: "N", strength: 0 } : { chord: TEMPLATES[p].name, strength: Math.min(1, sims[i][p]) })) };
 }
 
 /* ------------------- vocal activity (predominant melody, voice range) -------------------
@@ -144,9 +166,11 @@ function analyze(id, audio, sr) {
   const n = frames.size();
   const hpcpFrames = new Array(n);
   const frameTimes = new Float32Array(n);
+  const frameRms = new Float32Array(n);
   const chromaSummary = new Float32Array(12);
   for (let i = 0; i < n; i++) {
     const fr = frames.get(i);
+    { let e = 0, c = 0; for (let k = i * HOP, end = Math.min(audio.length, k + FRAME); k < end; k += 4) { e += audio[k] * audio[k]; c++; } frameRms[i] = c ? Math.sqrt(e / c) : 0; }
     const { hpcp } = hpcpFrame(fr, sr);
     const a = essentia.vectorToArray(hpcp);
     hpcp.delete();
@@ -159,7 +183,7 @@ function analyze(id, audio, sr) {
 
   const beats = Array.from(ticks);
   const duration = audio.length / sr;
-  const { phase, chords: decoded } = decodeChords(hpcpFrames, frameTimes, beats, duration, key.key, key.scale);
+  const { phase, chords: decoded } = decodeChords(hpcpFrames, frameTimes, beats, duration, key.key, key.scale, { frameRms });
   rhythm.ticks.delete();
 
   progress("vocals", 0.95);
