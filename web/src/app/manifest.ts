@@ -2,11 +2,14 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "Musica",
     short_name: "Musica",
     description: "Any song, in your hands. Chords, key, tempo and lyrics analyzed on your phone.",
     start_url: "/",
-    display: "standalone",
+    scope: "/",
+    display: "fullscreen",
+    display_override: ["fullscreen", "standalone"],
     orientation: "portrait",
     background_color: "#0b0a09",
     theme_color: "#0b0a09",

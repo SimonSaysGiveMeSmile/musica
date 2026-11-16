@@ -336,7 +336,7 @@ body::before {
 .song-header { background: linear-gradient(180deg, var(--ground-veil) 70%, transparent); }
 /* Installed on the Home Screen: no browser chrome. The whole UI sits 30px lower so nothing lands in the
    status-bar zone, where iOS 26 blurs content when the bar is translucent. */
-@media (display-mode: standalone) {
+@media (display-mode: standalone), (display-mode: fullscreen) {
   html { -webkit-user-select: none; user-select: none; }
   input, textarea { -webkit-user-select: text; user-select: text; }
   .safe-top { padding-top: calc(var(--sat) + 30px); }

@@ -12,7 +12,7 @@ let clientPlatform: { platform: Platform; installed: boolean } | null = null;
 function readPlatform() {
   if (clientPlatform) return clientPlatform;
   const ua = navigator.userAgent;
-  const installed = (navigator as Navigator & { standalone?: boolean }).standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+  const installed = (navigator as Navigator & { standalone?: boolean }).standalone === true || window.matchMedia("(display-mode: standalone), (display-mode: fullscreen)").matches;
   const platform: Platform = /MicroMessenger/i.test(ua) ? "wechat" : /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ? "ios" : /Android/i.test(ua) ? "android" : "desktop";
   clientPlatform = { platform, installed };
   return clientPlatform;

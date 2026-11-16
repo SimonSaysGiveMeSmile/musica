@@ -7,9 +7,11 @@ export const metadata: Metadata = {
   description: "Any song, in your hands. Chords, key, tempo and lyrics from YouTube, Spotify or your own files, analyzed on your phone.",
   applicationName: "Musica",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "Musica" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Musica" },
   formatDetection: { telephone: false },
   icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
+  // Next emits only `mobile-web-app-capable`; iOS before 17.4 needs the apple- prefixed tag to open full screen.
+  other: { "apple-mobile-web-app-capable": "yes" },
 };
 
 export const viewport: Viewport = {
