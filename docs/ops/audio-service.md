@@ -11,13 +11,13 @@ Deployed on **Railway** since 2026-10-02 at **https://musica-audio-production.up
 
 YouTube refuses audio extraction from cloud IPs ("Sign in to confirm you're not a bot") on Railway
 and on Vercel, while search still works from both. So the service now runs **on the owner's Mac**,
-which has a home IP. Production tries the servers in `NEXT_PUBLIC_AUDIO_API` in order:
+which has a home IP. Production's `NEXT_PUBLIC_AUDIO_API` is `https://musica-audio.taile5a5c2.ts.net`:
+the Mac, published by Tailscale Funnel. The variable takes a comma-separated list, tried in order.
 
-1. `https://musica-audio.taile5a5c2.ts.net`: the Mac, published by Tailscale Funnel.
-2. `https://musica-audio-production.up.railway.app`: Railway. Only the songs it had already cached
-   still play from here.
+**Railway is gone.** The `musica-audio` Railway project, including its volume and the 18 cached
+songs, was deleted on 2026-11-22. The Railway sections below are history.
 
-If neither returns audio, the app offers "Bring your own recording" or Apple's 30-second preview.
+If the Mac returns no audio, the app offers "Bring your own recording" or Apple's 30-second preview.
 Search and link resolving no longer touch this service at all (`web/src/app/api/{search,resolve}`).
 
 **Running it on the Mac.** `service/run-mac.sh` starts uvicorn on 127.0.0.1:8787, updates yt-dlp, and
