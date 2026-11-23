@@ -1,5 +1,5 @@
 "use client";
-import { audioUrl, splitTitle, type Resolved } from "@/lib/api";
+import { audioUrls, splitTitle, type Resolved } from "@/lib/api";
 import { decodeToMono, sha1Hex } from "@/lib/audio/decode";
 import { analyzeAudio } from "@/lib/analysis/client";
 import { fetchLyrics } from "@/lib/lyrics/lrclib";
@@ -7,17 +7,28 @@ import { getSong, saveAudio, saveSong, type Song } from "@/lib/store/db";
 import { getPrefs } from "@/lib/store/prefs";
 import type { Key } from "@/lib/i18n/en";
 import { estimateOffset } from "@/lib/lyrics/sync";
+import type { Preview } from "@/lib/sources/itunes";
 
 export type IngestStage = "fetching" | "decoding" | "analyzing" | "lyrics" | "saving" | "done" | "error";
-export interface IngestState { stage: IngestStage; pct: number; detail: Key | ""; songId?: string; error?: string }
+export interface IngestState { stage: IngestStage; pct: number; detail: Key | ""; songId?: string; error?: string; needsFile?: boolean }
 type Report = (s: IngestState) => void;
+
+/** YouTube would not hand over this song's audio (no audio service, or YouTube refused it).
+ *  The song is still known: the user can open their own recording of it. */
+export class NeedsRecordingError extends Error {
+  constructor(cause?: string) { super(cause ?? "No audio service"); this.name = "NeedsRecordingError"; }
+}
 
 const STAGE_LABEL: Record<string, Key> = {
   waveform: "ingest.waveform", key: "ingest.key", tempo: "ingest.tempo", chords: "ingest.chords", vocals: "ingest.vocals", done: "ingest.done",
 };
 
 async function fetchWithProgress(url: string, onPct: (p: number) => void): Promise<Blob> {
-  const res = await fetch(url);
+  // A sleeping Mac behind a tunnel can leave the request hanging. Give up on the first byte after 90 s
+  // (a cold download plus conversion takes well under that), but never cut off a body that is flowing.
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), 90_000);
+  const res = await fetch(url, { signal: ac.signal }).finally(() => clearTimeout(timer));
   if (!res.ok) throw new Error(`Audio fetch failed (${res.status})`);
   const total = Number(res.headers.get("Content-Length") ?? 0);
   if (!res.body || !total) return res.blob();
@@ -67,31 +78,55 @@ async function run(id: string, meta: Omit<Song, "id" | "hasAudio" | "transpose" 
   return id;
 }
 
-export function ingestResolved(r: Resolved, report: Report): Promise<string> {
-  const split = r.artist ? { title: r.title, artist: r.artist } : splitTitle(r.title, (r as Resolved & { channel?: string }).channel);
-  return run(
-    `yt:${r.id}`,
-    { source: r.source, title: split.title, artist: split.artist, durationSec: r.duration, thumbnail: r.thumbnail, sourceUrl: `https://www.youtube.com/watch?v=${r.id}` },
-    async (rep) => {
-      rep({ stage: "fetching", pct: 0.02, detail: "ingest.pulling" });
-      return fetchWithProgress(audioUrl(r.id), (p) => rep({ stage: "fetching", pct: 0.02 + 0.26 * p, detail: "ingest.pulling" }));
-    },
-    report,
-    { rawTitle: r.title, channel: (r as Resolved & { channel?: string }).channel },
-  );
+function resolvedMeta(r: Resolved) {
+  const split = songName(r);
+  return {
+    id: `yt:${r.id}`,
+    meta: { source: r.source, title: split.title, artist: split.artist, durationSec: r.duration, thumbnail: r.thumbnail, sourceUrl: `https://www.youtube.com/watch?v=${r.id}` },
+    hints: { rawTitle: r.title, channel: r.channel },
+  };
 }
 
-export async function ingestFile(file: File, report: Report): Promise<string> {
+export function ingestResolved(r: Resolved, report: Report): Promise<string> {
+  const { id, meta, hints } = resolvedMeta(r);
+  return run(id, meta, async (rep) => {
+    let last = "No audio service";
+    for (const url of audioUrls(r.id)) {
+      rep({ stage: "fetching", pct: 0.02, detail: "ingest.pulling" });
+      try { return await fetchWithProgress(url, (p) => rep({ stage: "fetching", pct: 0.02 + 0.26 * p, detail: "ingest.pulling" })); }
+      catch (e) { last = (e as Error).message; } // offline Mac, YouTube refusing a cloud IP: try the next one
+    }
+    throw new NeedsRecordingError(last);
+  }, report, hints);
+}
+
+/** Title and artist as the library will show them, for matching the song in other sources. */
+export function songName(r: Resolved): { title: string; artist?: string } {
+  return r.artist ? { title: r.title, artist: r.artist } : splitTitle(r.title, r.channel);
+}
+
+/** Fallback when YouTube refuses: analyze the song's 30-second store preview. A separate library entry,
+ *  so opening the full recording later still works. */
+export function ingestPreview(r: Resolved, p: Preview, report: Report): Promise<string> {
+  const { meta, hints } = resolvedMeta(r);
+  return run(`preview:${p.trackId}`, { ...meta, title: p.title, artist: p.artist, thumbnail: p.artwork ?? meta.thumbnail, preview: true }, async (rep) => {
+    rep({ stage: "fetching", pct: 0.02, detail: "ingest.pullingPreview" });
+    return fetchWithProgress(p.url, (pct) => rep({ stage: "fetching", pct: 0.02 + 0.26 * pct, detail: "ingest.pullingPreview" }));
+  }, report, hints);
+}
+
+/** Analyze a file the user picked. With `as`, the file is their recording of a song they found by
+ *  search or link, and it keeps that song's title, artist and cover. */
+export async function ingestFile(file: File, report: Report, as?: Resolved): Promise<string> {
   report({ stage: "fetching", pct: 0.05, detail: "ingest.readingFile" });
   const buf = await file.arrayBuffer();
+  const blob = async () => new Blob([buf], { type: file.type || "audio/mpeg" });
+  if (as) {
+    const { id, meta, hints } = resolvedMeta(as);
+    return run(id, meta, blob, report, hints);
+  }
   const id = `file:${(await sha1Hex(buf)).slice(0, 16)}`;
   const name = file.name.replace(/\.[^.]+$/, "");
   const split = splitTitle(name);
-  return run(
-    id,
-    { source: "file", title: split.title, artist: split.artist, durationSec: 0 },
-    async () => new Blob([buf], { type: file.type || "audio/mpeg" }),
-    report,
-    { rawTitle: name },
-  );
+  return run(id, { source: "file", title: split.title, artist: split.artist, durationSec: 0 }, blob, report, { rawTitle: name });
 }

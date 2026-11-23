@@ -180,7 +180,7 @@ export function SongView({ id }: { id: string }) {
           <button onClick={() => router.push("/library")} aria-label={t("common.back")} className="press glass circle-btn text-ivory shrink-0"><IconBack /></button>
           <div className="min-w-0 flex-1">
             <div className="ios-headline lg:ios-title1 truncate">{song.title}</div>
-            <div className="ios-footnote lg:ios-subhead label-2 truncate">{song.artist ?? (song.source === "file" ? t("common.localFile") : "")}</div>
+            <div className="ios-footnote lg:ios-subhead label-2 truncate">{song.artist ?? (song.source === "file" ? t("common.localFile") : "")}{song.preview ? ` · ${t("song.previewBadge")}` : ""}</div>
           </div>
           <div className="glass rounded-full px-3.5 h-11 flex items-center gap-2 ios-footnote" title={t("song.relative", { key: relativeKey(keyName, analysis.scale), pct: Math.round(analysis.keyStrength * 100) })}>
             <span className="chordname text-gold-hi ios-headline">{keyLabel}</span>

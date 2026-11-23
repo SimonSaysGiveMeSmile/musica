@@ -3,7 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { detectLink, resolveUrl, searchSongs, type Resolved, type SearchResult } from "@/lib/api";
-import { ingestFile, ingestResolved, type IngestState } from "@/lib/ingest";
+import { NeedsRecordingError, ingestFile, ingestPreview, ingestResolved, songName, type IngestState } from "@/lib/ingest";
+import { findPreview, type Preview } from "@/lib/sources/itunes";
+import { takeSharedFile } from "@/lib/share";
 import { listSongs, type Song } from "@/lib/store/db";
 import { IconFile, IconLink, IconSearch, IconSpark } from "@/components/ui/Icons";
 import { fmtTime } from "@/lib/audio/player";
@@ -25,6 +27,10 @@ export function SearchHome() {
   const [recent, setRecent] = useState<Song[]>([]);
   const abortRef = useRef<AbortController | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  // The song a picked file is a recording of (set when YouTube would not give us its audio).
+  const forSongRef = useRef<Resolved | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [preview, setPreview] = useState<Preview | null>(null);
 
   useEffect(() => { listSongs().then((s) => setRecent(s.slice(0, 4))).catch(() => {}); }, [ingest?.stage]);
 
@@ -33,8 +39,24 @@ export function SearchHome() {
   const startResolved = useCallback(async (r: Resolved) => {
     setError(null); setIngestTitle(r.title);
     try { const id = await ingestResolved(r, setIngest); finish(id); }
-    catch (e) { setIngest({ stage: "error", pct: 0, detail: "", error: (e as Error).message }); }
+    catch (e) {
+      if (!(e instanceof NeedsRecordingError)) { setIngest({ stage: "error", pct: 0, detail: "", error: (e as Error).message }); return; }
+      forSongRef.current = r;
+      setPreview(null);
+      setIngest({ stage: "error", pct: 0, detail: "", needsFile: true });
+      // Same song from another source: Apple's 30-second preview, if it has this exact title and artist.
+      const name = songName(r);
+      findPreview(name.title, name.artist).then((p) => { if (forSongRef.current === r) setPreview(p); }).catch(() => {});
+    }
   }, [finish]);
+
+  const analyzePreview = useCallback(async () => {
+    const r = forSongRef.current;
+    if (!r || !preview) return;
+    forSongRef.current = null; setPreview(null);
+    try { const id = await ingestPreview(r, preview, setIngest); finish(id); }
+    catch (e) { setIngest({ stage: "error", pct: 0, detail: "", error: (e as Error).message }); }
+  }, [preview, finish]);
 
   const submit = useCallback(async () => {
     const text = q.trim();
@@ -58,15 +80,36 @@ export function SearchHome() {
 
   const pickFile = useCallback(async (f: File | undefined) => {
     if (!f) return;
-    setError(null); setIngestTitle(f.name);
-    try { const id = await ingestFile(f, setIngest); finish(id); }
+    const as = forSongRef.current ?? undefined;
+    forSongRef.current = null;
+    if (fileRef.current) fileRef.current.value = ""; // picking the same file twice still fires onChange
+    setError(null); setIngestTitle(as?.title ?? f.name);
+    try { const id = await ingestFile(f, setIngest, as); finish(id); }
     catch (e) { setIngest({ stage: "error", pct: 0, detail: "", error: (e as Error).message }); }
   }, [finish]);
+
+  // A file shared to Musica from another app (Android share sheet; see public/sw.js).
+  useEffect(() => { takeSharedFile().then((f) => { if (f) pickFile(f); }).catch(() => {}); }, [pickFile]);
+
+  const openFile = useCallback((forSong: boolean) => {
+    if (!forSong) forSongRef.current = null;
+    fileRef.current?.click();
+  }, []);
 
   const busy = !!ingest && ingest.stage !== "error" && ingest.stage !== "done";
 
   return (
-    <main className="page-pad-bottom lg:px-10 lg:max-w-[980px]">
+    <main
+      className="page-pad-bottom lg:px-10 lg:max-w-[980px] relative"
+      onDragOver={(e) => { if (!busy && e.dataTransfer.types.includes("Files")) { e.preventDefault(); setDragging(true); } }}
+      onDragLeave={(e) => { if (e.currentTarget === e.target) setDragging(false); }}
+      onDrop={(e) => { e.preventDefault(); setDragging(false); if (!busy) pickFile(e.dataTransfer.files?.[0]); }}
+    >
+      {dragging && (
+        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center" style={{ background: "color-mix(in srgb, var(--gold) 10%, transparent)" }}>
+          <div className="glass rounded-[28px] px-8 py-6 ios-title3 font-semibold">{t("home.dropHere")}</div>
+        </div>
+      )}
       {/* Hero */}
       <section className="safe-top px-5 lg:px-0 pt-6 pb-2 relative">
         <div aria-hidden className="absolute top-0 right-0 w-[320px] h-[260px] pointer-events-none" style={{ background: "radial-gradient(closest-side, color-mix(in srgb, var(--gold) 16%, transparent), transparent)" }} />
@@ -98,7 +141,7 @@ export function SearchHome() {
           </button>
         </form>
         <div className="flex gap-2 mt-3">
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={busy} className="press glass rounded-full h-10 px-4 flex items-center gap-2 ios-subhead text-ivory disabled:opacity-40">
+          <button type="button" onClick={() => openFile(false)} disabled={busy} className="press gold-fill rounded-full h-10 px-4 flex items-center gap-2 ios-subhead font-semibold disabled:opacity-40">
             <IconFile width={18} height={18} /> {t("home.useFile")}
           </button>
           <button type="button" onClick={async () => { try { const t = await navigator.clipboard.readText(); if (t) setQ(t); } catch {} }} disabled={busy} className="press glass rounded-full h-10 px-4 flex items-center gap-2 ios-subhead text-ivory disabled:opacity-40">
@@ -113,7 +156,7 @@ export function SearchHome() {
       <AnimatePresence>
         {ingest && (
           <motion.section key="ingest" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="px-5 lg:px-0 mt-5 lg:max-w-[640px]">
-            <IngestProgress state={ingest} title={ingestTitle} onDismiss={() => setIngest(null)} />
+            <IngestProgress state={ingest} title={ingestTitle} onDismiss={() => { forSongRef.current = null; setPreview(null); setIngest(null); }} onPickFile={() => openFile(true)} onUsePreview={preview ? analyzePreview : undefined} previewOf={preview ? `${preview.title} – ${preview.artist}` : undefined} />
           </motion.section>
         )}
       </AnimatePresence>
@@ -130,7 +173,7 @@ export function SearchHome() {
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => startResolved({ id: r.id, title: r.title, duration: r.duration, thumbnail: r.thumbnail, source: "youtube", ...( { channel: r.channel } as object) })}
+                  onClick={() => startResolved({ id: r.id, title: r.title, channel: r.channel, duration: r.duration, thumbnail: r.thumbnail, source: "youtube" })}
                   className="press w-full min-w-0 inset-group p-2 flex items-center gap-3 text-left disabled:opacity-50"
                 >
                   <Thumb src={r.thumbnail} alt="" />

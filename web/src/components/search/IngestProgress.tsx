@@ -11,7 +11,7 @@ const STEPS: { key: IngestState["stage"][]; label: Key }[] = [
   { key: ["lyrics", "saving", "done"], label: "ingest.stepLyrics" },
 ];
 
-export function IngestProgress({ state, title, onDismiss }: { state: IngestState; title: string; onDismiss: () => void }) {
+export function IngestProgress({ state, title, onDismiss, onPickFile, onUsePreview, previewOf }: { state: IngestState; title: string; onDismiss: () => void; onPickFile?: () => void; onUsePreview?: () => void; previewOf?: string }) {
   const { t } = useT();
   const isError = state.stage === "error";
   const idx = STEPS.findIndex((s) => s.key.includes(state.stage));
@@ -20,14 +20,31 @@ export function IngestProgress({ state, title, onDismiss }: { state: IngestState
       
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="eyebrow">{isError ? t("ingest.failed") : t("ingest.analyzing")}</div>
+          <div className="eyebrow">{state.needsFile ? t("ingest.needsFileTitle") : isError ? t("ingest.failed") : t("ingest.analyzing")}</div>
           <div className="ios-headline truncate mt-1">{title}</div>
         </div>
         {(isError || state.stage === "done") && (
           <button onClick={onDismiss} aria-label={t("common.close")} className="press text-ivory-3 -mr-1 -mt-1 p-1"><IconClose /></button>
         )}
       </div>
-      {isError ? (
+      {state.needsFile ? (
+        <>
+          <p className="label-2 ios-footnote mt-2">{t("ingest.needsFileBody")}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {onPickFile && (
+              <button type="button" onClick={onPickFile} className="press h-10 px-4 rounded-full ios-subhead font-semibold gold-fill">
+                {t("ingest.openRecording")}
+              </button>
+            )}
+            {onUsePreview && (
+              <button type="button" onClick={onUsePreview} className="press glass h-10 px-4 rounded-full ios-subhead text-ivory">
+                {t("ingest.usePreview")}
+                {previewOf && <span className="label-2"> · {previewOf}</span>}
+              </button>
+            )}
+          </div>
+        </>
+      ) : isError ? (
         <p className="text-felt-hi ios-footnote mt-3">{state.error}</p>
       ) : (
         <>

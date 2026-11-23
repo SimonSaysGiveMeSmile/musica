@@ -15,6 +15,7 @@ export interface Song {
   thumbnail?: string;
   sourceUrl?: string;
   hasAudio: boolean;
+  preview?: boolean; // the audio is a 30-second store preview, not the whole song
   analysis?: Analysis;
   peaks?: number[];
   lyrics?: Lyrics;
