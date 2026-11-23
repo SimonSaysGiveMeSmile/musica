@@ -28,6 +28,16 @@ import { useT } from "@/lib/i18n";
 
 type View = "sheet" | "timeline" | "chords" | "learn";
 
+/** Songs already searched again for lyrics in this session. */
+const autoLyricsTried = new Set<string>();
+
+async function lyricsPatch(song: Song): Promise<Partial<Song> | null> {
+  const l = await fetchLyrics(song.title, song.artist, song.durationSec, undefined, song.title);
+  if (!l) return null;
+  const est = l.synced ? estimateOffset(l.lines, song.analysis?.vocals) : null;
+  return { lyrics: l, lyricsOffset: est?.confident ? est.offset : 0, lyricsAutoSynced: !!est?.confident, lyricAnchors: {} };
+}
+
 export function SongView({ id }: { id: string }) {
   const router = useRouter();
   const prefs = usePrefs();
@@ -128,12 +138,19 @@ export function SongView({ id }: { id: string }) {
   const retryLyrics = useCallback(async () => {
     if (!song) return;
     setLyricsBusy(true);
-    try {
-      const l = await fetchLyrics(song.title, song.artist, song.durationSec, undefined, song.title);
-      if (l) { const est = l.synced ? estimateOffset(l.lines, analysis?.vocals) : null; update({ lyrics: l, lyricsOffset: est?.confident ? est.offset : 0, lyricsAutoSynced: !!est?.confident, lyricAnchors: {} }); }
-    }
+    try { const p = await lyricsPatch(song); if (p) update(p); }
+    catch { /* offline: the button stays */ }
     finally { setLyricsBusy(false); }
   }, [song, update]);
+
+  // A song saved without lyrics (offline then, or an older, stricter search) looks again by itself
+  // once per visit, so "Find lyrics again" is only for when this also comes back empty.
+  const lyricsMissing = !!song && !!analysis && !song.lyrics;
+  useEffect(() => {
+    if (!lyricsMissing || !song || autoLyricsTried.has(id)) return;
+    autoLyricsTried.add(id);
+    lyricsPatch(song).then((p) => { if (p) update(p); }, () => { /* offline */ });
+  }, [lyricsMissing, id, song, update]);
 
   if (song === undefined) return <div className="safe-top p-5 text-ivory-3">{t("song.opening")}</div>;
   if (song === null || !analysis || !shown) {

@@ -58,7 +58,8 @@ async function run(id: string, meta: Omit<Song, "id" | "hasAudio" | "transpose" 
 
   report({ stage: "lyrics", pct: 0.88, detail: "ingest.lyrics" });
   let lyrics = null;
-  try { lyrics = await fetchLyrics(meta.title, meta.artist, duration, hints.channel, hints.rawTitle); } catch { /* offline: fine */ }
+  // A 30-second preview is matched by the full song's length, which is what the lyric files carry.
+  try { lyrics = await fetchLyrics(meta.title, meta.artist, meta.preview ? meta.durationSec : duration, hints.channel, hints.rawTitle); } catch { /* offline: fine */ }
 
   report({ stage: "saving", pct: 0.95, detail: "ingest.saving" });
   // Line up a timestamped lyric file with this recording (a different edit often has a longer intro).

@@ -25,10 +25,15 @@ export async function fetchLyrics(title: string, artist: string | undefined, dur
   const english = titleLang === "en" || titleLang === "und";
   const cands = english ? [{ title, artist }] : titleVariants(rawTitle ?? title, artist, channel);
   if (!english && !cands.some((c) => c.title === title && (c.artist ?? "") === (artist ?? ""))) cands.unshift({ title, artist });
-  const q = new URLSearchParams({ duration: String(Math.round(duration)), cands: JSON.stringify(cands.slice(0, 8)), strict: "1", artistCheck: english ? "1" : "0" });
-  const res = await fetch(`/api/lyrics?${q}`);
-  if (!res.ok) return null;
-  const data = await res.json();
+  const ask = async (strict: boolean) => {
+    const q = new URLSearchParams({ duration: String(Math.round(duration)), cands: JSON.stringify(cands.slice(0, 8)), strict: strict ? "1" : "0", artistCheck: english ? "1" : "0" });
+    const res = await fetch(`/api/lyrics?${q}`);
+    return res.ok ? res.json() : null;
+  };
+  // First only a lyric file from a recording of about this length (its timing fits). A live take,
+  // an extended edit or a home recording has none, so then take the closest one there is: its words
+  // are still right, and the offset estimate or a nudge lines it up.
+  const data = (await ask(true)) ?? (duration ? await ask(false) : null);
   if (!data) return null;
   const text: string = data.syncedLyrics || data.plainLyrics || "";
   const lang = detectLang(text.replace(/\[[^\]]*\]/g, " "));
