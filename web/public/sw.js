@@ -1,5 +1,5 @@
 /* Musica service worker: app shell + analysis engine offline. */
-const VERSION = "musica-v14";
+const VERSION = "musica-v15";
 const SHARE_CACHE = "musica-share"; // keep in sync with src/lib/share.ts
 const PRECACHE = ["/", "/library", "/live", "/me", "/manifest.webmanifest",
   "/essentia/essentia-wasm.web.js?v=11", "/essentia/essentia-wasm.web.wasm?v=11", "/essentia/essentia.js-core.umd.min.js?v=11", "/workers/analysis.js?v=11", "/workers/mic-processor.js?v=3", "/workers/pitch-processor.js?v=1",
@@ -46,13 +46,13 @@ self.addEventListener("fetch", (e) => {
     }));
     return;
   }
-  // Lyrics API: stale-while-revalidate
+  // Lyrics API: network first so a better match reaches the app at once; the saved copy is for offline.
+  // A "nothing found" answer is never saved, or it would hide lyrics found later.
   if (url.pathname.startsWith("/api/lyrics")) {
-    e.respondWith(caches.open(VERSION).then(async (c) => {
-      const cached = await c.match(req);
-      const net = fetch(req).then((r) => { if (r.ok) c.put(req, r.clone()); return r; }).catch(() => cached);
-      return cached || net;
-    }));
+    e.respondWith(caches.open(VERSION).then((c) => fetch(req).then(async (r) => {
+      if (r.ok) { const body = await r.clone().text(); if (body && body !== "null") c.put(req, r.clone()); }
+      return r;
+    }).catch(async () => (await c.match(req)) || Response.error())));
     return;
   }
   // Navigations: network first, fall back to cached shell

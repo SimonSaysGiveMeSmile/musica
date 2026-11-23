@@ -28,9 +28,20 @@ export function detectLink(input: string): "youtube" | "spotify" | null {
 
 /** Split "Artist - Title" / "Title (Official Video)" style YouTube titles. */
 export function splitTitle(title: string, channel?: string): { title: string; artist?: string } {
-  const t = title.replace(/\s*[\(\[][^\)\]]*(official|video|audio|lyrics?|hd|4k|visualizer|live|remaster(ed)?)[^\)\]]*[\)\]]/gi, "").trim();
-  const m = t.match(/^(.+?)\s+[-–—]\s+(.+)$/);
-  if (m) return { artist: m[1].trim(), title: m[2].trim() };
+  const t = title.replace(/\s*[\(\[][^\)\]]*(official|video|audio|lyrics?|hd|4k|visualizer|live|remaster(ed)?)[^\)\]]*[\)\]]/gi, "")
+    .replace(/\s+(official\s+)?(m\/?v|music\s+video|video|audio)\s*$/i, "").trim();
+  const bare = (a: string) => a.replace(/\s*[\(\[][^\)\]]*[\)\]]\s*/g, " ").trim(); // "IU(아이유)" -> "IU"
+  const m = t.match(/^(.+?)\s+[-–—_]\s+(.+)$/);
+  if (m) return { artist: bare(m[1]) || m[1].trim(), title: m[2].trim() };
+  // CJK quotes: YOASOBI「アイドル」, 周杰倫《晴天》
+  const cj = t.match(/^(.*?)\s*[《「『【]([^》」』】]+)[》」』】]/);
+  if (cj) return { artist: bare(cj[1]) || channel?.replace(/\s*-\s*topic$/i, "").trim() || undefined, title: cj[2].trim() };
+  // K-pop / J-pop: "BTS (방탄소년단) 'Dynamite' Official MV" from a label's channel
+  const q = t.match(/^(.+?)\s+['‘"“]([^'’"”]+)['’"”](?=\s|$)/);
+  if (q) {
+    const artist = bare(q[1]);
+    if (artist) return { artist, title: q[2].trim() };
+  }
   const artist = channel?.replace(/\s*-\s*topic$/i, "").replace(/VEVO$/i, "").trim();
   return { title: t, artist: artist || undefined };
 }

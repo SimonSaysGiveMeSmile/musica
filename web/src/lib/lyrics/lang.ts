@@ -111,7 +111,7 @@ export function titleVariants(raw: string, artistHint?: string, channel?: string
   if (q) { pushAll(q[2], q[1].trim() || artistHint || chan); pushAll(q[2]); }
 
   // K-pop / J-pop: Artist (한글) 'Title' Official MV. The channel is usually the label, not the artist.
-  const k = raw.match(/^(.*?)\s*['‘"“]([^'’"”]+)['’"”]/);
+  const k = raw.match(/^(.*?)\s+['‘"“]([^'’"”]+)['’"”](?=\s|$)/);
   if (k && k[1].trim()) {
     const artist = k[1].replace(/\s*[\(\[][^\)\]]*[\)\]]\s*/g, " ").trim();
     pushAll(k[2], artistHint ?? (artist || undefined));

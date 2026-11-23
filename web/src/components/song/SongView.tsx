@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAudio, getSong, saveSong, type Song } from "@/lib/store/db";
+import { splitTitle } from "@/lib/api";
 import { usePlayer } from "@/lib/audio/player";
 import { usePrefs, setPrefs } from "@/lib/store/prefs";
 import { chordAt, distinctChords, firstVocalOnset, simplifyChords, vocalActivityIn } from "@/lib/analysis/postprocess";
@@ -30,6 +31,14 @@ type View = "sheet" | "timeline" | "chords" | "learn";
 
 /** Songs already searched again for lyrics in this session. */
 const autoLyricsTried = new Set<string>();
+
+/** Songs saved before the title reader knew "Artist 'Title' MV", 「Title」 and "Artist _ Title" kept the raw
+ *  video title, with the label's channel as artist. Read them again; titles already split stay as they are. */
+function tidyName(song: Song): { title: string; artist?: string } | null {
+  if (!/\s['‘"“][^'’"”]+['’"”](\s|$)|[《「『【]|\s_\s/.test(song.title) || /\s[-–—]\s/.test(song.title)) return null;
+  const n = splitTitle(song.title, song.artist);
+  return n.title !== song.title ? n : null;
+}
 
 async function lyricsPatch(song: Song): Promise<Partial<Song> | null> {
   const l = await fetchLyrics(song.title, song.artist, song.durationSec, undefined, song.title);
@@ -145,12 +154,17 @@ export function SongView({ id }: { id: string }) {
 
   // A song saved without lyrics (offline then, or an older, stricter search) looks again by itself
   // once per visit, so "Find lyrics again" is only for when this also comes back empty.
-  const lyricsMissing = !!song && !!analysis && !song.lyrics;
   useEffect(() => {
-    if (!lyricsMissing || !song || autoLyricsTried.has(id)) return;
+    if (!song || !analysis || autoLyricsTried.has(id)) return;
     autoLyricsTried.add(id);
-    lyricsPatch(song).then((p) => { if (p) update(p); }, () => { /* offline */ });
-  }, [lyricsMissing, id, song, update]);
+    const name = tidyName(song);
+    if (!name && song.lyrics) return;
+    const named = name ? { ...song, ...name } : song;
+    lyricsPatch(named).then((p) => {
+      if (name) update(p && !song.lyrics ? { ...name, ...p } : name);
+      else if (p) update(p);
+    }, () => { if (name) update(name); });
+  }, [id, song, analysis, update]);
 
   if (song === undefined) return <div className="safe-top p-5 text-ivory-3">{t("song.opening")}</div>;
   if (song === null || !analysis || !shown) {
@@ -253,7 +267,7 @@ export function SongView({ id }: { id: string }) {
               </div>
             )}
             <div className="mt-4 flex flex-wrap gap-2 text-[13px]">
-              {!song.lyrics && <button onClick={retryLyrics} disabled={lyricsBusy} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">{lyricsBusy ? t("song.searching") : t("song.findLyricsAgain")}</button>}
+              {song.lyrics?.source !== "user" && <button onClick={retryLyrics} disabled={lyricsBusy} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">{lyricsBusy ? t("song.searching") : t("song.findLyricsAgain")}</button>}
               <button onClick={() => { setLyricsDraft(song.lyrics?.lines.map((l) => l.text).join("\n") ?? ""); setEditingLyrics(true); }} className="press glass rounded-full h-10 px-4 ios-subhead text-ivory">{song.lyrics ? t("song.editLyrics") : t("song.pasteLyrics")}</button>
               {song.lyrics?.lang && song.lyrics.lang !== "und" && <span className="self-center ios-footnote label-3">{t("sheet.lyricsIn", { lang: LANG_NAMES[song.lyrics.lang] })}</span>}
               {song.lyrics && !song.lyrics.synced && <span className="self-center ios-footnote label-2">{t("song.unsynced")}</span>}
