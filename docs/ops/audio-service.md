@@ -7,6 +7,35 @@ Deployed on **Railway** since 2026-10-02 at **https://musica-audio-production.up
 (stable hostname — this replaced a Cloudflare quick tunnel whose hostname rotated; see
 [`incident-2026-09-26-search-outage.md`](incident-2026-09-26-search-outage.md)).
 
+## Where it runs (2026-11-22)
+
+YouTube refuses audio extraction from cloud IPs ("Sign in to confirm you're not a bot") on Railway
+and on Vercel, while search still works from both. So the service now runs **on the owner's Mac**,
+which has a home IP. Production tries the servers in `NEXT_PUBLIC_AUDIO_API` in order:
+
+1. `https://musica-audio.taile5a5c2.ts.net`: the Mac, published by Tailscale Funnel.
+2. `https://musica-audio-production.up.railway.app`: Railway. Only the songs it had already cached
+   still play from here.
+
+If neither returns audio, the app offers "Bring your own recording" or Apple's 30-second preview.
+Search and link resolving no longer touch this service at all (`web/src/app/api/{search,resolve}`).
+
+**Running it on the Mac.** `service/run-mac.sh` starts uvicorn on 127.0.0.1:8787, updates yt-dlp, and
+starts a user-level `tailscaled` (userspace networking, so no root needed) if one isn't running.
+Tailscale state lives in `~/Library/Application Support/musica-tailscale`. That includes the Funnel
+config, which was set once with `tailscale --socket=<that dir>/tailscaled.sock funnel --bg 8787` and
+survives restarts. The audio cache is `~/Library/Caches/musica-audio`.
+
+- Start it by hand: `nohup service/run-mac.sh > /tmp/musica-mac.log 2>&1 &`
+- Start it on login: install `service/mac/site.musicaa.audio.plist` (install commands are in the
+  file). It was **not installed** as of 2026-11-22, so after a reboot the service is down until it
+  is started again.
+- Check: `curl https://musica-audio.taile5a5c2.ts.net/health`
+
+**Not set up:** a Cloudflare quick tunnel or ngrok as further fallbacks. Both get a new address on
+every restart, while `NEXT_PUBLIC_AUDIO_API` is fixed at build time. ngrok was also over its free
+monthly request limit (ERR_NGROK_727) on 2026-11-22.
+
 ## Routes
 
 Verified from `service/main.py` on 2026-10-31. Four GET routes, nothing else — `/` returns 404,

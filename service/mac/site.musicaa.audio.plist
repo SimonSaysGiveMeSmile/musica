@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Keeps the Musica audio service (service/run-mac.sh) running while this user is logged in.
+     Install:  cp service/mac/site.musicaa.audio.plist ~/Library/LaunchAgents/
+               launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/site.musicaa.audio.plist
+     Remove:   launchctl bootout gui/$(id -u)/site.musicaa.audio -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>site.musicaa.audio</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>/Users/test/Desktop/Side-Proj/musica/service/run-mac.sh</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <key>StandardOutPath</key><string>/Users/test/Library/Logs/musica-audio.log</string>
+  <key>StandardErrorPath</key><string>/Users/test/Library/Logs/musica-audio.log</string>
+</dict>
+</plist>
