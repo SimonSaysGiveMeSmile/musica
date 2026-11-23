@@ -23,11 +23,12 @@ export async function GET(req: NextRequest) {
   // edit of the song (longer intro, extended outro) is what makes timing drift, so duration dominates.
   const rank = (h: Hit) => (h.syncedLyrics ? 0 : 1000) + (duration ? Math.min(Math.abs((h.duration ?? 0) - duration), 600) : 0);
   let best: Hit | null = null;
-  let wantedArtist: string | undefined;
+  let wantedArtist: string | undefined, wantedTitle = "";
   const consider = (hits: Hit[]) => {
     for (const h of hits) {
       if (!h || (!h.syncedLyrics && !h.plainLyrics)) continue;
       if (!artistMatches(h, wantedArtist)) continue;
+      if (!titleMatches(h, wantedTitle)) continue;
       // more than 25 s off is almost certainly a different recording; keep it only as a last resort
       if (strict && duration && h.duration && Math.abs(h.duration - duration) > 25) continue;
       if (!best || rank(h) < rank(best)) best = h;
@@ -42,11 +43,20 @@ export async function GET(req: NextRequest) {
     const aw = a.split(" "), ww = w.split(" ");
     return ww.some((t) => t.length > 2 && aw.includes(t));
   };
+  // A search returns anything that shares a word ("Days Into Memories" -> "2 days into college"); the
+  // song's name has to be in the hit's name, or the hit's name in ours.
+  const titleMatches = (h: Hit, wanted: string) => {
+    const t = norm(h.trackName ?? ""), w = norm(wanted);
+    if (!t || !w) return true;
+    if (t.includes(w) || w.includes(t)) return true;
+    const tw = new Set(t.split(" ")), ww = w.split(" ").filter((x) => x.length > 1);
+    return ww.length > 0 && ww.filter((x) => tw.has(x)).length / ww.length >= 0.75;
+  };
   const goodEnough = () => !!best && !!(best as Hit).syncedLyrics && (!duration || Math.abs(((best as Hit).duration ?? 0) - duration) <= 2);
 
   try {
     for (const c of cands) {
-      wantedArtist = c.artist;
+      wantedArtist = c.artist; wantedTitle = c.title;
       if (c.artist) {
         const q = new URLSearchParams({ track_name: c.title, artist_name: c.artist });
         if (duration) q.set("duration", String(duration));
