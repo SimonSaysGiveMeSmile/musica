@@ -6,6 +6,7 @@ container runs (Railway, Fly.io, a VPS). See README.md.
 from __future__ import annotations
 
 import asyncio
+import hmac
 import os
 import re
 import time
@@ -27,6 +28,10 @@ RATE_PER_MIN = int(os.environ.get("RATE_PER_MIN", "30"))
 MAX_DURATION = int(os.environ.get("MAX_DURATION_SEC", "900"))
 COOKIES_FILE = os.environ.get("YTDLP_COOKIES")  # optional path to a Netscape cookie file
 PROXY = os.environ.get("YTDLP_PROXY")            # optional proxy url
+# Shared secret the web app's proxy sends as X-Musica-Key. Every route except
+# /health requires it, so knowing this service's public address is not enough
+# to use it. Fails closed: with no key configured, nothing but /health answers.
+SERVICE_KEY = os.environ.get("MUSICA_SERVICE_KEY", "")
 
 app = FastAPI(title="Musica audio service", docs_url=None, redoc_url=None)
 app.add_middleware(
@@ -46,6 +51,9 @@ _hits: dict[str, deque[float]] = defaultdict(deque)
 async def rate_limit(request: Request, call_next):
     if request.url.path == "/health":
         return await call_next(request)
+    given = request.headers.get("x-musica-key", "")
+    if not SERVICE_KEY or not hmac.compare_digest(given.encode(), SERVICE_KEY.encode()):
+        return JSONResponse({"detail": "Not found"}, status_code=404)
     ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0].strip()
     now = time.time()
     q = _hits[ip]
@@ -59,6 +67,27 @@ async def rate_limit(request: Request, call_next):
 
 # ------------------------------------------------------------------ yt-dlp
 YT_ID = re.compile(r"^[A-Za-z0-9_-]{11}$")
+YT_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"}
+
+
+def _youtube_id(url: str) -> str | None:
+    """The 11-character video id from a real YouTube link, else None."""
+    from urllib.parse import parse_qs, urlparse
+    try:
+        u = urlparse(url if "://" in url else "https://" + url)
+    except ValueError:
+        return None
+    host = (u.hostname or "").lower()
+    if u.scheme not in ("http", "https") or host not in YT_HOSTS:
+        return None
+    if host == "youtu.be":
+        cand = u.path.lstrip("/").split("/")[0]
+    elif u.path == "/watch":
+        cand = (parse_qs(u.query).get("v") or [""])[0]
+    else:
+        parts = u.path.strip("/").split("/")
+        cand = parts[1] if len(parts) >= 2 and parts[0] in ("shorts", "embed", "live", "v") else ""
+    return cand if YT_ID.match(cand) else None
 
 
 def base_opts(**extra: Any) -> dict[str, Any]:
@@ -151,7 +180,7 @@ _locks: dict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
 # ------------------------------------------------------------------ routes
 @app.get("/health")
 async def health():
-    return {"ok": True, "yt_dlp": yt_dlp.version.__version__}
+    return {"ok": True}
 
 
 @app.get("/search")
@@ -159,7 +188,7 @@ async def search(q: str = Query(min_length=1, max_length=200), n: int = Query(10
     try:
         results = await asyncio.to_thread(_search_sync, q, n)
     except yt_dlp.utils.DownloadError as e:
-        raise HTTPException(502, f"Search failed: {e}") from e
+        raise HTTPException(502, "Search failed") from e
     return {"results": results}
 
 
@@ -196,12 +225,15 @@ async def resolve(url: str = Query(min_length=5, max_length=500)):
         return {"id": best["id"], "title": title or best["title"], "artist": artist or None,
                 "duration": best["duration"], "thumbnail": data.get("thumbnail_url") or best["thumbnail"], "source": "spotify"}
 
-    if not re.search(r"(youtube\.com|youtu\.be)", url):
+    vid = _youtube_id(url)
+    if not vid:
         raise HTTPException(400, "Paste a YouTube or Spotify link")
     try:
-        info = await asyncio.to_thread(_info_sync, url)
+        # Only ever hand yt-dlp a canonical YouTube URL built from the id, so
+        # it can't be pointed at any other host.
+        info = await asyncio.to_thread(_info_sync, f"https://www.youtube.com/watch?v={vid}")
     except yt_dlp.utils.DownloadError as e:
-        raise HTTPException(404, f"Could not read that link: {e}") from e
+        raise HTTPException(404, "Could not read that link") from e
     dur = int(info.get("duration") or 0)
     if dur > MAX_DURATION:
         raise HTTPException(400, f"Track is longer than {MAX_DURATION // 60} minutes")
@@ -221,7 +253,7 @@ async def audio(video_id: str, request: Request):
                 try:
                     await asyncio.to_thread(_download_sync, video_id, target)
                 except yt_dlp.utils.DownloadError as e:
-                    raise HTTPException(502, f"Could not fetch audio: {e}") from e
+                    raise HTTPException(502, "Could not fetch audio") from e
                 await asyncio.to_thread(_evict)
     os.utime(target, None)
     return FileResponse(target, media_type="audio/mp4", headers={"Cache-Control": "public, max-age=604800"})

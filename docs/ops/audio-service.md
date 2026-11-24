@@ -11,8 +11,14 @@ Deployed on **Railway** since 2026-10-02 at **https://musica-audio-production.up
 
 YouTube refuses audio extraction from cloud IPs ("Sign in to confirm you're not a bot") on Railway
 and on Vercel, while search still works from both. So the service now runs **on the owner's Mac**,
-which has a home IP. Production's `NEXT_PUBLIC_AUDIO_API` is `https://musica-audio.taile5a5c2.ts.net`:
-the Mac, published by Tailscale Funnel. The variable takes a comma-separated list, tried in order.
+which has a home IP, published by Tailscale Funnel.
+
+**The Mac's address is private (since 2026-11-24).** The browser only calls this site's `/audio/<id>`.
+`web/src/proxy.ts` forwards that on the server to `AUDIO_API` (server-only Vercel env, the Funnel URL)
+and adds the header `X-Musica-Key: $MUSICA_SERVICE_KEY`. The service answers every route except
+`/health` with 404 unless that key matches. The key lives on the Mac in `~/.config/musica/service.key`
+(mode 600, created by `run-mac.sh`) and in Vercel as `MUSICA_SERVICE_KEY`. Keep both in sync, and
+don't write the Funnel hostname into this repo (it's public).
 
 **Railway is gone.** The `musica-audio` Railway project, including its volume and the 18 cached
 songs, was deleted on 2026-11-22. The Railway sections below are history.
@@ -30,10 +36,10 @@ survives restarts. The audio cache is `~/Library/Caches/musica-audio`.
 - Start it on login: install `service/mac/site.musicaa.audio.plist` (install commands are in the
   file). It was **not installed** as of 2026-11-22, so after a reboot the service is down until it
   is started again.
-- Check: `curl https://musica-audio.taile5a5c2.ts.net/health`
+- Check: `curl "$AUDIO_API/health"` (the Funnel URL is in Vercel env `AUDIO_API`)
 
 **Not set up:** a Cloudflare quick tunnel or ngrok as further fallbacks. Both get a new address on
-every restart, while `NEXT_PUBLIC_AUDIO_API` is fixed at build time. ngrok was also over its free
+every restart, while `AUDIO_API` is read at request time but must be updated in Vercel. ngrok was also over its free
 monthly request limit (ERR_NGROK_727) on 2026-11-22.
 
 ## Routes

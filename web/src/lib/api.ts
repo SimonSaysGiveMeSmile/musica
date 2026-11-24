@@ -1,9 +1,6 @@
-/** Optional YouTube audio services (service/), comma-separated and tried in order, e.g. the home Mac then
- *  Railway. Search and links work without any; when all fail, the song asks for a recording instead.
- *  Unset in production means "no service". */
-export const AUDIO_APIS = (process.env.NEXT_PUBLIC_AUDIO_API ?? (process.env.NODE_ENV === "development" ? "http://localhost:8787" : ""))
-  .split(",").map((s) => s.trim().replace(/\/$/, "")).filter(Boolean);
-
+/** Audio comes from this site's /audio/<id>, which src/proxy.ts forwards to the YouTube audio service
+ *  (service/) on the server. The service's address and key never reach the browser. When no service is
+ *  configured the route answers 404 and the song asks for a recording instead. */
 export interface SearchResult { id: string; title: string; channel: string; duration: number; thumbnail?: string }
 export interface Resolved { id: string; title: string; artist?: string; channel?: string; duration: number; thumbnail?: string; source: "youtube" | "spotify" }
 
@@ -17,7 +14,7 @@ export async function resolveUrl(url: string): Promise<Resolved> {
   if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail ?? `Could not resolve link (${r.status})`);
   return r.json();
 }
-export function audioUrls(id: string): string[] { return AUDIO_APIS.map((base) => `${base}/audio/${encodeURIComponent(id)}`); }
+export function audioUrls(id: string): string[] { return [`/audio/${encodeURIComponent(id)}`]; }
 
 export function detectLink(input: string): "youtube" | "spotify" | null {
   const s = input.trim();

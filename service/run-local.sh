@@ -1,13 +1,13 @@
 #!/bin/sh
 # Runs the audio service on this machine and exposes it through a Cloudflare quick tunnel.
 # Temporary alternative to Railway: the tunnel URL changes every run, so after it prints,
-# update NEXT_PUBLIC_AUDIO_API in Vercel and redeploy:
-#   cd ../web && vercel env rm NEXT_PUBLIC_AUDIO_API production --yes; printf "<url>" | vercel env add NEXT_PUBLIC_AUDIO_API production; vercel --prod --yes
+# set it as the server-only AUDIO_API in Vercel (and MUSICA_SERVICE_KEY to this run's key), then redeploy.
 set -e
 cd "$(dirname "$0")"
 [ -d .venv ] || (python3 -m venv .venv && . .venv/bin/activate && pip install -q -r requirements.txt)
 . .venv/bin/activate
 export ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3100,https://musica-mauve-pi.vercel.app,https://www.musicaa.site,https://musicaa.site}"
+export MUSICA_SERVICE_KEY="${MUSICA_SERVICE_KEY:-dev}"  # web dev uses the same default
 uvicorn main:app --port 8787 &
 UV=$!
 trap 'kill $UV' EXIT

@@ -22,5 +22,12 @@ fi
 .venv/bin/pip install -q -U yt-dlp || true # YouTube changes often; a stale yt-dlp is the usual breakage
 
 export CACHE_DIR="${CACHE_DIR:-$HOME/Library/Caches/musica-audio}"
+# Shared secret with the web app (Vercel env MUSICA_SERVICE_KEY). Kept outside the repo, mode 600.
+KEY_FILE="$HOME/.config/musica/service.key"
+if [ ! -s "$KEY_FILE" ]; then
+  mkdir -p "$(dirname "$KEY_FILE")"
+  (umask 077; openssl rand -hex 32 > "$KEY_FILE")
+fi
+export MUSICA_SERVICE_KEY="$(cat "$KEY_FILE")"
 export ALLOWED_ORIGINS="${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3100,https://www.musicaa.site,https://musicaa.site,https://musica-mauve-pi.vercel.app}"
 exec .venv/bin/uvicorn main:app --host 127.0.0.1 --port "$PORT"

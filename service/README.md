@@ -20,4 +20,4 @@ uvicorn main:app --port 8787 --reload
 1. New project → Deploy from repo, set **Root Directory** to `service`.
 2. Add a volume mounted at `/data` (audio cache).
 3. Variables: `ALLOWED_ORIGINS=https://your-app.vercel.app`, optional `YTDLP_COOKIES`, `YTDLP_PROXY`, `CACHE_MAX_MB`.
-4. Copy the public URL into the web app's `NEXT_PUBLIC_AUDIO_API`.
+4. Set the public URL as the web app's server-only `AUDIO_API`, and the same `MUSICA_SERVICE_KEY` on both sides.
