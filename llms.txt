@@ -1,0 +1,24 @@
+# Musica
+
+> Musica is a mobile-first progressive web app that turns a YouTube link, Spotify link, song search or local audio file into a chord sheet with lyrics, key, tempo and instrument diagrams. All music analysis (key, tempo, beats and chords) runs on the phone with Essentia.js in a Web Worker; a small FastAPI service fetches audio with yt-dlp and ffmpeg. No accounts, no AI tokens, no database.
+
+- What it is: a chord detection and play-along app for musicians (guitar chords, key detection, tempo detection, lyrics)
+- Stack: Next.js 16, React 19, TypeScript, Tailwind CSS 4, Essentia.js (WASM), Web Workers; Python FastAPI, yt-dlp, ffmpeg; lyrics from LRCLIB
+- Live demo: https://www.musicaa.site
+- Hosting: web on Vercel, audio service in a container (Railway or similar)
+
+## Docs
+
+- [README](https://github.com/SimonSaysGiveMeSmile/musica/blob/main/README.md): overview, run locally, deploy, how the analysis works
+- [Product spec](https://github.com/SimonSaysGiveMeSmile/musica/blob/main/docs/PRD.md)
+- [Audio service README](https://github.com/SimonSaysGiveMeSmile/musica/blob/main/service/README.md): routes /search, /resolve, /audio/{id}, /health
+- [Audio service source](https://github.com/SimonSaysGiveMeSmile/musica/blob/main/service/main.py)
+- [Web app entry page](https://github.com/SimonSaysGiveMeSmile/musica/blob/main/web/src/app/page.tsx)
+- [Analysis code](https://github.com/SimonSaysGiveMeSmile/musica/tree/main/web/src/lib/analysis)
+
+## Optional
+
+- [Ops docs](https://github.com/SimonSaysGiveMeSmile/musica/tree/main/docs/ops): deploying, the audio service, gotchas, incident notes
+- [Web package.json](https://github.com/SimonSaysGiveMeSmile/musica/blob/main/web/package.json)
+- [Service requirements](https://github.com/SimonSaysGiveMeSmile/musica/blob/main/service/requirements.txt)
+- [Service Dockerfile](https://github.com/SimonSaysGiveMeSmile/musica/blob/main/service/Dockerfile)

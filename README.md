@@ -1,5 +1,11 @@
 # Musica
 
+Musica is a mobile-first web app (PWA) that turns any song into a chord sheet with lyrics, key and tempo, analyzed on your phone, for guitarists and other musicians who want to play along.
+
+![Musica home page: search for a song, artist, or YouTube / Spotify link, open a recording or paste a link, and a three-step "How it works" panel](docs/screenshot.jpg)
+
+Live demo: https://www.musicaa.site
+
 Any song, in your hands. A mobile-first PWA that turns a YouTube link, Spotify link, search, or local audio file into a chord sheet with lyrics, key, tempo, and instrument diagrams. All music analysis runs on the phone (Essentia.js in a Web Worker). No accounts, no AI tokens, no database.
 
 Read the product spec in [`docs/PRD.md`](docs/PRD.md).
@@ -7,6 +13,23 @@ Read the product spec in [`docs/PRD.md`](docs/PRD.md).
 **Live:** https://www.musicaa.site (Vercel project `musica`, also https://musica-mauve-pi.vercel.app). On a phone, open it in Safari or Chrome, then Share → Add to Home Screen.
 
 > The audio service currently runs on the development Mac behind a Cloudflare quick tunnel (`service/run-local.sh`). That URL dies when the Mac sleeps and changes on every restart. Move it to Railway with the steps below, then point `NEXT_PUBLIC_AUDIO_API` at the Railway URL.
+
+## Features
+
+- Start from a YouTube link, a Spotify link, a song search, or a local audio file
+- Chord sheet with synced lyrics, key, tempo (BPM) and instrument chord diagrams
+- Chord, key and tempo detection runs on the device (Essentia.js in a Web Worker); nothing you play is uploaded for analysis
+- Live tab: listens through the microphone for chords and pitch
+- Library of songs you opened; installs to the home screen as a PWA
+- No accounts, no AI tokens, no database
+
+## Tech stack
+
+- Web: Next.js 16, React 19, TypeScript, Tailwind CSS 4, Essentia.js (WebAssembly), deployed on Vercel
+- Audio service: Python FastAPI wrapping yt-dlp and ffmpeg (Docker, Railway or any container host)
+- Lyrics: LRCLIB
+
+## Project structure
 
 ```
 musica/
